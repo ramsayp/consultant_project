@@ -61,7 +61,7 @@ public with sharing class WorkItemController {
     @AuraEnabled(cacheable=true)
     public static List<Sprint__c> getActiveSprints() {
         return [
-            SELECT Id, Name, Start_Date__c, End_Date__c, Status__c, Goal__c, Sequence__c
+            SELECT Id, Name, Start_Date__c, End_Date__c, Status__c, Sequence__c
             FROM Sprint__c
             WHERE Status__c IN ('Planning', 'Active')
             ORDER BY Sequence__c NULLS LAST, Start_Date__c ASC
@@ -71,7 +71,7 @@ public with sharing class WorkItemController {
     @AuraEnabled(cacheable=true)
     public static List<Sprint__c> getAllSprints() {
         return [
-            SELECT Id, Name, Start_Date__c, End_Date__c, Status__c, Goal__c, Sequence__c
+            SELECT Id, Name, Start_Date__c, End_Date__c, Status__c, Sequence__c
             FROM Sprint__c
             ORDER BY Sequence__c NULLS LAST, Start_Date__c ASC
         ];
