@@ -10,7 +10,6 @@ export default class WorkManager extends LightningElement {
     @track view               = 'initiatives';
     @track selectedInitiative = null;
     @track showCreate         = false;
-    @track showSprintCreate   = false;
     @track isGenerating       = false;
 
     initiatives  = [];
@@ -62,9 +61,6 @@ export default class WorkManager extends LightningElement {
 
     handleNewInitiative()      { this.showCreate = true; }
     handleCreateCancel()       { this.showCreate = false; }
-    handleNewSprint()          { this.showSprintCreate = true; }
-    handleSprintCreateCancel() { this.showSprintCreate = false; }
-
     handleInitiativeSelect(event) {
         const { id, name } = event.currentTarget.dataset;
         this.selectedInitiative = { Id: id, Name: name };
@@ -79,11 +75,6 @@ export default class WorkManager extends LightningElement {
     async handleInitiativeCreated() {
         this.showCreate = false;
         await refreshApex(this._wiredInitiatives);
-    }
-
-    async handleSprintCreated() {
-        this.showSprintCreate = false;
-        await refreshApex(this._wiredSprints);
     }
 
     async handleGenerateSprints() {
