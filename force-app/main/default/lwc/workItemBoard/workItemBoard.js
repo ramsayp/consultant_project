@@ -9,10 +9,11 @@ import updateStatus    from '@salesforce/apex/WorkItemController.updateStatus';
 const STATUS_COLS = {
     Story: ['Backlog', 'Ready', 'In Progress', 'In Review', 'Done'],
     Task:  ['Backlog', 'In Progress', 'Blocked', 'Done'],
-    Bug:   ['Open', 'Triaged', 'In Progress', 'Fixed', 'Closed']
+    Bug:   ['Open', 'Triaged', 'In Progress', 'Fixed', 'Closed'],
+    Epic:  ['Draft', 'Active', 'In Progress', 'Completed', 'Cancelled']
 };
 
-const BOARD_TYPES = ['Story', 'Task', 'Bug'];
+const BOARD_TYPES = ['Story', 'Task', 'Bug', 'Epic'];
 
 export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     @api initiativeId         = null;
@@ -58,7 +59,8 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
         return opts;
     }
 
-    get newLabel() { return `+ New ${this.activeType}`; }
+    get newLabel()       { return `+ New ${this.activeType}`; }
+    get epicParentId()   { return this.activeType === 'Epic' ? this.initiativeId : null; }
 
     get columns() {
         const statuses = STATUS_COLS[this.activeType] || [];

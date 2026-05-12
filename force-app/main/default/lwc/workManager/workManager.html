@@ -1,6 +1,14 @@
 <template>
     <div class="wm-shell">
 
+        <!-- ── Top nav (hidden in board sub-view) ── -->
+        <template if:false={isBoardView}>
+            <nav class="wm-nav">
+                <button class={initiativesTabClass} onclick={showInitiatives}>Initiatives</button>
+                <button class={sprintsTabClass} onclick={showSprints}>Sprints</button>
+            </nav>
+        </template>
+
         <!-- ── Initiatives list ── -->
         <template if:true={isInitiativesView}>
             <div class="wm-initiatives slds-p-around_medium">
@@ -44,6 +52,48 @@
             </div>
         </template>
 
+        <!-- ── Sprints list ── -->
+        <template if:true={isSprintsView}>
+            <div class="wm-sprints slds-p-around_medium">
+                <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_medium">
+                    <h2 class="slds-col slds-text-heading_small wm-section-title">Sprints</h2>
+                    <div class="slds-col slds-shrink">
+                        <lightning-button
+                            variant="brand"
+                            label="+ New Sprint"
+                            onclick={handleNewSprint}>
+                        </lightning-button>
+                    </div>
+                </div>
+
+                <template if:false={hasSprints}>
+                    <div class="wm-empty">
+                        <p>No sprints yet — create one to get started.</p>
+                    </div>
+                </template>
+
+                <div class="wm-grid">
+                    <template for:each={allSprintsForDisplay} for:item="sp">
+                        <div key={sp.Id} class="sprint-card">
+                            <div class={sp.barClass}></div>
+                            <div class="sprint-card__body">
+                                <div class="sprint-card__name">{sp.Name}</div>
+                                <div class="sprint-card__meta">
+                                    <span class="sprint-card__status">{sp.Status__c}</span>
+                                    <template if:true={sp.Start_Date__c}>
+                                        <span class="sprint-card__dates">{sp.Start_Date__c} – {sp.End_Date__c}</span>
+                                    </template>
+                                </div>
+                                <template if:true={sp.Goal__c}>
+                                    <div class="sprint-card__goal">{sp.Goal__c}</div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
         <!-- ── Board view ── -->
         <template if:true={isBoardView}>
             <div class="wm-breadcrumb slds-p-horizontal_medium slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center">
@@ -75,6 +125,26 @@
                             oncreated={handleInitiativeCreated}
                             oncancel={handleCreateCancel}>
                         </c-work-item-create>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <!-- ── New Sprint modal ── -->
+        <template if:true={showSprintCreate}>
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+                <div class="slds-modal__container">
+                    <button
+                        class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        onclick={handleSprintCreateCancel}>
+                        <lightning-icon icon-name="utility:close" size="small" alternative-text="Close"></lightning-icon>
+                    </button>
+                    <div class="slds-modal__content slds-p-around_none">
+                        <c-sprint-create
+                            oncreated={handleSprintCreated}
+                            oncancel={handleSprintCreateCancel}>
+                        </c-sprint-create>
                     </div>
                 </div>
             </section>
