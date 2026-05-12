@@ -8,7 +8,6 @@ export default class SprintCreate extends LightningElement {
     @track startDate = null;
     @track endDate   = null;
     @track status    = 'Planning';
-    @track goal      = '';
     @track isCreating = false;
 
     get statusOptions() {
@@ -22,6 +21,11 @@ export default class SprintCreate extends LightningElement {
     handleChange(event) {
         const field = event.target.dataset.field;
         this[field] = event.target.value;
+        if (field === 'startDate' && this.startDate) {
+            const d = new Date(this.startDate);
+            d.setDate(d.getDate() + 13);
+            this.endDate = d.toISOString().split('T')[0];
+        }
     }
 
     async handleCreate() {
@@ -36,7 +40,6 @@ export default class SprintCreate extends LightningElement {
         };
         if (this.startDate) fields.Start_Date__c = this.startDate;
         if (this.endDate)   fields.End_Date__c   = this.endDate;
-        if (this.goal)      fields.Goal__c       = this.goal;
 
         try {
             const rec = await createRecord({ apiName: SPRINT_OBJECT.objectApiName, fields });
@@ -64,6 +67,5 @@ export default class SprintCreate extends LightningElement {
         this.startDate = null;
         this.endDate = null;
         this.status = 'Planning';
-        this.goal = '';
     }
 }

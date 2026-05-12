@@ -34,13 +34,12 @@ export default class WorkManager extends LightningElement {
 
     get allSprintsForDisplay() {
         return this.allSprints.map(s => ({
-            Id:           s.Id,
-            Name:         s.Name,
-            Status__c:    s.Status__c,
+            Id:            s.Id,
+            Name:          s.Name,
+            Status__c:     s.Status__c,
             Start_Date__c: s.Start_Date__c,
-            End_Date__c:  s.End_Date__c,
-            Goal__c:      s.Goal__c,
-            barClass:     'sprint-card__bar sprint-card__bar--' + (s.Status__c || 'Planning').toLowerCase()
+            End_Date__c:   s.End_Date__c,
+            barClass:      'sprint-card__bar sprint-card__bar--' + (s.Status__c || 'Planning').toLowerCase()
         }));
     }
     get selectedInitiativeId() { return this.selectedInitiative?.Id ?? null; }
