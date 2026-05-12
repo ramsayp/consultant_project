@@ -83,6 +83,60 @@ public with sharing class WorkItemController {
     }
 
     @AuraEnabled
+    public static void generateSprints() {
+        Integer existingCount = [SELECT COUNT() FROM Sprint__c];
+        if (existingCount > 0) return;
+
+        Date startDate = nextSprintStart(Date.today());
+        List<Sprint__c> sprints = new List<Sprint__c>();
+        for (Integer i = 1; i <= 6; i++) {
+            sprints.add(new Sprint__c(
+                Name          = 'Sprint ' + i,
+                Start_Date__c = startDate,
+                End_Date__c   = startDate.addDays(13),
+                Status__c     = 'Planning',
+                Sequence__c   = i
+            ));
+            startDate = startDate.addDays(14);
+        }
+        insert sprints;
+    }
+
+    @AuraEnabled
+    public static Sprint__c closeSprint(Id sprintId) {
+        update new Sprint__c(Id = sprintId, Status__c = 'Completed');
+
+        Sprint__c lastSprint = [
+            SELECT End_Date__c FROM Sprint__c
+            WHERE End_Date__c != null
+            ORDER BY End_Date__c DESC LIMIT 1
+        ];
+
+        AggregateResult[] agg = [SELECT MAX(Sequence__c) maxSeq FROM Sprint__c];
+        Integer nextSeq = agg[0].get('maxSeq') != null
+            ? Integer.valueOf((Decimal)agg[0].get('maxSeq')) + 1
+            : 1;
+
+        Sprint__c next = new Sprint__c(
+            Name          = 'Sprint ' + nextSeq,
+            Start_Date__c = lastSprint.End_Date__c.addDays(1),
+            End_Date__c   = lastSprint.End_Date__c.addDays(14),
+            Status__c     = 'Planning',
+            Sequence__c   = nextSeq
+        );
+        insert next;
+        return next;
+    }
+
+    private static Date nextSprintStart(Date d) {
+        // 0 = Monday relative to Jan 6 2025 (known Monday)
+        Date knownMonday = Date.newInstance(2025, 1, 6);
+        Integer dayOfWeek = Math.mod(knownMonday.daysBetween(d), 7);
+        Integer daysUntilMonday = (dayOfWeek == 0) ? 0 : (7 - dayOfWeek);
+        return d.addDays(daysUntilMonday);
+    }
+
+    @AuraEnabled
     public static void updateStatus(Id workItemId, String newStatus) {
         update new Work_Item__c(Id = workItemId, Status__c = newStatus);
     }

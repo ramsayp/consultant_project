@@ -68,7 +68,13 @@
 
                 <template if:false={hasSprints}>
                     <div class="wm-empty">
-                        <p>No sprints yet — create one to get started.</p>
+                        <p>No sprints yet.</p>
+                        <lightning-button
+                            variant="brand"
+                            label="Generate 6 Sprints (3 months)"
+                            onclick={handleGenerateSprints}
+                            disabled={isGenerating}>
+                        </lightning-button>
                     </div>
                 </template>
 
@@ -85,6 +91,15 @@
                                     </template>
                                 </div>
                             </div>
+                            <template if:true={sp.canClose}>
+                                <div class="sprint-card__actions">
+                                    <lightning-button
+                                        label="Close"
+                                        data-id={sp.Id}
+                                        onclick={handleCloseSprint}>
+                                    </lightning-button>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>

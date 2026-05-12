@@ -1,13 +1,17 @@
 import { LightningElement, wire, track } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
-import getWorkItems  from '@salesforce/apex/WorkItemController.getWorkItems';
-import getAllSprints  from '@salesforce/apex/WorkItemController.getAllSprints';
+import getWorkItems     from '@salesforce/apex/WorkItemController.getWorkItems';
+import getAllSprints     from '@salesforce/apex/WorkItemController.getAllSprints';
+import generateSprints  from '@salesforce/apex/WorkItemController.generateSprints';
+import closeSprint      from '@salesforce/apex/WorkItemController.closeSprint';
 
 export default class WorkManager extends LightningElement {
     @track view               = 'initiatives';
     @track selectedInitiative = null;
     @track showCreate         = false;
     @track showSprintCreate   = false;
+    @track isGenerating       = false;
 
     initiatives  = [];
     allSprints   = [];
@@ -31,17 +35,6 @@ export default class WorkManager extends LightningElement {
     get isBoardView()          { return this.view === 'board'; }
     get hasInitiatives()       { return this.initiatives.length > 0; }
     get hasSprints()           { return this.allSprints.length > 0; }
-
-    get allSprintsForDisplay() {
-        return this.allSprints.map(s => ({
-            Id:            s.Id,
-            Name:          s.Name,
-            Status__c:     s.Status__c,
-            Start_Date__c: s.Start_Date__c,
-            End_Date__c:   s.End_Date__c,
-            barClass:      'sprint-card__bar sprint-card__bar--' + (s.Status__c || 'Planning').toLowerCase()
-        }));
-    }
     get selectedInitiativeId() { return this.selectedInitiative?.Id ?? null; }
 
     get initiativesTabClass() {
@@ -51,19 +44,35 @@ export default class WorkManager extends LightningElement {
         return 'wm-nav__tab' + (this.view === 'sprints' ? ' wm-nav__tab--active' : '');
     }
 
+    get allSprintsForDisplay() {
+        return this.allSprints.map(s => ({
+            Id:            s.Id,
+            Name:          s.Name,
+            Status__c:     s.Status__c,
+            Start_Date__c: s.Start_Date__c,
+            End_Date__c:   s.End_Date__c,
+            canClose:      s.Status__c !== 'Completed',
+            barClass:      'sprint-card__bar sprint-card__bar--' + (s.Status__c || 'Planning').toLowerCase()
+        }));
+    }
+
     showInitiatives()  { this.view = 'initiatives'; }
     showSprints()      { this.view = 'sprints'; }
 
-    handleNewInitiative()  { this.showCreate = true; }
-    handleCreateCancel()   { this.showCreate = false; }
-
-    handleNewSprint()         { this.showSprintCreate = true; }
-    handleSprintCreateCancel(){ this.showSprintCreate = false; }
+    handleNewInitiative()      { this.showCreate = true; }
+    handleCreateCancel()       { this.showCreate = false; }
+    handleNewSprint()          { this.showSprintCreate = true; }
+    handleSprintCreateCancel() { this.showSprintCreate = false; }
 
     handleInitiativeSelect(event) {
         const { id, name } = event.currentTarget.dataset;
         this.selectedInitiative = { Id: id, Name: name };
         this.view = 'board';
+    }
+
+    handleBack() {
+        this.view = 'initiatives';
+        this.selectedInitiative = null;
     }
 
     async handleInitiativeCreated() {
@@ -76,8 +85,30 @@ export default class WorkManager extends LightningElement {
         await refreshApex(this._wiredSprints);
     }
 
-    handleBack() {
-        this.view = 'initiatives';
-        this.selectedInitiative = null;
+    async handleGenerateSprints() {
+        this.isGenerating = true;
+        try {
+            await generateSprints();
+            await refreshApex(this._wiredSprints);
+        } catch (err) {
+            this.toast('Generation failed', err?.body?.message ?? err?.message, 'error');
+        } finally {
+            this.isGenerating = false;
+        }
+    }
+
+    async handleCloseSprint(event) {
+        const sprintId = event.target.dataset.id;
+        try {
+            await closeSprint({ sprintId });
+            await refreshApex(this._wiredSprints);
+            this.toast('Sprint closed', 'Next sprint created automatically', 'success');
+        } catch (err) {
+            this.toast('Close failed', err?.body?.message ?? err?.message, 'error');
+        }
+    }
+
+    toast(title, message, variant) {
+        this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
     }
 }
