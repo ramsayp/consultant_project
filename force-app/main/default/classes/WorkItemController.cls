@@ -70,9 +70,13 @@ public with sharing class WorkItemController {
 
     @AuraEnabled(cacheable=true)
     public static List<Sprint__c> getAllSprints() {
+        Date cutoff = Date.today().addDays(-30);
         return [
             SELECT Id, Name, Start_Date__c, End_Date__c, Status__c, Sequence__c
             FROM Sprint__c
+            WHERE Status__c != 'Completed'
+               OR End_Date__c >= :cutoff
+               OR End_Date__c = null
             ORDER BY Sequence__c NULLS LAST, Start_Date__c ASC
         ];
     }

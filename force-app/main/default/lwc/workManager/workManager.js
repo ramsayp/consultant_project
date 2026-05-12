@@ -45,13 +45,14 @@ export default class WorkManager extends LightningElement {
     }
 
     get allSprintsForDisplay() {
+        const closable = this.allSprints.find(s => s.Status__c !== 'Completed');
         return this.allSprints.map(s => ({
             Id:            s.Id,
             Name:          s.Name,
             Status__c:     s.Status__c,
             Start_Date__c: s.Start_Date__c,
             End_Date__c:   s.End_Date__c,
-            canClose:      s.Status__c !== 'Completed',
+            canClose:      s.Id === closable?.Id,
             barClass:      'sprint-card__bar sprint-card__bar--' + (s.Status__c || 'Planning').toLowerCase()
         }));
     }
