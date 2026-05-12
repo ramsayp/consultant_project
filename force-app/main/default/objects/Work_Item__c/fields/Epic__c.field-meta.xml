@@ -7,5 +7,6 @@
     <relationshipLabel>Epic Work Items</relationshipLabel>
     <relationshipName>Epic_Work_Items</relationshipName>
     <required>false</required>
+    <trackTrending>false</trackTrending>
     <type>Lookup</type>
 </CustomField>

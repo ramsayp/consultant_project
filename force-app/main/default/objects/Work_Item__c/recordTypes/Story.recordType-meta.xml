@@ -5,24 +5,60 @@
     <description>Sprint-based iterative product work. Can be rolled forward into a new Story.</description>
     <label>Story</label>
     <picklistValues>
-        <picklist>Status__c</picklist>
-        <values><fullName>Backlog</fullName><default>true</default></values>
-        <values><fullName>Ready</fullName><default>false</default></values>
-        <values><fullName>In Sprint</fullName><default>false</default></values>
-        <values><fullName>In Progress</fullName><default>false</default></values>
-        <values><fullName>In Review</fullName><default>false</default></values>
-        <values><fullName>Done</fullName><default>false</default></values>
-        <values><fullName>Rolled Forward</fullName><default>false</default></values>
+        <picklist>Priority__c</picklist>
+        <values>
+            <fullName>Critical</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>High</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Low</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Medium</fullName>
+            <default>true</default>
+        </values>
     </picklistValues>
     <picklistValues>
-        <picklist>Priority__c</picklist>
-        <values><fullName>Critical</fullName><default>false</default></values>
-        <values><fullName>High</fullName><default>false</default></values>
-        <values><fullName>Medium</fullName><default>true</default></values>
-        <values><fullName>Low</fullName><default>false</default></values>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Backlog</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>Done</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Review</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Sprint</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Ready</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Rolled Forward</fullName>
+            <default>false</default>
+        </values>
     </picklistValues>
     <picklistValues>
         <picklist>Work_Mode__c</picklist>
-        <values><fullName>Iterative</fullName><default>true</default></values>
+        <values>
+            <fullName>Iterative</fullName>
+            <default>true</default>
+        </values>
     </picklistValues>
 </RecordType>

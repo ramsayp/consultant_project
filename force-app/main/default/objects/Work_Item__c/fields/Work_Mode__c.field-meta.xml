@@ -3,13 +3,26 @@
     <fullName>Work_Mode__c</fullName>
     <label>Work Mode</label>
     <required>false</required>
+    <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
         <valueSetDefinition>
             <sorted>false</sorted>
-            <value><fullName>Iterative</fullName><default>false</default><label>Iterative</label></value>
-            <value><fullName>Continuous</fullName><default>false</default><label>Continuous</label></value>
-            <value><fullName>Reactive</fullName><default>false</default><label>Reactive</label></value>
+            <value>
+                <fullName>Iterative</fullName>
+                <default>false</default>
+                <label>Iterative</label>
+            </value>
+            <value>
+                <fullName>Continuous</fullName>
+                <default>false</default>
+                <label>Continuous</label>
+            </value>
+            <value>
+                <fullName>Reactive</fullName>
+                <default>false</default>
+                <label>Reactive</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

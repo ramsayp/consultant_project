@@ -5,24 +5,60 @@
     <description>Defect work. Reactive in nature. Can be sprint or non-sprint.</description>
     <label>Bug</label>
     <picklistValues>
-        <picklist>Status__c</picklist>
-        <values><fullName>Open</fullName><default>true</default></values>
-        <values><fullName>Triaged</fullName><default>false</default></values>
-        <values><fullName>In Progress</fullName><default>false</default></values>
-        <values><fullName>In Review</fullName><default>false</default></values>
-        <values><fullName>Fixed</fullName><default>false</default></values>
-        <values><fullName>Closed</fullName><default>false</default></values>
-        <values><fullName>Wont Fix</fullName><default>false</default></values>
+        <picklist>Priority__c</picklist>
+        <values>
+            <fullName>Critical</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>High</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Low</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Medium</fullName>
+            <default>true</default>
+        </values>
     </picklistValues>
     <picklistValues>
-        <picklist>Priority__c</picklist>
-        <values><fullName>Critical</fullName><default>false</default></values>
-        <values><fullName>High</fullName><default>false</default></values>
-        <values><fullName>Medium</fullName><default>true</default></values>
-        <values><fullName>Low</fullName><default>false</default></values>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Closed</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Fixed</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Review</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Open</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>Triaged</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Wont Fix</fullName>
+            <default>false</default>
+        </values>
     </picklistValues>
     <picklistValues>
         <picklist>Work_Mode__c</picklist>
-        <values><fullName>Reactive</fullName><default>true</default></values>
+        <values>
+            <fullName>Reactive</fullName>
+            <default>true</default>
+        </values>
     </picklistValues>
 </RecordType>

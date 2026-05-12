@@ -5,21 +5,48 @@
     <description>Execution or fix step. Child of Task or Bug. Max depth: 2 levels.</description>
     <label>Step</label>
     <picklistValues>
-        <picklist>Status__c</picklist>
-        <values><fullName>To Do</fullName><default>true</default></values>
-        <values><fullName>In Progress</fullName><default>false</default></values>
-        <values><fullName>Done</fullName><default>false</default></values>
+        <picklist>Priority__c</picklist>
+        <values>
+            <fullName>Critical</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>High</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Low</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Medium</fullName>
+            <default>true</default>
+        </values>
     </picklistValues>
     <picklistValues>
-        <picklist>Priority__c</picklist>
-        <values><fullName>Critical</fullName><default>false</default></values>
-        <values><fullName>High</fullName><default>false</default></values>
-        <values><fullName>Medium</fullName><default>true</default></values>
-        <values><fullName>Low</fullName><default>false</default></values>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Done</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>To Do</fullName>
+            <default>true</default>
+        </values>
     </picklistValues>
     <picklistValues>
         <picklist>Work_Mode__c</picklist>
-        <values><fullName>Continuous</fullName><default>false</default></values>
-        <values><fullName>Reactive</fullName><default>false</default></values>
+        <values>
+            <fullName>Continuous</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Reactive</fullName>
+            <default>false</default>
+        </values>
     </picklistValues>
 </RecordType>

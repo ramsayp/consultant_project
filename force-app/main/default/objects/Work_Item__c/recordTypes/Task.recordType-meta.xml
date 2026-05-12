@@ -5,21 +5,48 @@
     <description>Operational or continuous work. May optionally belong to a Sprint.</description>
     <label>Task</label>
     <picklistValues>
-        <picklist>Status__c</picklist>
-        <values><fullName>Backlog</fullName><default>true</default></values>
-        <values><fullName>In Progress</fullName><default>false</default></values>
-        <values><fullName>Blocked</fullName><default>false</default></values>
-        <values><fullName>Done</fullName><default>false</default></values>
+        <picklist>Priority__c</picklist>
+        <values>
+            <fullName>Critical</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>High</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Low</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Medium</fullName>
+            <default>true</default>
+        </values>
     </picklistValues>
     <picklistValues>
-        <picklist>Priority__c</picklist>
-        <values><fullName>Critical</fullName><default>false</default></values>
-        <values><fullName>High</fullName><default>false</default></values>
-        <values><fullName>Medium</fullName><default>true</default></values>
-        <values><fullName>Low</fullName><default>false</default></values>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Backlog</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>Blocked</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Done</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Progress</fullName>
+            <default>false</default>
+        </values>
     </picklistValues>
     <picklistValues>
         <picklist>Work_Mode__c</picklist>
-        <values><fullName>Continuous</fullName><default>true</default></values>
+        <values>
+            <fullName>Continuous</fullName>
+            <default>true</default>
+        </values>
     </picklistValues>
 </RecordType>

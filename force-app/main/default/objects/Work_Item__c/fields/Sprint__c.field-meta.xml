@@ -7,5 +7,6 @@
     <relationshipLabel>Work Items</relationshipLabel>
     <relationshipName>Work_Items</relationshipName>
     <required>false</required>
+    <trackTrending>false</trackTrending>
     <type>Lookup</type>
 </CustomField>

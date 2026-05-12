@@ -1,0 +1,324 @@
+[1mdiff --git a/force-app/main/default/applications/ProjectManagement.app-meta.xml b/force-app/main/default/applications/ProjectManagement.app-meta.xml[m
+[1mindex 2b1d48b..698fad7 100644[m
+[1m--- a/force-app/main/default/applications/ProjectManagement.app-meta.xml[m
+[1m+++ b/force-app/main/default/applications/ProjectManagement.app-meta.xml[m
+[36m@@ -1,14 +1,14 @@[m
+ <?xml version="1.0" encoding="UTF-8"?>[m
+ <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">[m
+[31m-    <defaultLandingTab>standard-home</defaultLandingTab>[m
+     <description>Internal project management — Stories, Tasks, Bugs across Epics and Sprints.</description>[m
+[32m+[m[32m    <formFactors>Large</formFactors>[m
+     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>[m
+     <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>[m
+     <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>[m
+[31m-    <isServiceCloudConsole>false</isServiceCloudConsole>[m
+[32m+[m[32m    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>[m
+     <label>Project Management</label>[m
+     <navType>Standard</navType>[m
+     <tabs>ProjectManagement</tabs>[m
+[32m+[m[32m    <tabs>Work_Item__c</tabs>[m
+     <uiType>Lightning</uiType>[m
+[31m-    <formFactors>Large</formFactors>[m
+ </CustomApplication>[m
+[1mdiff --git a/force-app/main/default/classes/WorkItemController.cls b/force-app/main/default/classes/WorkItemController.cls[m
+[1mindex 8addf33..d44ce53 100644[m
+[1m--- a/force-app/main/default/classes/WorkItemController.cls[m
+[1m+++ b/force-app/main/default/classes/WorkItemController.cls[m
+[36m@@ -119,4 +119,4 @@[m [mpublic with sharing class WorkItemController {[m
+             .get(name)[m
+             .getRecordTypeId();[m
+     }[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/flexipages/ProjectManagement.flexipage-meta.xml b/force-app/main/default/flexipages/ProjectManagement.flexipage-meta.xml[m
+[1mindex 4aa1190..d816058 100644[m
+[1m--- a/force-app/main/default/flexipages/ProjectManagement.flexipage-meta.xml[m
+[1m+++ b/force-app/main/default/flexipages/ProjectManagement.flexipage-meta.xml[m
+[36m@@ -4,7 +4,7 @@[m
+     <flexiPageRegions>[m
+         <itemInstances>[m
+             <componentInstance>[m
+[31m-                <componentName>c:workManager</componentName>[m
+[32m+[m[32m                <componentName>workManager</componentName>[m
+                 <identifier>workManager</identifier>[m
+             </componentInstance>[m
+         </itemInstances>[m
+[1mdiff --git a/force-app/main/default/lwc/sprintCreate/sprintCreate.html b/force-app/main/default/lwc/sprintCreate/sprintCreate.html[m
+[1mindex 69c53e9..fe1f6dd 100644[m
+[1m--- a/force-app/main/default/lwc/sprintCreate/sprintCreate.html[m
+[1m+++ b/force-app/main/default/lwc/sprintCreate/sprintCreate.html[m
+[36m@@ -65,4 +65,4 @@[m
+             </div>[m
+         </div>[m
+     </div>[m
+[31m-</template>[m
+[32m+[m[32m</template>[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/sprintCreate/sprintCreate.js b/force-app/main/default/lwc/sprintCreate/sprintCreate.js[m
+[1mindex 3f625ec..c01e549 100644[m
+[1m--- a/force-app/main/default/lwc/sprintCreate/sprintCreate.js[m
+[1m+++ b/force-app/main/default/lwc/sprintCreate/sprintCreate.js[m
+[36m@@ -66,4 +66,4 @@[m [mexport default class SprintCreate extends LightningElement {[m
+         this.status = 'Planning';[m
+         this.goal = '';[m
+     }[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/sprintCreate/sprintCreate.js-meta.xml b/force-app/main/default/lwc/sprintCreate/sprintCreate.js-meta.xml[m
+[1mindex 32a2c5f..11c9e86 100644[m
+[1m--- a/force-app/main/default/lwc/sprintCreate/sprintCreate.js-meta.xml[m
+[1m+++ b/force-app/main/default/lwc/sprintCreate/sprintCreate.js-meta.xml[m
+[36m@@ -2,4 +2,4 @@[m
+ <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">[m
+     <apiVersion>61.0</apiVersion>[m
+     <isExposed>false</isExposed>[m
+[31m-</LightningComponentBundle>[m
+[32m+[m[32m</LightningComponentBundle>[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemBoard/workItemBoard.css b/force-app/main/default/lwc/workItemBoard/workItemBoard.css[m
+[1mindex cec71a5..3e39897 100644[m
+[1m--- a/force-app/main/default/lwc/workItemBoard/workItemBoard.css[m
+[1m+++ b/force-app/main/default/lwc/workItemBoard/workItemBoard.css[m
+[36m@@ -57,4 +57,4 @@[m
+     color: #a5adba;[m
+     font-size: 0.8rem;[m
+     padding: 0.75rem 0;[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemBoard/workItemBoard.html b/force-app/main/default/lwc/workItemBoard/workItemBoard.html[m
+[1mindex d2d3c2d..24393b8 100644[m
+[1m--- a/force-app/main/default/lwc/workItemBoard/workItemBoard.html[m
+[1m+++ b/force-app/main/default/lwc/workItemBoard/workItemBoard.html[m
+[36m@@ -98,4 +98,4 @@[m
+         </section>[m
+         <div class="slds-backdrop slds-backdrop_open"></div>[m
+     </template>[m
+[31m-</template>[m
+[32m+[m[32m</template>[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemBoard/workItemBoard.js b/force-app/main/default/lwc/workItemBoard/workItemBoard.js[m
+[1mindex 6d3464a..09cd77d 100644[m
+[1m--- a/force-app/main/default/lwc/workItemBoard/workItemBoard.js[m
+[1m+++ b/force-app/main/default/lwc/workItemBoard/workItemBoard.js[m
+[36m@@ -112,4 +112,4 @@[m [mexport default class WorkItemBoard extends NavigationMixin(LightningElement) {[m
+             attributes: { recordId: event.detail.id, actionName: 'view' }[m
+         });[m
+     }[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemBoard/workItemBoard.js-meta.xml b/force-app/main/default/lwc/workItemBoard/workItemBoard.js-meta.xml[m
+[1mindex 8691883..f2aff92 100644[m
+[1m--- a/force-app/main/default/lwc/workItemBoard/workItemBoard.js-meta.xml[m
+[1m+++ b/force-app/main/default/lwc/workItemBoard/workItemBoard.js-meta.xml[m
+[36m@@ -2,4 +2,4 @@[m
+ <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">[m
+     <apiVersion>61.0</apiVersion>[m
+     <isExposed>false</isExposed>[m
+[31m-</LightningComponentBundle>[m
+[32m+[m[32m</LightningComponentBundle>[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemCard/workItemCard.css b/force-app/main/default/lwc/workItemCard/workItemCard.css[m
+[1mindex 0c0fa2e..6d74944 100644[m
+[1m--- a/force-app/main/default/lwc/workItemCard/workItemCard.css[m
+[1m+++ b/force-app/main/default/lwc/workItemCard/workItemCard.css[m
+[36m@@ -76,4 +76,4 @@[m
+     --slds-c-input-color-border: transparent;[m
+     font-size: 0.75rem;[m
+     min-width: 7rem;[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemCard/workItemCard.html b/force-app/main/default/lwc/workItemCard/workItemCard.html[m
+[1mindex 3c914db..de2487e 100644[m
+[1m--- a/force-app/main/default/lwc/workItemCard/workItemCard.html[m
+[1m+++ b/force-app/main/default/lwc/workItemCard/workItemCard.html[m
+[36m@@ -26,4 +26,4 @@[m
+             </lightning-combobox>[m
+         </div>[m
+     </div>[m
+[31m-</template>[m
+[32m+[m[32m</template>[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemCard/workItemCard.js b/force-app/main/default/lwc/workItemCard/workItemCard.js[m
+[1mindex a4479ca..ba3b58a 100644[m
+[1m--- a/force-app/main/default/lwc/workItemCard/workItemCard.js[m
+[1m+++ b/force-app/main/default/lwc/workItemCard/workItemCard.js[m
+[36m@@ -37,4 +37,4 @@[m [mexport default class WorkItemCard extends LightningElement {[m
+     stopProp(event) {[m
+         event.stopPropagation();[m
+     }[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemCard/workItemCard.js-meta.xml b/force-app/main/default/lwc/workItemCard/workItemCard.js-meta.xml[m
+[1mindex 8691883..f2aff92 100644[m
+[1m--- a/force-app/main/default/lwc/workItemCard/workItemCard.js-meta.xml[m
+[1m+++ b/force-app/main/default/lwc/workItemCard/workItemCard.js-meta.xml[m
+[36m@@ -2,4 +2,4 @@[m
+ <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">[m
+     <apiVersion>61.0</apiVersion>[m
+     <isExposed>false</isExposed>[m
+[31m-</LightningComponentBundle>[m
+[32m+[m[32m</LightningComponentBundle>[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemCreate/workItemCreate.css b/force-app/main/default/lwc/workItemCreate/workItemCreate.css[m
+[1mindex ed11af3..cae3ad6 100644[m
+[1m--- a/force-app/main/default/lwc/workItemCreate/workItemCreate.css[m
+[1m+++ b/force-app/main/default/lwc/workItemCreate/workItemCreate.css[m
+[36m@@ -12,4 +12,4 @@[m
+ [m
+ .create-panel__footer {[m
+     border-top: 1px solid #e0e5ee;[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemCreate/workItemCreate.html b/force-app/main/default/lwc/workItemCreate/workItemCreate.html[m
+[1mindex 3194191..83d7b53 100644[m
+[1m--- a/force-app/main/default/lwc/workItemCreate/workItemCreate.html[m
+[1m+++ b/force-app/main/default/lwc/workItemCreate/workItemCreate.html[m
+[36m@@ -83,4 +83,4 @@[m
+             </div>[m
+         </div>[m
+     </div>[m
+[31m-</template>[m
+[32m+[m[32m</template>[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemCreate/workItemCreate.js b/force-app/main/default/lwc/workItemCreate/workItemCreate.js[m
+[1mindex 70c90cd..18f1d23 100644[m
+[1m--- a/force-app/main/default/lwc/workItemCreate/workItemCreate.js[m
+[1m+++ b/force-app/main/default/lwc/workItemCreate/workItemCreate.js[m
+[36m@@ -131,4 +131,4 @@[m [mexport default class WorkItemCreate extends LightningElement {[m
+     toast(title, message, variant) {[m
+         this.dispatchEvent(new ShowToastEvent({ title, message, variant }));[m
+     }[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workItemCreate/workItemCreate.js-meta.xml b/force-app/main/default/lwc/workItemCreate/workItemCreate.js-meta.xml[m
+[1mindex 8691883..f2aff92 100644[m
+[1m--- a/force-app/main/default/lwc/workItemCreate/workItemCreate.js-meta.xml[m
+[1m+++ b/force-app/main/default/lwc/workItemCreate/workItemCreate.js-meta.xml[m
+[36m@@ -2,4 +2,4 @@[m
+ <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">[m
+     <apiVersion>61.0</apiVersion>[m
+     <isExposed>false</isExposed>[m
+[31m-</LightningComponentBundle>[m
+[32m+[m[32m</LightningComponentBundle>[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workManager/workManager.css b/force-app/main/default/lwc/workManager/workManager.css[m
+[1mindex 2adc861..98ce066 100644[m
+[1m--- a/force-app/main/default/lwc/workManager/workManager.css[m
+[1m+++ b/force-app/main/default/lwc/workManager/workManager.css[m
+[36m@@ -202,4 +202,4 @@[m
+     font-size: 0.875rem;[m
+     font-weight: 600;[m
+     color: #16325c;[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workManager/workManager.html b/force-app/main/default/lwc/workManager/workManager.html[m
+[1mindex 3ee66a9..3c85703 100644[m
+[1m--- a/force-app/main/default/lwc/workManager/workManager.html[m
+[1m+++ b/force-app/main/default/lwc/workManager/workManager.html[m
+[36m@@ -152,4 +152,4 @@[m
+         </template>[m
+ [m
+     </div>[m
+[31m-</template>[m
+[32m+[m[32m</template>[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workManager/workManager.js b/force-app/main/default/lwc/workManager/workManager.js[m
+[1mindex 14276e3..33e65df 100644[m
+[1m--- a/force-app/main/default/lwc/workManager/workManager.js[m
+[1m+++ b/force-app/main/default/lwc/workManager/workManager.js[m
+[36m@@ -81,4 +81,4 @@[m [mexport default class WorkManager extends LightningElement {[m
+         this.view = 'initiatives';[m
+         this.selectedInitiative = null;[m
+     }[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/lwc/workManager/workManager.js-meta.xml b/force-app/main/default/lwc/workManager/workManager.js-meta.xml[m
+[1mindex 6849140..90b3bcd 100644[m
+[1m--- a/force-app/main/default/lwc/workManager/workManager.js-meta.xml[m
+[1m+++ b/force-app/main/default/lwc/workManager/workManager.js-meta.xml[m
+[36m@@ -5,4 +5,4 @@[m
+     <targets>[m
+         <target>lightning__AppPage</target>[m
+     </targets>[m
+[31m-</LightningComponentBundle>[m
+[32m+[m[32m</LightningComponentBundle>[m
+\ No newline at end of file[m
+[1mdiff --git a/force-app/main/default/objects/Sprint__c/Sprint__c.object-meta.xml b/force-app/main/default/objects/Sprint__c/Sprint__c.object-meta.xml[m
+[1mindex f239fe5..f292e5b 100644[m
+[1m--- a/force-app/main/default/objects/Sprint__c/Sprint__c.object-meta.xml[m
+[1m+++ b/force-app/main/default/objects/Sprint__c/Sprint__c.object-meta.xml[m
+[36m@@ -1,21 +1,166 @@[m
+ <?xml version="1.0" encoding="UTF-8"?>[m
+ <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>Accept</actionName>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>Accept</actionName>[m
+[32m+[m[32m        <formFactor>Large</formFactor>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>Accept</actionName>[m
+[32m+[m[32m        <formFactor>Small</formFactor>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>CancelEdit</actionName>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>CancelEdit</actionName>[m
+[32m+[m[32m        <formFactor>Large</formFactor>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>CancelEdit</actionName>[m
+[32m+[m[32m        <formFactor>Small</formFactor>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>Clone</actionName>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>Clone</actionName>[m
+[32m+[m[32m        <formFactor>Large</formFactor>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>Clone</actionName>[m
+[32m+[m[32m        <formFactor>Small</formFactor>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>Delete</actionName>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>Delete</actionName>[m
+[32m+[m[32m        <formFactor>Large</formFactor>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>Delete</actionName>[m
+[32m+[m[32m        <formFactor>Small</formFactor>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m        <actionName>Edit</actionName>[m
+[32m+[m[32m        <type>Default</type>[m
+[32m+[m[32m    </actionOverrides>[m
+[32m+[m[32m    <actionOverrides>[m
+[32m+[m[32m      

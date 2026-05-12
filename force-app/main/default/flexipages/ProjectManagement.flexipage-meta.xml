@@ -4,7 +4,7 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>c:workManager</componentName>
+                <componentName>workManager</componentName>
                 <identifier>workManager</identifier>
             </componentInstance>
         </itemInstances>

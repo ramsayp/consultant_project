@@ -3,6 +3,7 @@
     <fullName>Goal__c</fullName>
     <label>Goal</label>
     <length>32768</length>
+    <trackTrending>false</trackTrending>
     <type>LongTextArea</type>
     <visibleLines>3</visibleLines>
 </CustomField>
