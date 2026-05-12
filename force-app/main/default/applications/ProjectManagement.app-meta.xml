@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <defaultLandingTab>standard-home</defaultLandingTab>
+    <description>Internal project management — Stories, Tasks, Bugs across Epics and Sprints.</description>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isServiceCloudConsole>false</isServiceCloudConsole>
+    <label>Project Management</label>
+    <navType>Standard</navType>
+    <tabs>ProjectManagement</tabs>
+    <uiType>Lightning</uiType>
+    <formFactors>Large</formFactors>
+</CustomApplication>

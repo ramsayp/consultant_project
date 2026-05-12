@@ -1,0 +1,29 @@
+<template>
+    <div class={cardClass} data-id={workItem.Id} onclick={handleOpen}>
+        <div class={priorityBar}></div>
+        <div class="card__body">
+            <div class="card__title">{workItem.Name}</div>
+            <div class="card__meta slds-grid slds-wrap slds-gutters_xx-small">
+                <template if:true={workItem.Estimate__c}>
+                    <span class="meta-badge meta-badge_pts" title="Estimate">{workItem.Estimate__c}pt</span>
+                </template>
+                <template if:true={assigneeName}>
+                    <span class="meta-badge meta-badge_user">{assigneeName}</span>
+                </template>
+                <template if:true={workItem.Sprint__r}>
+                    <span class="meta-badge meta-badge_sprint">{workItem.Sprint__r.Name}</span>
+                </template>
+            </div>
+        </div>
+        <div class="card__actions" onclick={stopProp}>
+            <lightning-combobox
+                label=""
+                variant="label-hidden"
+                value={workItem.Status__c}
+                options={statusOptions}
+                onchange={handleStatusChange}
+                class="status-picker">
+            </lightning-combobox>
+        </div>
+    </div>
+</template>

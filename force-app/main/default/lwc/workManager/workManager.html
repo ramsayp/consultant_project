@@ -1,0 +1,85 @@
+<template>
+    <div class="wm-shell">
+
+        <!-- ── Initiatives list ── -->
+        <template if:true={isInitiativesView}>
+            <div class="wm-initiatives slds-p-around_medium">
+                <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_medium">
+                    <h2 class="slds-col slds-text-heading_small wm-section-title">Initiatives</h2>
+                    <div class="slds-col slds-shrink">
+                        <lightning-button
+                            variant="brand"
+                            label="+ New Initiative"
+                            onclick={handleNewInitiative}>
+                        </lightning-button>
+                    </div>
+                </div>
+
+                <template if:false={hasInitiatives}>
+                    <div class="wm-empty">
+                        <p>No initiatives yet — create one to get started.</p>
+                    </div>
+                </template>
+
+                <div class="wm-grid">
+                    <template for:each={initiatives} for:item="init">
+                        <div key={init.Id}
+                             class="init-card"
+                             onclick={handleInitiativeSelect}
+                             data-id={init.Id}
+                             data-name={init.Name}>
+                            <div class="init-card__bar"></div>
+                            <div class="init-card__body">
+                                <div class="init-card__name">{init.Name}</div>
+                                <div class="init-card__status">{init.Status__c}</div>
+                            </div>
+                            <lightning-icon
+                                icon-name="utility:chevronright"
+                                size="x-small"
+                                class="init-card__arrow">
+                            </lightning-icon>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- ── Board view ── -->
+        <template if:true={isBoardView}>
+            <div class="wm-breadcrumb slds-p-horizontal_medium slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center">
+                <lightning-button-icon
+                    icon-name="utility:chevronleft"
+                    variant="bare"
+                    onclick={handleBack}
+                    alternative-text="Back to Initiatives">
+                </lightning-button-icon>
+                <span class="slds-m-left_x-small crumb-parent">Initiatives</span>
+                <span class="crumb-sep">/</span>
+                <span class="crumb-current">{selectedInitiative.Name}</span>
+            </div>
+            <c-work-item-board initiative-id={selectedInitiativeId}></c-work-item-board>
+        </template>
+
+        <!-- ── New Initiative modal ── -->
+        <template if:true={showCreate}>
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+                <div class="slds-modal__container">
+                    <button
+                        class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        onclick={handleCreateCancel}>
+                        <lightning-icon icon-name="utility:close" size="small" alternative-text="Close"></lightning-icon>
+                    </button>
+                    <div class="slds-modal__content slds-p-around_none">
+                        <c-work-item-create
+                            type="Initiative"
+                            oncreated={handleInitiativeCreated}
+                            oncancel={handleCreateCancel}>
+                        </c-work-item-create>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+    </div>
+</template>

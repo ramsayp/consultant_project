@@ -1,0 +1,100 @@
+<template>
+    <div class="board-root slds-p-around_medium">
+
+        <!-- Type tabs + controls -->
+        <div class="board-header slds-grid slds-grid_vertical-align-center slds-m-bottom_medium">
+            <div class="slds-col">
+                <lightning-button-group>
+                    <template for:each={typeOptions} for:item="opt">
+                        <lightning-button
+                            key={opt.value}
+                            label={opt.label}
+                            variant={opt.variant}
+                            data-type={opt.value}
+                            onclick={handleTypeSelect}>
+                        </lightning-button>
+                    </template>
+                </lightning-button-group>
+            </div>
+            <div class="slds-col slds-grid slds-grid_align-end slds-gutters_small">
+                <div class="slds-col slds-shrink">
+                    <lightning-combobox
+                        label=""
+                        variant="label-hidden"
+                        placeholder="All Sprints"
+                        value={selectedSprint}
+                        options={sprintOptions}
+                        onchange={handleSprintChange}>
+                    </lightning-combobox>
+                </div>
+                <div class="slds-col slds-shrink">
+                    <lightning-button
+                        variant="brand"
+                        label={newLabel}
+                        onclick={handleNewClick}>
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kanban columns -->
+        <template if:false={isLoading}>
+            <div class="kanban">
+                <template for:each={columns} for:item="col">
+                    <div key={col.status} class="kanban__col">
+                        <div class="kanban__col-header">
+                            <span class="col-name">{col.status}</span>
+                            <span class="col-count">{col.count}</span>
+                        </div>
+                        <div class="kanban__col-body">
+                            <template for:each={col.items} for:item="item">
+                                <c-work-item-card
+                                    key={item.Id}
+                                    work-item={item}
+                                    status-options={col.statusOptions}
+                                    onstatuschange={handleStatusChange}
+                                    onopen={handleOpenItem}>
+                                </c-work-item-card>
+                            </template>
+                            <template if:true={col.empty}>
+                                <p class="empty-col">—</p>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        </template>
+
+        <template if:true={error}>
+            <p class="slds-text-color_error">{error}</p>
+        </template>
+    </div>
+
+    <!-- Create modal -->
+    <template if:true={showCreate}>
+        <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+            <div class="slds-modal__container">
+                <button
+                    class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                    title="Close"
+                    onclick={handleCreateCancel}>
+                    <lightning-icon icon-name="utility:close" size="small" alternative-text="Close"></lightning-icon>
+                </button>
+                <div class="slds-modal__content slds-p-around_none">
+                    <c-work-item-create
+                        type={activeType}
+                        sprint-id={selectedSprint}
+                        initiative-id={initiativeId}
+                        oncreated={handleItemCreated}
+                        oncancel={handleCreateCancel}>
+                    </c-work-item-create>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

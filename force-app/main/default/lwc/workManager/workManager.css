@@ -1,0 +1,106 @@
+:host {
+    display: block;
+    background: #f3f4f7;
+    min-height: calc(100vh - 90px);
+}
+
+.wm-shell {
+    height: 100%;
+}
+
+/* ── Initiatives ── */
+.wm-initiatives {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.wm-section-title {
+    color: #16325c;
+    font-weight: 700;
+}
+
+.wm-empty {
+    text-align: center;
+    padding: 3rem 0;
+    color: #8a94a6;
+}
+
+.wm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.init-card {
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+    transition: box-shadow 0.15s, transform 0.1s;
+}
+
+.init-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.14);
+    transform: translateY(-1px);
+}
+
+.init-card__bar {
+    width: 5px;
+    align-self: stretch;
+    background: #1976d2;
+    flex-shrink: 0;
+}
+
+.init-card__body {
+    flex: 1;
+    padding: 1rem 0.875rem;
+    min-width: 0;
+}
+
+.init-card__name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #16325c;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.init-card__status {
+    font-size: 0.75rem;
+    color: #5e6c84;
+    margin-top: 0.2rem;
+}
+
+.init-card__arrow {
+    margin-right: 0.75rem;
+    --sds-c-icon-color-foreground-default: #a8b0bf;
+}
+
+/* ── Breadcrumb ── */
+.wm-breadcrumb {
+    background: #fff;
+    border-bottom: 1px solid #dde1e8;
+    gap: 0.25rem;
+}
+
+.crumb-parent {
+    font-size: 0.8125rem;
+    color: #0070d2;
+    cursor: pointer;
+}
+
+.crumb-sep {
+    font-size: 0.8125rem;
+    color: #a8b0bf;
+    margin: 0 0.15rem;
+}
+
+.crumb-current {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #16325c;
+}

@@ -1,0 +1,86 @@
+<template>
+    <div class="create-panel">
+        <div class="create-panel__header">
+            <h2 class="slds-text-heading_small">New {type}</h2>
+        </div>
+
+        <div class="create-panel__body slds-form slds-form_stacked slds-p-around_medium">
+            <lightning-input
+                label="Title"
+                value={name}
+                onchange={handleChange}
+                data-field="name"
+                required>
+            </lightning-input>
+
+            <lightning-textarea
+                label="Description"
+                value={description}
+                onchange={handleChange}
+                data-field="description"
+                max-length="32768">
+            </lightning-textarea>
+
+            <template if:true={showEpicPicker}>
+                <lightning-combobox
+                    label="Epic"
+                    value={selectedEpicId}
+                    options={epicOptions}
+                    onchange={handleChange}
+                    data-field="selectedEpicId"
+                    placeholder="No Epic">
+                </lightning-combobox>
+            </template>
+
+            <template if:true={showSprintPicker}>
+                <lightning-combobox
+                    label="Sprint"
+                    value={selectedSprintId}
+                    options={sprintOptions}
+                    onchange={handleChange}
+                    data-field="selectedSprintId"
+                    placeholder="No Sprint">
+                </lightning-combobox>
+            </template>
+
+            <div class="slds-grid slds-gutters_small">
+                <div class="slds-col">
+                    <lightning-combobox
+                        label="Priority"
+                        value={priority}
+                        options={priorityOptions}
+                        onchange={handleChange}
+                        data-field="priority">
+                    </lightning-combobox>
+                </div>
+                <template if:true={showEstimate}>
+                    <div class="slds-col">
+                        <lightning-input
+                            type="number"
+                            label="Estimate (pts)"
+                            value={estimate}
+                            onchange={handleChange}
+                            data-field="estimate"
+                            min="0"
+                            step="1">
+                        </lightning-input>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <div class="create-panel__footer slds-p-around_medium slds-grid slds-grid_align-end slds-gutters_small">
+            <div class="slds-col slds-shrink">
+                <lightning-button label="Cancel" onclick={handleCancel}></lightning-button>
+            </div>
+            <div class="slds-col slds-shrink">
+                <lightning-button
+                    variant="brand"
+                    label={createLabel}
+                    onclick={handleCreate}
+                    disabled={isCreating}>
+                </lightning-button>
+            </div>
+        </div>
+    </div>
+</template>

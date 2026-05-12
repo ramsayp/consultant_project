@@ -1,0 +1,79 @@
+:host {
+    --priority-critical: #e53935;
+    --priority-high:     #fb8c00;
+    --priority-medium:   #1976d2;
+    --priority-low:      #757575;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.work-card {
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: stretch;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+    overflow: hidden;
+}
+
+.work-card:hover {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+.priority-bar {
+    width: 4px;
+    flex-shrink: 0;
+}
+
+.priority-bar_critical { background: var(--priority-critical); }
+.priority-bar_high     { background: var(--priority-high); }
+.priority-bar_medium   { background: var(--priority-medium); }
+.priority-bar_low      { background: var(--priority-low); }
+
+.card__body {
+    flex: 1;
+    padding: 0.5rem 0.625rem;
+    min-width: 0;
+}
+
+.card__title {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #181818;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.3rem;
+}
+
+.card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.meta-badge {
+    font-size: 0.6875rem;
+    padding: 0 0.375rem;
+    border-radius: 2px;
+    line-height: 1.4rem;
+    white-space: nowrap;
+}
+
+.meta-badge_pts    { background: #e8f0fe; color: #1a73e8; }
+.meta-badge_user   { background: #fce8e6; color: #c5221f; }
+.meta-badge_sprint { background: #e6f4ea; color: #1e8e3e; }
+
+.card__actions {
+    display: flex;
+    align-items: center;
+    padding: 0 0.375rem;
+}
+
+.status-picker {
+    --slds-c-input-color-border: transparent;
+    font-size: 0.75rem;
+    min-width: 7rem;
+}
