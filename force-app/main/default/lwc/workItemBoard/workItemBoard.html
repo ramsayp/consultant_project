@@ -1,72 +1,97 @@
 <template>
     <div class="board-root slds-p-around_medium">
 
-        <!-- Type tabs + controls -->
-        <div class="board-header slds-grid slds-grid_vertical-align-center slds-m-bottom_medium">
-            <div class="slds-col">
-                <lightning-button-group>
-                    <template for:each={typeOptions} for:item="opt">
-                        <lightning-button
-                            key={opt.value}
-                            label={opt.label}
-                            variant={opt.variant}
-                            data-type={opt.value}
-                            onclick={handleTypeSelect}>
-                        </lightning-button>
-                    </template>
-                </lightning-button-group>
-            </div>
-            <div class="slds-col slds-grid slds-grid_align-end slds-gutters_small">
-                <div class="slds-col slds-shrink">
-                    <lightning-combobox
-                        label=""
-                        variant="label-hidden"
-                        placeholder="All Sprints"
-                        value={selectedSprint}
-                        options={sprintOptions}
-                        onchange={handleSprintChange}>
-                    </lightning-combobox>
-                </div>
-                <div class="slds-col slds-shrink">
-                    <lightning-button
-                        variant="brand"
-                        label={newLabel}
-                        onclick={handleNewClick}>
-                    </lightning-button>
-                </div>
-            </div>
+        <!-- Board header: type picker + new button -->
+        <div class="board-header slds-m-bottom_medium">
+            <lightning-combobox
+                label=""
+                variant="label-hidden"
+                value={createType}
+                options={typeOptions}
+                onchange={handleTypeChange}
+                class="type-picker">
+            </lightning-combobox>
+            <lightning-button
+                variant="brand"
+                label="+ New"
+                onclick={handleNewClick}>
+            </lightning-button>
         </div>
-
-        <!-- Kanban columns -->
-        <template if:false={isLoading}>
-            <div class="kanban">
-                <template for:each={columns} for:item="col">
-                    <div key={col.status} class="kanban__col">
-                        <div class="kanban__col-header">
-                            <span class="col-name">{col.status}</span>
-                            <span class="col-count">{col.count}</span>
-                        </div>
-                        <div class="kanban__col-body">
-                            <template for:each={col.items} for:item="item">
-                                <c-work-item-card
-                                    key={item.Id}
-                                    work-item={item}
-                                    status-options={col.statusOptions}
-                                    onstatuschange={handleStatusChange}
-                                    onopen={handleOpenItem}>
-                                </c-work-item-card>
-                            </template>
-                            <template if:true={col.empty}>
-                                <p class="empty-col">—</p>
-                            </template>
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </template>
 
         <template if:true={isLoading}>
             <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        </template>
+
+        <template if:false={isLoading}>
+
+            <!-- Sprint sections -->
+            <template for:each={sprintSections} for:item="section">
+                <div key={section.sprintId} class="sprint-section slds-m-bottom_medium">
+                    <div class="sprint-section__header">
+                        <span class="sprint-section__name">{section.name}</span>
+                        <span class="sprint-section__dates">{section.startDate} – {section.endDate}</span>
+                        <span class="sprint-section__count">{section.count}</span>
+                        <div class="sprint-section__actions">
+                            <lightning-button
+                                label="+ New"
+                                data-sprint-id={section.sprintId}
+                                onclick={handleNewClick}>
+                            </lightning-button>
+                        </div>
+                    </div>
+                    <div class="kanban">
+                        <template for:each={section.columns} for:item="col">
+                            <div key={col.stage} class="kanban__col">
+                                <div class="kanban__col-header">
+                                    <span class="col-name">{col.stage}</span>
+                                    <span class="col-count">{col.count}</span>
+                                </div>
+                                <div class="kanban__col-body">
+                                    <template for:each={col.items} for:item="item">
+                                        <c-work-item-card
+                                            key={item.Id}
+                                            work-item={item}
+                                            status-options={stageOptions}
+                                            sprint-options={sprintOptions}
+                                            onstatuschange={handleStatusChange}
+                                            onsprintchange={handleSprintChange}
+                                            onopen={handleOpenItem}>
+                                        </c-work-item-card>
+                                    </template>
+                                    <template if:true={col.empty}>
+                                        <p class="empty-col">—</p>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Backlog -->
+            <div class="backlog-section">
+                <div class="backlog-section__header">
+                    <span class="backlog-section__title">Backlog</span>
+                    <span class="backlog-count">{backlogCount} items</span>
+                </div>
+                <div class="backlog-list">
+                    <template for:each={backlogItems} for:item="item">
+                        <c-work-item-card
+                            key={item.Id}
+                            work-item={item}
+                            status-options={stageOptions}
+                            sprint-options={sprintOptions}
+                            onstatuschange={handleStatusChange}
+                            onsprintchange={handleSprintChange}
+                            onopen={handleOpenItem}>
+                        </c-work-item-card>
+                    </template>
+                    <template if:false={backlogCount}>
+                        <p class="empty-col">Backlog is empty.</p>
+                    </template>
+                </div>
+            </div>
+
         </template>
 
         <template if:true={error}>
@@ -86,9 +111,8 @@
                 </button>
                 <div class="slds-modal__content slds-p-around_none">
                     <c-work-item-create
-                        type={activeType}
-                        parent-id={epicParentId}
-                        sprint-id={selectedSprint}
+                        type={createType}
+                        sprint-id={createSprint}
                         initiative-id={initiativeId}
                         oncreated={handleItemCreated}
                         oncancel={handleCreateCancel}>

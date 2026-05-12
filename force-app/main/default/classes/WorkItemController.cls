@@ -140,6 +140,31 @@ public with sharing class WorkItemController {
         return d.addDays(daysUntilMonday);
     }
 
+    @AuraEnabled(cacheable=true)
+    public static List<Work_Item__c> getBoardItems(Id initiativeId) {
+        List<Id> rtIds = new List<Id>();
+        for (String rt : new List<String>{'Epic','Story','Task','Bug'}) {
+            rtIds.add(rtId(rt));
+        }
+        String q = 'SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c, '
+                 + 'Work_Mode__c, Assignee__c, Assignee__r.Name, Description__c, '
+                 + 'Sprint__c, Sprint__r.Name, Sprint__r.Sequence__c, '
+                 + 'Sprint__r.Start_Date__c, Sprint__r.End_Date__c, '
+                 + 'Parent_Work_Item__c, Epic__c, Epic__r.Name, '
+                 + 'RecordType.Name, RecordTypeId '
+                 + 'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
+        if (initiativeId != null) {
+            q += ' AND (Parent_Work_Item__c = :initiativeId OR Epic__r.Parent_Work_Item__c = :initiativeId)';
+        }
+        q += ' ORDER BY Sprint__r.Sequence__c NULLS LAST, Sequence__c NULLS LAST, CreatedDate ASC';
+        return Database.query(q);
+    }
+
+    @AuraEnabled
+    public static void updateSprint(Id workItemId, Id sprintId) {
+        update new Work_Item__c(Id = workItemId, Sprint__c = sprintId);
+    }
+
     @AuraEnabled
     public static void updateStatus(Id workItemId, String newStatus) {
         update new Work_Item__c(Id = workItemId, Status__c = newStatus);

@@ -3,15 +3,15 @@
         <div class={priorityBar}></div>
         <div class="card__body">
             <div class="card__title">{workItem.Name}</div>
-            <div class="card__meta slds-grid slds-wrap slds-gutters_xx-small">
+            <div class="card__meta">
+                <template if:true={workItemType}>
+                    <span class={typeBadgeClass}>{workItemType}</span>
+                </template>
                 <template if:true={workItem.Estimate__c}>
                     <span class="meta-badge meta-badge_pts" title="Estimate">{workItem.Estimate__c}pt</span>
                 </template>
                 <template if:true={assigneeName}>
                     <span class="meta-badge meta-badge_user">{assigneeName}</span>
-                </template>
-                <template if:true={workItem.Sprint__r}>
-                    <span class="meta-badge meta-badge_sprint">{workItem.Sprint__r.Name}</span>
                 </template>
             </div>
         </div>
@@ -19,10 +19,18 @@
             <lightning-combobox
                 label=""
                 variant="label-hidden"
-                value={workItem.Status__c}
+                value={currentStage}
                 options={statusOptions}
                 onchange={handleStatusChange}
                 class="status-picker">
+            </lightning-combobox>
+            <lightning-combobox
+                label=""
+                variant="label-hidden"
+                value={currentSprintId}
+                options={sprintOptions}
+                onchange={handleSprintChange}
+                class="sprint-picker">
             </lightning-combobox>
         </div>
     </div>
