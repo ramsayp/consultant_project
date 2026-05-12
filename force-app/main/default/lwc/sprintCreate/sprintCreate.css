@@ -1,7 +1,8 @@
 .create-panel {
     background: #fff;
     border-radius: 0.25rem;
-    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    min-width: 420px;
 }
 
 .create-panel__header {
