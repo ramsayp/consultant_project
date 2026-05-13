@@ -47,15 +47,12 @@ public with sharing class WorkItemController {
     @AuraEnabled(cacheable=true)
     public static List<Work_Item__c> getEpics(Id initiativeId) {
         Id rtId = rtId('Epic');
-        String q = 'SELECT Id, Name, Status__c, Priority__c, Sequence__c, Description__c, '
-                 + '(SELECT Id, Name, Status__c, Priority__c, RecordType.Name, Sequence__c '
-                 + ' FROM Child_Work_Items__r ORDER BY Sequence__c NULLS LAST) '
-                 + 'FROM Work_Item__c WHERE RecordTypeId = :rtId';
-        if (initiativeId != null) {
-            q += ' AND Parent_Work_Item__c = :initiativeId';
-        }
-        q += ' ORDER BY Sequence__c NULLS LAST, Name ASC';
-        return Database.query(q);
+        return [
+            SELECT Id, Name, Parent_Work_Item__c, Parent_Work_Item__r.Name
+            FROM Work_Item__c
+            WHERE RecordTypeId = :rtId
+            ORDER BY Name ASC
+        ];
     }
 
     @AuraEnabled(cacheable=true)

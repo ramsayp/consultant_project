@@ -45,12 +45,12 @@ export default class WorkItemCreate extends LightningElement {
     @wire(getActiveSprints)
     wiredSprints({ data }) { if (data) this.sprints = data; }
 
-    @wire(getEpics, { initiativeId: '$initiativeId' })
+    @wire(getEpics, { initiativeId: null })
     wiredEpics({ data }) { if (data) this.epics = data; }
 
     get showSprintPicker()  { return SPRINT_TYPES.has(this.type); }
     get showEstimate()      { return ESTIMATE_TYPES.has(this.type); }
-    get showParentPicker()  { return this.initiativeId && PARENT_TYPES.has(this.type); }
+    get showParentPicker()  { return PARENT_TYPES.has(this.type); }
     get createLabel()       { return `Create ${this.type}`; }
 
     get sprintOptions() {
@@ -61,7 +61,11 @@ export default class WorkItemCreate extends LightningElement {
 
     get parentOptions() {
         const opts = [{ label: '— No Parent —', value: '' }];
-        this.epics.forEach(e => opts.push({ label: e.Name, value: e.Id }));
+        this.epics.forEach(e => {
+            const initiative = e.Parent_Work_Item__r?.Name;
+            const label = initiative ? `${e.Name} (${initiative})` : e.Name;
+            opts.push({ label, value: e.Id });
+        });
         return opts;
     }
 
