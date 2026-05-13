@@ -66,33 +66,56 @@
                         <span class="sprint-section__dates">{section.startDate} – {section.endDate}</span>
                         <span class="sprint-section__count">{section.count}</span>
                     </div>
-                    <div class="kanban">
-                        <template for:each={section.columns} for:item="col">
-                            <div key={col.stage} class="kanban__col">
-                                <div class="kanban__col-header">
-                                    <span class="col-name">{col.stage}</span>
-                                    <span class="col-count">{col.count}</span>
+                    <!-- Kanban layout for regular sprints -->
+                    <template if:false={section.isBacklog}>
+                        <div class="kanban">
+                            <template for:each={section.columns} for:item="col">
+                                <div key={col.stage} class="kanban__col">
+                                    <div class="kanban__col-header">
+                                        <span class="col-name">{col.stage}</span>
+                                        <span class="col-count">{col.count}</span>
+                                    </div>
+                                    <div class="kanban__col-body">
+                                        <template for:each={col.items} for:item="item">
+                                            <c-work-item-card
+                                                key={item.Id}
+                                                work-item={item}
+                                                status-options={stageOptions}
+                                                sprint-options={sprintOptions}
+                                                onstatuschange={handleStatusChange}
+                                                onsprintchange={handleSprintChange}
+                                                onopen={handleOpenItem}
+                                                onaddchapter={handleAddChapter}>
+                                            </c-work-item-card>
+                                        </template>
+                                        <template if:true={col.empty}>
+                                            <p class="empty-col">—</p>
+                                        </template>
+                                    </div>
                                 </div>
-                                <div class="kanban__col-body">
-                                    <template for:each={col.items} for:item="item">
-                                        <c-work-item-card
-                                            key={item.Id}
-                                            work-item={item}
-                                            status-options={stageOptions}
-                                            sprint-options={sprintOptions}
-                                            onstatuschange={handleStatusChange}
-                                            onsprintchange={handleSprintChange}
-                                            onopen={handleOpenItem}
-                                            onaddchapter={handleAddChapter}>
-                                        </c-work-item-card>
-                                    </template>
-                                    <template if:true={col.empty}>
-                                        <p class="empty-col">—</p>
-                                    </template>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
+                            </template>
+                        </div>
+                    </template>
+                    <!-- List layout for backlog -->
+                    <template if:true={section.isBacklog}>
+                        <div class="backlog-list">
+                            <template for:each={section.listItems} for:item="item">
+                                <c-work-item-card
+                                    key={item.Id}
+                                    work-item={item}
+                                    status-options={stageOptions}
+                                    sprint-options={sprintOptions}
+                                    onstatuschange={handleStatusChange}
+                                    onsprintchange={handleSprintChange}
+                                    onopen={handleOpenItem}
+                                    onaddchapter={handleAddChapter}>
+                                </c-work-item-card>
+                            </template>
+                            <template if:false={section.count}>
+                                <p class="empty-col">Backlog is empty.</p>
+                            </template>
+                        </div>
+                    </template>
                 </div>
             </template>
 

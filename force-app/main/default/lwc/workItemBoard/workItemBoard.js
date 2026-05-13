@@ -124,13 +124,14 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
                 return { stage, items: colItems, count: colItems.length, empty: colItems.length === 0 };
             });
             return {
-                sprintId:  sprint.Id,
-                name:      sprint.Name,
-                startDate: sprint.Start_Date__c,
-                endDate:   sprint.End_Date__c,
+                sprintId:   sprint.Id,
+                name:       sprint.Name,
+                startDate:  sprint.Start_Date__c,
+                endDate:    sprint.End_Date__c,
                 isBacklog,
-                count:     items.length,
-                columns
+                count:      items.length,
+                columns,
+                listItems:  isBacklog ? items : []
             };
         });
     }
