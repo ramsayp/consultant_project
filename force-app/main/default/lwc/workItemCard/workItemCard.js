@@ -1,10 +1,22 @@
 import { LightningElement, api } from 'lwc';
 
 const STATUS_TO_STAGE = {
-    'Backlog': 'To Do', 'Open': 'To Do', 'Draft': 'To Do', 'Ready': 'To Do', 'To Do': 'To Do',
-    'In Progress': 'In Progress', 'In Sprint': 'In Progress', 'Active': 'In Progress', 'Triaged': 'In Progress',
-    'In Review': 'Review', 'Blocked': 'Review', 'Fixed': 'Review',
-    'Done': 'Done', 'Closed': 'Done', 'Completed': 'Done', 'Cancelled': 'Done',
+    'Not Started': 'Not Started',
+    'To Do':       'To Do',
+    'In Progress': 'In Progress',
+    'Blocked':     'Blocked',
+    'Code Review': 'Code Review',
+    'UAT':         'UAT',
+    'Pipeline':    'Pipeline',
+    'Released':    'Released',
+    'Documented':  'Documented',
+    'Done':        'Done',
+    // Legacy
+    'Backlog': 'Not Started', 'Draft': 'Not Started', 'Open': 'Not Started',
+    'Ready': 'To Do', 'Triaged': 'To Do',
+    'In Sprint': 'In Progress', 'Active': 'In Progress',
+    'In Review': 'Code Review', 'Fixed': 'Code Review',
+    'Closed': 'Done', 'Completed': 'Done', 'Cancelled': 'Done',
     'Rolled Forward': 'Done', 'Wont Fix': 'Done'
 };
 

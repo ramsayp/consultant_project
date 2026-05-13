@@ -7,21 +7,31 @@ import getActiveSprints from '@salesforce/apex/WorkItemController.getActiveSprin
 import updateStatus     from '@salesforce/apex/WorkItemController.updateStatus';
 import updateSprint     from '@salesforce/apex/WorkItemController.updateSprint';
 
-const STAGES = ['To Do', 'In Progress', 'Review', 'Done'];
+const STAGES = [
+    'Not Started', 'To Do', 'In Progress', 'Blocked',
+    'Code Review', 'UAT', 'Pipeline', 'Released', 'Documented', 'Done'
+];
 
+// Maps any status value (including legacy) to a kanban column
 const STATUS_TO_STAGE = {
-    'Backlog': 'To Do', 'Open': 'To Do', 'Draft': 'To Do', 'Ready': 'To Do', 'To Do': 'To Do',
-    'In Progress': 'In Progress', 'In Sprint': 'In Progress', 'Active': 'In Progress', 'Triaged': 'In Progress',
-    'In Review': 'Review', 'Blocked': 'Review', 'Fixed': 'Review',
-    'Done': 'Done', 'Closed': 'Done', 'Completed': 'Done', 'Cancelled': 'Done',
+    // Current values — direct
+    'Not Started': 'Not Started',
+    'To Do':       'To Do',
+    'In Progress': 'In Progress',
+    'Blocked':     'Blocked',
+    'Code Review': 'Code Review',
+    'UAT':         'UAT',
+    'Pipeline':    'Pipeline',
+    'Released':    'Released',
+    'Documented':  'Documented',
+    'Done':        'Done',
+    // Legacy values — mapped to nearest current stage
+    'Backlog': 'Not Started', 'Draft': 'Not Started', 'Open': 'Not Started',
+    'Ready': 'To Do', 'Triaged': 'To Do',
+    'In Sprint': 'In Progress', 'Active': 'In Progress',
+    'In Review': 'Code Review', 'Fixed': 'Code Review',
+    'Closed': 'Done', 'Completed': 'Done', 'Cancelled': 'Done',
     'Rolled Forward': 'Done', 'Wont Fix': 'Done'
-};
-
-const TYPE_STAGE_STATUS = {
-    Story:   { 'To Do': 'Ready',       'In Progress': 'In Progress', 'Review': 'In Review',   'Done': 'Done' },
-    Task:    { 'To Do': 'Backlog',     'In Progress': 'In Progress', 'Review': 'Blocked',     'Done': 'Done' },
-    Bug:     { 'To Do': 'Open',        'In Progress': 'In Progress', 'Review': 'In Review',   'Done': 'Fixed' },
-    Chapter: { 'To Do': 'To Do',       'In Progress': 'In Progress', 'Review': 'In Progress', 'Done': 'Done' }
 };
 
 const STAGE_OPTS = STAGES.map(s => ({ label: s, value: s }));
@@ -149,13 +159,9 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     }
 
     async handleStatusChange(event) {
-        const { id, status: stage } = event.detail;
-        const item = this.workItems.find(i => i.Id === id);
-        if (!item) return;
-        const typeName = item.RecordType?.Name ?? 'Story';
-        const actualStatus = (TYPE_STAGE_STATUS[typeName] || {})[stage] || stage;
+        const { id, status } = event.detail;
         try {
-            await updateStatus({ workItemId: id, newStatus: actualStatus });
+            await updateStatus({ workItemId: id, newStatus: status });
             await refreshApex(this._wiredResult);
         } catch (err) {
             this.toast('Status update failed', err?.body?.message ?? err?.message, 'error');

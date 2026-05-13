@@ -11,49 +11,9 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
-                <fullName>Backlog</fullName>
-                <default>false</default>
-                <label>Backlog</label>
-            </value>
-            <value>
-                <fullName>Draft</fullName>
-                <default>false</default>
-                <label>Draft</label>
-            </value>
-            <value>
-                <fullName>Active</fullName>
-                <default>false</default>
-                <label>Active</label>
-            </value>
-            <value>
-                <fullName>Ready</fullName>
-                <default>false</default>
-                <label>Ready</label>
-            </value>
-            <value>
-                <fullName>In Sprint</fullName>
-                <default>false</default>
-                <label>In Sprint</label>
-            </value>
-            <value>
-                <fullName>In Progress</fullName>
-                <default>false</default>
-                <label>In Progress</label>
-            </value>
-            <value>
-                <fullName>In Review</fullName>
-                <default>false</default>
-                <label>In Review</label>
-            </value>
-            <value>
-                <fullName>Done</fullName>
-                <default>false</default>
-                <label>Done</label>
-            </value>
-            <value>
-                <fullName>Rolled Forward</fullName>
-                <default>false</default>
-                <label>Rolled Forward</label>
+                <fullName>Not Started</fullName>
+                <default>true</default>
+                <label>Not Started</label>
             </value>
             <value>
                 <fullName>To Do</fullName>
@@ -61,44 +21,128 @@
                 <label>To Do</label>
             </value>
             <value>
+                <fullName>In Progress</fullName>
+                <default>false</default>
+                <label>In Progress</label>
+            </value>
+            <value>
                 <fullName>Blocked</fullName>
                 <default>false</default>
                 <label>Blocked</label>
             </value>
             <value>
+                <fullName>Code Review</fullName>
+                <default>false</default>
+                <label>Code Review</label>
+            </value>
+            <value>
+                <fullName>UAT</fullName>
+                <default>false</default>
+                <label>UAT</label>
+            </value>
+            <value>
+                <fullName>Pipeline</fullName>
+                <default>false</default>
+                <label>Pipeline</label>
+            </value>
+            <value>
+                <fullName>Released</fullName>
+                <default>false</default>
+                <label>Released</label>
+            </value>
+            <value>
+                <fullName>Documented</fullName>
+                <default>false</default>
+                <label>Documented</label>
+            </value>
+            <value>
+                <fullName>Done</fullName>
+                <default>false</default>
+                <label>Done</label>
+            </value>
+            <value>
+                <fullName>Backlog</fullName>
+                <default>false</default>
+                <label>Backlog</label>
+                <isActive>false</isActive>
+            </value>
+            <value>
+                <fullName>Draft</fullName>
+                <default>false</default>
+                <label>Draft</label>
+                <isActive>false</isActive>
+            </value>
+            <value>
+                <fullName>Active</fullName>
+                <default>false</default>
+                <label>Active</label>
+                <isActive>false</isActive>
+            </value>
+            <value>
+                <fullName>Ready</fullName>
+                <default>false</default>
+                <label>Ready</label>
+                <isActive>false</isActive>
+            </value>
+            <value>
+                <fullName>In Sprint</fullName>
+                <default>false</default>
+                <label>In Sprint</label>
+                <isActive>false</isActive>
+            </value>
+            <value>
+                <fullName>In Review</fullName>
+                <default>false</default>
+                <label>In Review</label>
+                <isActive>false</isActive>
+            </value>
+            <value>
+                <fullName>Rolled Forward</fullName>
+                <default>false</default>
+                <label>Rolled Forward</label>
+                <isActive>false</isActive>
+            </value>
+            <value>
                 <fullName>Open</fullName>
                 <default>false</default>
                 <label>Open</label>
+                <isActive>false</isActive>
             </value>
             <value>
                 <fullName>Triaged</fullName>
                 <default>false</default>
                 <label>Triaged</label>
+                <isActive>false</isActive>
             </value>
             <value>
                 <fullName>Fixed</fullName>
                 <default>false</default>
                 <label>Fixed</label>
+                <isActive>false</isActive>
             </value>
             <value>
                 <fullName>Closed</fullName>
                 <default>false</default>
                 <label>Closed</label>
+                <isActive>false</isActive>
             </value>
             <value>
                 <fullName>Wont Fix</fullName>
                 <default>false</default>
                 <label>Won&apos;t Fix</label>
+                <isActive>false</isActive>
             </value>
             <value>
                 <fullName>Completed</fullName>
                 <default>false</default>
                 <label>Completed</label>
+                <isActive>false</isActive>
             </value>
             <value>
                 <fullName>Cancelled</fullName>
                 <default>false</default>
                 <label>Cancelled</label>
+                <isActive>false</isActive>
             </value>
         </valueSetDefinition>
     </valueSet>
