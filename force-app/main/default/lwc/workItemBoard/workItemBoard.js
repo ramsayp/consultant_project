@@ -2,10 +2,11 @@ import { LightningElement, track, wire, api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import { NavigationMixin } from 'lightning/navigation';
-import getBoardItems    from '@salesforce/apex/WorkItemController.getBoardItems';
-import getActiveSprints from '@salesforce/apex/WorkItemController.getActiveSprints';
-import updateStatus     from '@salesforce/apex/WorkItemController.updateStatus';
-import updateSprint     from '@salesforce/apex/WorkItemController.updateSprint';
+import getBoardItems        from '@salesforce/apex/WorkItemController.getBoardItems';
+import getActiveSprints     from '@salesforce/apex/WorkItemController.getActiveSprints';
+import ensureBacklogSprint  from '@salesforce/apex/WorkItemController.ensureBacklogSprint';
+import updateStatus         from '@salesforce/apex/WorkItemController.updateStatus';
+import updateSprint         from '@salesforce/apex/WorkItemController.updateSprint';
 
 const STAGES = [
     'Not Started', 'To Do', 'In Progress', 'Blocked',
@@ -49,9 +50,20 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     workItems = [];
     sprints   = [];
     _wiredResult;
+    _wiredSprints;
+
+    async connectedCallback() {
+        try {
+            await ensureBacklogSprint();
+            if (this._wiredSprints) await refreshApex(this._wiredSprints);
+        } catch(e) { /* backlog sprint already exists */ }
+    }
 
     @wire(getActiveSprints)
-    wiredSprints({ data }) { if (data) this.sprints = data; }
+    wiredSprints(result) {
+        this._wiredSprints = result;
+        if (result.data) this.sprints = result.data;
+    }
 
     @wire(getBoardItems, { initiativeId: '$initiativeId' })
     wiredItems(result) {

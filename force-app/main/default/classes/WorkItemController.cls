@@ -55,9 +55,8 @@ public with sharing class WorkItemController {
         ];
     }
 
-    @AuraEnabled
+    @AuraEnabled(cacheable=true)
     public static List<Sprint__c> getActiveSprints() {
-        ensureBacklogSprint();
         return [
             SELECT Id, Name, Start_Date__c, End_Date__c, Status__c, Sequence__c
             FROM Sprint__c
