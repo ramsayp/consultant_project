@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Work_Mode__c</fullName>
+    <description>How this work item is delivered: Iterative (sprint-planned), Continuous (ongoing), or Reactive (unplanned).</description>
+    <inlineHelpText>Iterative: planned in a sprint with a defined start and end. Continuous: ongoing work with no fixed end. Reactive: unplanned work responding to an event or incident.</inlineHelpText>
     <label>Work Mode</label>
     <required>false</required>
     <trackTrending>false</trackTrending>

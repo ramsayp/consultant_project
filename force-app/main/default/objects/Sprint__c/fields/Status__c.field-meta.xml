@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Status__c</fullName>
+    <description>The current state of this sprint in its lifecycle.</description>
+    <inlineHelpText>Planning = sprint is being set up and not yet started; Active = sprint is currently in progress; Completed = sprint has ended and is archived after 30 days.</inlineHelpText>
     <label>Status</label>
     <required>false</required>
     <trackTrending>false</trackTrending>

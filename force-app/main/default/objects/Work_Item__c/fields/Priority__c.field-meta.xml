@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Priority__c</fullName>
+    <description>The urgency and importance of this work item relative to others in the backlog or sprint.</description>
+    <inlineHelpText>Critical = must address immediately; High = important this sprint; Medium = normal priority; Low = nice to have when capacity allows.</inlineHelpText>
     <label>Priority</label>
     <required>false</required>
     <trackTrending>false</trackTrending>

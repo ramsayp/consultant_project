@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Status__c</fullName>
+    <description>The current stage of this work item in the delivery workflow. Drives which kanban column the card appears in.</description>
+    <inlineHelpText>Update this to reflect where the item is in the process. The kanban board groups items by status automatically.</inlineHelpText>
     <label>Status</label>
     <required>false</required>
     <trackTrending>false</trackTrending>

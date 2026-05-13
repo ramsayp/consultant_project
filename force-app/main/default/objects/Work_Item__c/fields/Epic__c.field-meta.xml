@@ -2,6 +2,8 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Epic__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
+    <description>The Epic this Story, Task, or Bug belongs to. Used to group related work items under a common theme.</description>
+    <inlineHelpText>Link this item to its parent Epic. The Epic must belong to the same Initiative for this item to appear on the Initiative board.</inlineHelpText>
     <label>Epic</label>
     <referenceTo>Work_Item__c</referenceTo>
     <relationshipLabel>Epic Work Items</relationshipLabel>

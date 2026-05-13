@@ -2,6 +2,8 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Assignee__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
+    <description>The team member responsible for completing this work item.</description>
+    <inlineHelpText>Select the person who will work on and complete this item.</inlineHelpText>
     <label>Assignee</label>
     <referenceTo>User</referenceTo>
     <relationshipLabel>Work Items</relationshipLabel>

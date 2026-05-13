@@ -170,32 +170,6 @@ public with sharing class WorkItemController {
         update new Work_Item__c(Id = workItemId, Status__c = newStatus);
     }
 
-    @AuraEnabled
-    public static Work_Item__c rollForwardStory(Id storyId, Id newSprintId) {
-        Work_Item__c orig = [
-            SELECT Id, Name, Description__c, Priority__c, Estimate__c, Epic__c, Parent_Work_Item__c
-            FROM Work_Item__c
-            WHERE Id = :storyId
-        ];
-        update new Work_Item__c(Id = storyId, Status__c = 'Rolled Forward');
-
-        Work_Item__c next = new Work_Item__c(
-            Name                 = orig.Name,
-            Description__c       = orig.Description__c,
-            Priority__c          = orig.Priority__c,
-            Estimate__c          = orig.Estimate__c,
-            Epic__c              = orig.Epic__c,
-            Parent_Work_Item__c  = orig.Parent_Work_Item__c,
-            Sprint__c            = newSprintId,
-            Lineage_Parent__c    = storyId,
-            Status__c            = 'Backlog',
-            Work_Mode__c         = 'Iterative',
-            RecordTypeId         = rtId('Story')
-        );
-        insert next;
-        return next;
-    }
-
     private static Id rtId(String name) {
         return Schema.SObjectType.Work_Item__c
             .getRecordTypeInfosByName()

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Sequence__c</fullName>
+    <description>Controls the display order of this item within its sprint or backlog. Lower numbers appear first.</description>
     <externalId>false</externalId>
+    <inlineHelpText>Set a number to control sort order. Items with no sequence are shown after sequenced items.</inlineHelpText>
     <label>Sequence</label>
     <precision>6</precision>
     <required>false</required>

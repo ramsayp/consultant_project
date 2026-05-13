@@ -2,6 +2,8 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Sprint__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
+    <description>The sprint this work item is scheduled for. Items with no sprint appear in the backlog.</description>
+    <inlineHelpText>Assign to a sprint to include it on the sprint kanban board. Leave blank to keep it in the backlog.</inlineHelpText>
     <label>Sprint</label>
     <referenceTo>Sprint__c</referenceTo>
     <relationshipLabel>Work Items</relationshipLabel>

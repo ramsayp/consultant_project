@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Description__c</fullName>
+    <description>Detailed description of the work to be done, including acceptance criteria or relevant notes.</description>
+    <inlineHelpText>Describe what needs to be done, why it matters, and any acceptance criteria or context a developer would need.</inlineHelpText>
     <label>Description</label>
     <length>32768</length>
     <trackTrending>false</trackTrending>

@@ -2,6 +2,8 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Parent_Work_Item__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
+    <description>The parent item in the hierarchy. Epics link to their Initiative here; Stories and Tasks link to their Epic.</description>
+    <inlineHelpText>For Epics: select the Initiative this Epic belongs to. For Stories and Tasks: select the parent Epic.</inlineHelpText>
     <label>Parent Work Item</label>
     <referenceTo>Work_Item__c</referenceTo>
     <relationshipLabel>Child Work Items</relationshipLabel>
