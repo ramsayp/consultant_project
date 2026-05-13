@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Status__c</fullName>
     <description>The current state of this sprint in its lifecycle.</description>
-    <inlineHelpText>Planning = sprint is being set up and not yet started; Active = sprint is currently in progress; Completed = sprint has ended and is archived after 30 days.</inlineHelpText>
+    <inlineHelpText>Backlog = permanent catch-all for unplanned items; Planning = sprint being set up; Active = sprint in progress; Completed = sprint ended, archived after 30 days.</inlineHelpText>
     <label>Status</label>
     <required>false</required>
     <trackTrending>false</trackTrending>
@@ -10,6 +10,11 @@
     <valueSet>
         <valueSetDefinition>
             <sorted>false</sorted>
+            <value>
+                <fullName>Backlog</fullName>
+                <default>false</default>
+                <label>Backlog</label>
+            </value>
             <value>
                 <fullName>Planning</fullName>
                 <default>true</default>

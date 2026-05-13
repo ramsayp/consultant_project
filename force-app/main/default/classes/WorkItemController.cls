@@ -55,14 +55,27 @@ public with sharing class WorkItemController {
         ];
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Sprint__c> getActiveSprints() {
+        ensureBacklogSprint();
         return [
             SELECT Id, Name, Start_Date__c, End_Date__c, Status__c, Sequence__c
             FROM Sprint__c
-            WHERE Status__c IN ('Planning', 'Active')
+            WHERE Status__c IN ('Planning', 'Active', 'Backlog')
             ORDER BY Sequence__c NULLS LAST, Start_Date__c ASC
         ];
+    }
+
+    @AuraEnabled
+    public static void ensureBacklogSprint() {
+        Integer count = [SELECT COUNT() FROM Sprint__c WHERE Status__c = 'Backlog'];
+        if (count == 0) {
+            insert new Sprint__c(
+                Name       = 'Backlog',
+                Status__c  = 'Backlog',
+                Sequence__c = 9999
+            );
+        }
     }
 
     @AuraEnabled(cacheable=true)
@@ -85,7 +98,8 @@ public with sharing class WorkItemController {
 
     @AuraEnabled
     public static void generateSprints() {
-        Integer existingCount = [SELECT COUNT() FROM Sprint__c];
+        ensureBacklogSprint();
+        Integer existingCount = [SELECT COUNT() FROM Sprint__c WHERE Status__c != 'Backlog'];
         if (existingCount > 0) return;
 
         Date startDate = nextSprintStart(Date.today());
@@ -105,6 +119,8 @@ public with sharing class WorkItemController {
 
     @AuraEnabled
     public static Sprint__c closeSprint(Id sprintId) {
+        Sprint__c check = [SELECT Status__c FROM Sprint__c WHERE Id = :sprintId];
+        if (check.Status__c == 'Backlog') throw new AuraHandledException('Cannot close the Backlog sprint.');
         update new Sprint__c(Id = sprintId, Status__c = 'Completed');
 
         Sprint__c lastSprint = [

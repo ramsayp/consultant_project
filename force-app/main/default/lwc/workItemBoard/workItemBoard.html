@@ -103,31 +103,6 @@
                 </div>
             </template>
 
-            <!-- ── Backlog ── -->
-            <div class="backlog-section">
-                <div class="backlog-section__header">
-                    <span class="backlog-section__title">Backlog</span>
-                    <span class="backlog-count">{backlogCount} items</span>
-                </div>
-                <div class="backlog-list">
-                    <template for:each={backlogItems} for:item="item">
-                        <c-work-item-card
-                            key={item.Id}
-                            work-item={item}
-                            status-options={stageOptions}
-                            sprint-options={sprintOptions}
-                            onstatuschange={handleStatusChange}
-                            onsprintchange={handleSprintChange}
-                            onopen={handleOpenItem}
-                            onaddchapter={handleAddChapter}>
-                        </c-work-item-card>
-                    </template>
-                    <template if:false={backlogCount}>
-                        <p class="empty-col">Backlog is empty.</p>
-                    </template>
-                </div>
-            </div>
-
         </template>
 
         <template if:true={error}>

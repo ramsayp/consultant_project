@@ -135,6 +135,7 @@
 .sprint-card__bar--planning  { background: #6b7280; }
 .sprint-card__bar--active    { background: #22c55e; }
 .sprint-card__bar--completed { background: #94a3b8; }
+.sprint-card__bar--backlog   { background: #7c3aed; }
 
 .sprint-card__body {
     flex: 1;

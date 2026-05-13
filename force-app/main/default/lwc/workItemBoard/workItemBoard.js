@@ -70,9 +70,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     }
 
     get sprintOptions() {
-        const opts = [{ label: '— Backlog —', value: '' }];
-        this.sprints.forEach(s => opts.push({ label: s.Name, value: s.Id }));
-        return opts;
+        return this.sprints.map(s => ({ label: s.Name, value: s.Id }));
     }
 
     get stageOptions() { return STAGE_OPTS; }
@@ -99,12 +97,17 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
 
     // ── Sprint kanban ────────────────────────────────────────────────────────
     get sprintSections() {
+        const sprintIds = new Set(this.sprints.map(s => s.Id));
         return this.sprints.map(sprint => {
-            const items = this.workItems.filter(i =>
-                i.RecordType?.Name !== 'Epic' && i.Sprint__c === sprint.Id
-            );
+            const isBacklog = sprint.Status__c === 'Backlog';
+            const items = this.workItems.filter(i => {
+                if (i.RecordType?.Name === 'Epic') return false;
+                // Backlog sprint absorbs items with no sprint or unknown sprint
+                if (isBacklog) return i.Sprint__c === sprint.Id || !i.Sprint__c || !sprintIds.has(i.Sprint__c);
+                return i.Sprint__c === sprint.Id;
+            });
             const columns = STAGES.map(stage => {
-                const colItems = items.filter(i => (STATUS_TO_STAGE[i.Status__c] || 'To Do') === stage);
+                const colItems = items.filter(i => (STATUS_TO_STAGE[i.Status__c] || 'Not Started') === stage);
                 return { stage, items: colItems, count: colItems.length, empty: colItems.length === 0 };
             });
             return {
@@ -112,22 +115,12 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
                 name:      sprint.Name,
                 startDate: sprint.Start_Date__c,
                 endDate:   sprint.End_Date__c,
+                isBacklog,
                 count:     items.length,
                 columns
             };
         });
     }
-
-    // ── Backlog ──────────────────────────────────────────────────────────────
-    get backlogItems() {
-        const sprintIds = new Set(this.sprints.map(s => s.Id));
-        return this.workItems.filter(i => {
-            if (i.RecordType?.Name === 'Epic') return false;
-            return !i.Sprint__c || !sprintIds.has(i.Sprint__c);
-        });
-    }
-
-    get backlogCount() { return this.backlogItems.length; }
 
     // ── Handlers ─────────────────────────────────────────────────────────────
     handleTypeChange(event) { this.createType = event.detail.value; }

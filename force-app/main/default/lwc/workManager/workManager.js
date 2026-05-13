@@ -44,7 +44,7 @@ export default class WorkManager extends LightningElement {
     }
 
     get allSprintsForDisplay() {
-        const closable = this.allSprints.find(s => s.Status__c !== 'Completed');
+        const closable = this.allSprints.find(s => s.Status__c !== 'Completed' && s.Status__c !== 'Backlog');
         return this.allSprints.map(s => ({
             Id:            s.Id,
             Name:          s.Name,
