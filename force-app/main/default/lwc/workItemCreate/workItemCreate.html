@@ -21,14 +21,14 @@
                 max-length="32768">
             </lightning-textarea>
 
-            <template if:true={showEpicPicker}>
+            <template if:true={showParentPicker}>
                 <lightning-combobox
-                    label="Epic"
-                    value={selectedEpicId}
-                    options={epicOptions}
+                    label="Parent Epic"
+                    value={selectedParentId}
+                    options={parentOptions}
                     onchange={handleChange}
-                    data-field="selectedEpicId"
-                    placeholder="No Epic">
+                    data-field="selectedParentId"
+                    placeholder="No Parent">
                 </lightning-combobox>
             </template>
 

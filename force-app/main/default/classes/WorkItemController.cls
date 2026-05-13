@@ -15,7 +15,7 @@ public with sharing class WorkItemController {
         Id rtId = rtId(recordTypeName);
         String q = 'SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c, '
                  + 'Work_Mode__c, Assignee__c, Assignee__r.Name, Description__c, '
-                 + 'Sprint__c, Sprint__r.Name, Parent_Work_Item__c, Epic__c, Epic__r.Name, '
+                 + 'Sprint__c, Sprint__r.Name, Parent_Work_Item__c, Parent_Work_Item__r.Name, '
                  + 'RecordType.Name, RecordTypeId '
                  + 'FROM Work_Item__c '
                  + 'WHERE RecordTypeId = :rtId';
@@ -26,7 +26,7 @@ public with sharing class WorkItemController {
             if (recordTypeName == 'Epic') {
                 q += ' AND Parent_Work_Item__c = :initiativeId';
             } else if (recordTypeName != 'Initiative') {
-                q += ' AND Epic__r.Parent_Work_Item__c = :initiativeId';
+                q += ' AND Parent_Work_Item__c IN (SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :initiativeId)';
             }
         }
         q += ' ORDER BY Sequence__c NULLS LAST, CreatedDate ASC';
@@ -150,11 +150,12 @@ public with sharing class WorkItemController {
                  + 'Work_Mode__c, Assignee__c, Assignee__r.Name, Description__c, '
                  + 'Sprint__c, Sprint__r.Name, Sprint__r.Sequence__c, '
                  + 'Sprint__r.Start_Date__c, Sprint__r.End_Date__c, '
-                 + 'Parent_Work_Item__c, Epic__c, Epic__r.Name, '
+                 + 'Parent_Work_Item__c, Parent_Work_Item__r.Name, '
                  + 'RecordType.Name, RecordTypeId '
                  + 'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
         if (initiativeId != null) {
-            q += ' AND (Parent_Work_Item__c = :initiativeId OR Epic__r.Parent_Work_Item__c = :initiativeId)';
+            q += ' AND (Parent_Work_Item__c = :initiativeId'
+               + ' OR Parent_Work_Item__c IN (SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :initiativeId))';
         }
         q += ' ORDER BY Sprint__r.Sequence__c NULLS LAST, Sequence__c NULLS LAST, CreatedDate ASC';
         return Database.query(q);

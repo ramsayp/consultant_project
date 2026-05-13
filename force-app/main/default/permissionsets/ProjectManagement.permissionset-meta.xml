@@ -35,11 +35,7 @@
         <field>Work_Item__c.Description__c</field>
         <readable>true</readable>
     </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>Work_Item__c.Epic__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
+
     <fieldPermissions>
         <editable>true</editable>
         <field>Work_Item__c.Estimate__c</field>

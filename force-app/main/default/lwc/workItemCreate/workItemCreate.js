@@ -20,22 +20,21 @@ const DEFAULT_STATUS = {
 
 const SPRINT_TYPES   = new Set(['Story', 'Task', 'Bug']);
 const ESTIMATE_TYPES = new Set(['Story', 'Task', 'Bug', 'Chapter', 'Epic']);
-const EPIC_TYPES     = new Set(['Story', 'Task', 'Bug']);
+const PARENT_TYPES   = new Set(['Story', 'Task', 'Bug']);
 
 export default class WorkItemCreate extends LightningElement {
     @api type         = 'Story';
     @api parentId;
-    @api epicId;
     @api sprintId;
     @api initiativeId;
 
-    @track name             = '';
-    @track description      = '';
-    @track priority         = 'Medium';
-    @track estimate         = null;
-    @track selectedSprintId = null;
-    @track selectedEpicId   = null;
-    @track isCreating       = false;
+    @track name              = '';
+    @track description       = '';
+    @track priority          = 'Medium';
+    @track estimate          = null;
+    @track selectedSprintId  = null;
+    @track selectedParentId  = null;
+    @track isCreating        = false;
 
     sprints = [];
     epics   = [];
@@ -49,10 +48,10 @@ export default class WorkItemCreate extends LightningElement {
     @wire(getEpics, { initiativeId: '$initiativeId' })
     wiredEpics({ data }) { if (data) this.epics = data; }
 
-    get showSprintPicker() { return SPRINT_TYPES.has(this.type); }
-    get showEstimate()     { return ESTIMATE_TYPES.has(this.type); }
-    get showEpicPicker()   { return this.initiativeId && EPIC_TYPES.has(this.type); }
-    get createLabel()      { return `Create ${this.type}`; }
+    get showSprintPicker()  { return SPRINT_TYPES.has(this.type); }
+    get showEstimate()      { return ESTIMATE_TYPES.has(this.type); }
+    get showParentPicker()  { return this.initiativeId && PARENT_TYPES.has(this.type); }
+    get createLabel()       { return `Create ${this.type}`; }
 
     get sprintOptions() {
         const opts = [{ label: '— No Sprint —', value: '' }];
@@ -60,8 +59,8 @@ export default class WorkItemCreate extends LightningElement {
         return opts;
     }
 
-    get epicOptions() {
-        const opts = [{ label: '— No Epic —', value: '' }];
+    get parentOptions() {
+        const opts = [{ label: '— No Parent —', value: '' }];
         this.epics.forEach(e => opts.push({ label: e.Name, value: e.Id }));
         return opts;
     }
@@ -100,11 +99,11 @@ export default class WorkItemCreate extends LightningElement {
             Description__c: this.description || null
         };
 
-        if (WORK_MODE[this.type])      fields.Work_Mode__c        = WORK_MODE[this.type];
-        if (this.parentId)             fields.Parent_Work_Item__c = this.parentId;
-        if (this.selectedEpicId)       fields.Epic__c             = this.selectedEpicId;
-        else if (this.epicId)          fields.Epic__c             = this.epicId;
-        if (this.estimate != null)     fields.Estimate__c         = Number(this.estimate);
+        if (WORK_MODE[this.type])  fields.Work_Mode__c        = WORK_MODE[this.type];
+        if (this.estimate != null) fields.Estimate__c         = Number(this.estimate);
+
+        const parentId = this.selectedParentId || this.parentId || null;
+        if (parentId) fields.Parent_Work_Item__c = parentId;
 
         const sprint = this.selectedSprintId || this.sprintId || null;
         if (sprint) fields.Sprint__c = sprint;
@@ -125,7 +124,7 @@ export default class WorkItemCreate extends LightningElement {
 
     reset() {
         this.name = ''; this.description = ''; this.priority = 'Medium';
-        this.estimate = null; this.selectedSprintId = null; this.selectedEpicId = null;
+        this.estimate = null; this.selectedSprintId = null; this.selectedParentId = null;
     }
 
     toast(title, message, variant) {
