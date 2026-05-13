@@ -118,7 +118,8 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
                 if (isBacklog) return i.Sprint__c === sprint.Id || !i.Sprint__c || !sprintIds.has(i.Sprint__c);
                 return i.Sprint__c === sprint.Id;
             });
-            const columns = STAGES.map(stage => {
+            const stageList = isBacklog ? ['Not Started'] : STAGES;
+            const columns = stageList.map(stage => {
                 const colItems = items.filter(i => (STATUS_TO_STAGE[i.Status__c] || 'Not Started') === stage);
                 return { stage, items: colItems, count: colItems.length, empty: colItems.length === 0 };
             });

@@ -65,13 +65,6 @@
                         <span class="sprint-section__name">{section.name}</span>
                         <span class="sprint-section__dates">{section.startDate} – {section.endDate}</span>
                         <span class="sprint-section__count">{section.count}</span>
-                        <div class="sprint-section__actions">
-                            <lightning-button
-                                label="+ New"
-                                data-sprint-id={section.sprintId}
-                                onclick={handleNewClick}>
-                            </lightning-button>
-                        </div>
                     </div>
                     <div class="kanban">
                         <template for:each={section.columns} for:item="col">
