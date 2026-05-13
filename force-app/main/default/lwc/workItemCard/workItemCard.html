@@ -24,14 +24,16 @@
                 onchange={handleStatusChange}
                 class="status-picker">
             </lightning-combobox>
-            <lightning-combobox
-                label=""
-                variant="label-hidden"
-                value={currentSprintId}
-                options={sprintOptions}
-                onchange={handleSprintChange}
-                class="sprint-picker">
-            </lightning-combobox>
+            <template if:true={showSprintPicker}>
+                <lightning-combobox
+                    label=""
+                    variant="label-hidden"
+                    value={currentSprintId}
+                    options={sprintOptions}
+                    onchange={handleSprintChange}
+                    class="sprint-picker">
+                </lightning-combobox>
+            </template>
         </div>
     </div>
 </template>

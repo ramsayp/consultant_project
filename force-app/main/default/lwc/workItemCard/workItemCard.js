@@ -41,6 +41,10 @@ export default class WorkItemCard extends LightningElement {
         return `meta-badge meta-badge_type meta-badge_type--${this.workItemType.toLowerCase()}`;
     }
 
+    get showSprintPicker() {
+        return this.workItemType !== 'Epic' && this.workItemType !== 'Chapter';
+    }
+
     handleOpen() {
         this.dispatchEvent(new CustomEvent('open', { detail: { id: this.workItem.Id } }));
     }

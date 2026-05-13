@@ -140,7 +140,7 @@ public with sharing class WorkItemController {
     @AuraEnabled(cacheable=true)
     public static List<Work_Item__c> getBoardItems(Id initiativeId) {
         List<Id> rtIds = new List<Id>();
-        for (String rt : new List<String>{'Epic','Story','Task','Bug'}) {
+        for (String rt : new List<String>{'Epic','Story','Task','Bug','Chapter'}) {
             rtIds.add(rtId(rt));
         }
         String q = 'SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c, '
@@ -151,8 +151,18 @@ public with sharing class WorkItemController {
                  + 'RecordType.Name, RecordTypeId '
                  + 'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
         if (initiativeId != null) {
-            q += ' AND (Parent_Work_Item__c = :initiativeId'
-               + ' OR Parent_Work_Item__c IN (SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :initiativeId))';
+            // SOQL doesn't support nested subqueries, so gather parent IDs across
+            // all 3 hierarchy levels (Initiative > Epic > Story > Chapter) in Apex
+            Set<Id> epicIds = new Map<Id, Work_Item__c>([
+                SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :initiativeId
+            ]).keySet();
+            Set<Id> storyIds = new Map<Id, Work_Item__c>([
+                SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c IN :epicIds
+            ]).keySet();
+            Set<Id> allParentIds = new Set<Id>{ initiativeId };
+            allParentIds.addAll(epicIds);
+            allParentIds.addAll(storyIds);
+            q += ' AND Parent_Work_Item__c IN :allParentIds';
         }
         q += ' ORDER BY Sprint__r.Sequence__c NULLS LAST, Sequence__c NULLS LAST, CreatedDate ASC';
         return Database.query(q);
@@ -160,7 +170,17 @@ public with sharing class WorkItemController {
 
     @AuraEnabled
     public static void updateSprint(Id workItemId, Id sprintId) {
-        update new Work_Item__c(Id = workItemId, Sprint__c = sprintId);
+        List<Work_Item__c> toUpdate = new List<Work_Item__c>{
+            new Work_Item__c(Id = workItemId, Sprint__c = sprintId)
+        };
+        Id chapterRtId = rtId('Chapter');
+        for (Work_Item__c child : [
+            SELECT Id FROM Work_Item__c
+            WHERE Parent_Work_Item__c = :workItemId AND RecordTypeId = :chapterRtId
+        ]) {
+            toUpdate.add(new Work_Item__c(Id = child.Id, Sprint__c = sprintId));
+        }
+        update toUpdate;
     }
 
     @AuraEnabled

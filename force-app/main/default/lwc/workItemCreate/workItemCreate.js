@@ -106,7 +106,10 @@ export default class WorkItemCreate extends LightningElement {
         if (WORK_MODE[this.type])  fields.Work_Mode__c        = WORK_MODE[this.type];
         if (this.estimate != null) fields.Estimate__c         = Number(this.estimate);
 
-        const parentId = this.selectedParentId || this.parentId || null;
+        // Epics belong to the Initiative; Stories/Tasks/Bugs belong to the selected Epic
+        const parentId = this.selectedParentId || this.parentId
+            || (this.type === 'Epic' ? this.initiativeId : null)
+            || null;
         if (parentId) fields.Parent_Work_Item__c = parentId;
 
         const sprint = this.selectedSprintId || this.sprintId || null;

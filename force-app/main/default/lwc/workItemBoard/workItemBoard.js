@@ -69,7 +69,9 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
 
     get sprintSections() {
         return this.sprints.map(sprint => {
-            const items = this.workItems.filter(i => i.Sprint__c === sprint.Id);
+            const items = this.workItems.filter(i =>
+                i.RecordType?.Name !== 'Epic' && i.Sprint__c === sprint.Id
+            );
             const columns = STAGES.map(stage => {
                 const colItems = items.filter(i => (STATUS_TO_STAGE[i.Status__c] || 'To Do') === stage);
                 return { stage, items: colItems, count: colItems.length, empty: colItems.length === 0 };
@@ -87,7 +89,10 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
 
     get backlogItems() {
         const sprintIds = new Set(this.sprints.map(s => s.Id));
-        return this.workItems.filter(i => !i.Sprint__c || !sprintIds.has(i.Sprint__c));
+        return this.workItems.filter(i => {
+            if (i.RecordType?.Name === 'Epic') return true;
+            return !i.Sprint__c || !sprintIds.has(i.Sprint__c);
+        });
     }
 
     get backlogCount() { return this.backlogItems.length; }
