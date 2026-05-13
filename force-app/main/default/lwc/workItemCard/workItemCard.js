@@ -45,6 +45,21 @@ export default class WorkItemCard extends LightningElement {
         return this.workItemType !== 'Epic' && this.workItemType !== 'Chapter';
     }
 
+    get isStory() {
+        return this.workItemType === 'Story';
+    }
+
+    handleAddChapter(event) {
+        event.stopPropagation();
+        this.dispatchEvent(new CustomEvent('addchapter', {
+            detail: {
+                parentId: this.workItem.Id,
+                sprintId: this.workItem.Sprint__c || null
+            },
+            bubbles: true
+        }));
+    }
+
     handleOpen() {
         this.dispatchEvent(new CustomEvent('open', { detail: { id: this.workItem.Id } }));
     }

@@ -18,10 +18,10 @@ const STATUS_TO_STAGE = {
 };
 
 const TYPE_STAGE_STATUS = {
-    Story:   { 'To Do': 'Ready',   'In Progress': 'In Progress', 'Review': 'In Review',    'Done': 'Done' },
-    Task:    { 'To Do': 'Backlog', 'In Progress': 'In Progress', 'Review': 'Blocked',      'Done': 'Done' },
-    Bug:     { 'To Do': 'Open',    'In Progress': 'In Progress', 'Review': 'In Review',    'Done': 'Fixed' },
-    Epic:    { 'To Do': 'Draft',   'In Progress': 'In Progress', 'Review': 'In Progress',  'Done': 'Completed' }
+    Story:   { 'To Do': 'Ready',       'In Progress': 'In Progress', 'Review': 'In Review',   'Done': 'Done' },
+    Task:    { 'To Do': 'Backlog',     'In Progress': 'In Progress', 'Review': 'Blocked',     'Done': 'Done' },
+    Bug:     { 'To Do': 'Open',        'In Progress': 'In Progress', 'Review': 'In Review',   'Done': 'Fixed' },
+    Chapter: { 'To Do': 'To Do',       'In Progress': 'In Progress', 'Review': 'In Progress', 'Done': 'Done' }
 };
 
 const STAGE_OPTS = STAGES.map(s => ({ label: s, value: s }));
@@ -29,11 +29,12 @@ const STAGE_OPTS = STAGES.map(s => ({ label: s, value: s }));
 export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     @api initiativeId = null;
 
-    @track showCreate   = false;
-    @track createType   = 'Story';
-    @track createSprint = null;
-    @track isLoading    = true;
-    @track error        = null;
+    @track showCreate    = false;
+    @track createType    = 'Story';
+    @track createSprint  = null;
+    @track createParent  = null;
+    @track isLoading     = true;
+    @track error         = null;
 
     workItems = [];
     sprints   = [];
@@ -54,8 +55,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
         return [
             { label: 'Story', value: 'Story' },
             { label: 'Task',  value: 'Task' },
-            { label: 'Bug',   value: 'Bug' },
-            { label: 'Epic',  value: 'Epic' }
+            { label: 'Bug',   value: 'Bug' }
         ];
     }
 
@@ -67,6 +67,27 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
 
     get stageOptions() { return STAGE_OPTS; }
 
+    // ── Epic panel ──────────────────────────────────────────────────────────
+    get epicGroups() {
+        const epics = this.workItems.filter(i => i.RecordType?.Name === 'Epic');
+        const groups = [
+            { key: 'active',    label: 'Active',    statuses: null },
+            { key: 'completed', label: 'Completed', statuses: ['Completed'] },
+            { key: 'cancelled', label: 'Cancelled', statuses: ['Cancelled'] }
+        ];
+        return groups.map(g => {
+            const items = g.statuses
+                ? epics.filter(e => g.statuses.includes(e.Status__c))
+                : epics.filter(e => !['Completed', 'Cancelled'].includes(e.Status__c));
+            return { ...g, items, count: items.length, empty: items.length === 0 };
+        });
+    }
+
+    get epicCount() {
+        return this.workItems.filter(i => i.RecordType?.Name === 'Epic').length;
+    }
+
+    // ── Sprint kanban ────────────────────────────────────────────────────────
     get sprintSections() {
         return this.sprints.map(sprint => {
             const items = this.workItems.filter(i =>
@@ -87,27 +108,43 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
         });
     }
 
+    // ── Backlog ──────────────────────────────────────────────────────────────
     get backlogItems() {
         const sprintIds = new Set(this.sprints.map(s => s.Id));
         return this.workItems.filter(i => {
-            if (i.RecordType?.Name === 'Epic') return true;
+            if (i.RecordType?.Name === 'Epic') return false;
             return !i.Sprint__c || !sprintIds.has(i.Sprint__c);
         });
     }
 
     get backlogCount() { return this.backlogItems.length; }
 
-    handleTypeChange(event)  { this.createType = event.detail.value; }
+    // ── Handlers ─────────────────────────────────────────────────────────────
+    handleTypeChange(event) { this.createType = event.detail.value; }
 
     handleNewClick(event) {
+        this.createType   = event.currentTarget.dataset.type || this.createType;
         this.createSprint = event.currentTarget.dataset.sprintId || null;
-        this.showCreate = true;
+        this.createParent = null;
+        this.showCreate   = true;
     }
 
-    handleCreateCancel()  { this.showCreate = false; }
+    handleAddChapter(event) {
+        const { parentId, sprintId } = event.detail;
+        this.createType   = 'Chapter';
+        this.createSprint = sprintId;
+        this.createParent = parentId;
+        this.showCreate   = true;
+    }
+
+    handleCreateCancel() {
+        this.showCreate   = false;
+        this.createParent = null;
+    }
 
     async handleItemCreated() {
-        this.showCreate = false;
+        this.showCreate   = false;
+        this.createParent = null;
         await refreshApex(this._wiredResult);
     }
 
@@ -136,9 +173,11 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     }
 
     handleOpenItem(event) {
+        const id = event.detail?.id || event.currentTarget?.dataset?.id;
+        if (!id) return;
         this[NavigationMixin.Navigate]({
             type: 'standard__recordPage',
-            attributes: { recordId: event.detail.id, actionName: 'view' }
+            attributes: { recordId: id, actionName: 'view' }
         });
     }
 

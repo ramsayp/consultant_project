@@ -90,3 +90,19 @@
     font-size: 0.75rem;
     min-width: 7rem;
 }
+
+.add-chapter-btn {
+    font-size: 0.7rem;
+    color: #5e6c84;
+    background: #ebecf0;
+    border: none;
+    border-radius: 3px;
+    padding: 0.15rem 0.4rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.add-chapter-btn:hover {
+    background: #dfe1e6;
+    color: #172b4d;
+}

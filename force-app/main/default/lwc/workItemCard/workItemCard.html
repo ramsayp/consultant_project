@@ -16,6 +16,9 @@
             </div>
         </div>
         <div class="card__actions" onclick={stopProp}>
+            <template if:true={isStory}>
+                <button class="add-chapter-btn" onclick={handleAddChapter} title="Add Chapter">+ Chapter</button>
+            </template>
             <lightning-combobox
                 label=""
                 variant="label-hidden"

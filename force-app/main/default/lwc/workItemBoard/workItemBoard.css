@@ -15,6 +15,97 @@
     min-width: 8rem;
 }
 
+/* ── Epic panel ── */
+.epic-panel {
+    border: 1px solid #dde1e8;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.epic-panel__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    background: #fff;
+    border-bottom: 1px solid #dde1e8;
+}
+
+.epic-panel__title {
+    font-weight: 700;
+    color: #16325c;
+    font-size: 0.9rem;
+}
+
+.epic-groups {
+    display: flex;
+    gap: 0;
+    background: #f3f4f7;
+    padding: 0.625rem;
+    gap: 0.625rem;
+}
+
+.epic-group {
+    flex: 1;
+    background: #ebecf0;
+    border-radius: 6px;
+    padding: 0.375rem;
+    min-width: 0;
+}
+
+.epic-group__header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.2rem 0.375rem 0.375rem;
+}
+
+.epic-group__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #5e6c84;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.epic-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border-radius: 4px;
+    padding: 0.4rem 0.625rem;
+    margin-bottom: 0.375rem;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: box-shadow 0.15s;
+}
+
+.epic-row:hover {
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+.epic-row__name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #181818;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    margin-right: 0.5rem;
+}
+
+.epic-row__status {
+    font-size: 0.6875rem;
+    color: #5e6c84;
+    white-space: nowrap;
+    background: #dfe1e6;
+    border-radius: 10px;
+    padding: 0 0.4rem;
+    line-height: 1.5;
+}
+
 /* ── Sprint section ── */
 .sprint-section {
     border: 1px solid #dde1e8;

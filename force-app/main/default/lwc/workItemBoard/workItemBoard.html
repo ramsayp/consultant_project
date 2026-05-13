@@ -24,7 +24,41 @@
 
         <template if:false={isLoading}>
 
-            <!-- Sprint sections -->
+            <!-- ── Epic panel ── -->
+            <div class="epic-panel slds-m-bottom_medium">
+                <div class="epic-panel__header">
+                    <span class="epic-panel__title">Epics</span>
+                    <span class="sprint-section__count">{epicCount}</span>
+                    <div class="sprint-section__actions">
+                        <lightning-button
+                            label="+ New Epic"
+                            data-type="Epic"
+                            onclick={handleNewClick}>
+                        </lightning-button>
+                    </div>
+                </div>
+                <div class="epic-groups">
+                    <template for:each={epicGroups} for:item="group">
+                        <div key={group.key} class="epic-group">
+                            <div class="epic-group__header">
+                                <span class="epic-group__label">{group.label}</span>
+                                <span class="col-count">{group.count}</span>
+                            </div>
+                            <template for:each={group.items} for:item="epic">
+                                <div key={epic.Id} class="epic-row" data-id={epic.Id} onclick={handleOpenItem}>
+                                    <span class="epic-row__name">{epic.Name}</span>
+                                    <span class="epic-row__status">{epic.Status__c}</span>
+                                </div>
+                            </template>
+                            <template if:true={group.empty}>
+                                <p class="empty-col">—</p>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- ── Sprint sections ── -->
             <template for:each={sprintSections} for:item="section">
                 <div key={section.sprintId} class="sprint-section slds-m-bottom_medium">
                     <div class="sprint-section__header">
@@ -55,7 +89,8 @@
                                             sprint-options={sprintOptions}
                                             onstatuschange={handleStatusChange}
                                             onsprintchange={handleSprintChange}
-                                            onopen={handleOpenItem}>
+                                            onopen={handleOpenItem}
+                                            onaddchapter={handleAddChapter}>
                                         </c-work-item-card>
                                     </template>
                                     <template if:true={col.empty}>
@@ -68,7 +103,7 @@
                 </div>
             </template>
 
-            <!-- Backlog -->
+            <!-- ── Backlog ── -->
             <div class="backlog-section">
                 <div class="backlog-section__header">
                     <span class="backlog-section__title">Backlog</span>
@@ -83,7 +118,8 @@
                             sprint-options={sprintOptions}
                             onstatuschange={handleStatusChange}
                             onsprintchange={handleSprintChange}
-                            onopen={handleOpenItem}>
+                            onopen={handleOpenItem}
+                            onaddchapter={handleAddChapter}>
                         </c-work-item-card>
                     </template>
                     <template if:false={backlogCount}>
@@ -113,6 +149,7 @@
                     <c-work-item-create
                         type={createType}
                         sprint-id={createSprint}
+                        parent-id={createParent}
                         initiative-id={initiativeId}
                         oncreated={handleItemCreated}
                         oncancel={handleCreateCancel}>

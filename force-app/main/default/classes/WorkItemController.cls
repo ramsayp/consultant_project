@@ -151,18 +151,10 @@ public with sharing class WorkItemController {
                  + 'RecordType.Name, RecordTypeId '
                  + 'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
         if (initiativeId != null) {
-            // SOQL doesn't support nested subqueries, so gather parent IDs across
-            // all 3 hierarchy levels (Initiative > Epic > Story > Chapter) in Apex
-            Set<Id> epicIds = new Map<Id, Work_Item__c>([
-                SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :initiativeId
-            ]).keySet();
-            Set<Id> storyIds = new Map<Id, Work_Item__c>([
-                SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c IN :epicIds
-            ]).keySet();
-            Set<Id> allParentIds = new Set<Id>{ initiativeId };
-            allParentIds.addAll(epicIds);
-            allParentIds.addAll(storyIds);
-            q += ' AND Parent_Work_Item__c IN :allParentIds';
+            // Epics are scoped to the initiative; Stories/Tasks/Bugs/Chapters are global
+            // (a sprint board is cross-initiative — scoping would hide work items)
+            Id epicRtId = rtId('Epic');
+            q += ' AND (RecordTypeId != :epicRtId OR Parent_Work_Item__c = :initiativeId)';
         }
         q += ' ORDER BY Sprint__r.Sequence__c NULLS LAST, Sequence__c NULLS LAST, CreatedDate ASC';
         return Database.query(q);
