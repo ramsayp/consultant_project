@@ -70,7 +70,13 @@
                     <template if:false={section.isBacklog}>
                         <div class="kanban">
                             <template for:each={section.columns} for:item="col">
-                                <div key={col.stage} class="kanban__col">
+                                <div key={col.stage} class="kanban__col"
+                                     data-stage={col.stage}
+                                     data-sprint-id={section.sprintId}
+                                     ondragover={handleDragOver}
+                                     ondragenter={handleDragEnter}
+                                     ondragleave={handleDragLeave}
+                                     ondrop={handleDrop}>
                                     <div class="kanban__col-header">
                                         <span class="col-name">{col.stage}</span>
                                         <span class="col-count">{col.count}</span>
@@ -80,10 +86,6 @@
                                             <c-work-item-card
                                                 key={item.Id}
                                                 work-item={item}
-                                                status-options={stageOptions}
-                                                sprint-options={sprintOptions}
-                                                onstatuschange={handleStatusChange}
-                                                onsprintchange={handleSprintChange}
                                                 onopen={handleOpenItem}
                                                 onaddchapter={handleAddChapter}>
                                             </c-work-item-card>
@@ -98,15 +100,17 @@
                     </template>
                     <!-- List layout for backlog -->
                     <template if:true={section.isBacklog}>
-                        <div class="backlog-list">
+                        <div class="backlog-list"
+                             data-stage="Not Started"
+                             data-sprint-id={section.sprintId}
+                             ondragover={handleDragOver}
+                             ondragenter={handleDragEnter}
+                             ondragleave={handleDragLeave}
+                             ondrop={handleDrop}>
                             <template for:each={section.listItems} for:item="item">
                                 <c-work-item-card
                                     key={item.Id}
                                     work-item={item}
-                                    status-options={stageOptions}
-                                    sprint-options={sprintOptions}
-                                    onstatuschange={handleStatusChange}
-                                    onsprintchange={handleSprintChange}
                                     onopen={handleOpenItem}
                                     onaddchapter={handleAddChapter}>
                                 </c-work-item-card>

@@ -165,23 +165,42 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
         await refreshApex(this._wiredResult);
     }
 
-    async handleStatusChange(event) {
-        const { id, status } = event.detail;
-        try {
-            await updateStatus({ workItemId: id, newStatus: status });
-            await refreshApex(this._wiredResult);
-        } catch (err) {
-            this.toast('Status update failed', err?.body?.message ?? err?.message, 'error');
+    // ── Drag and drop ────────────────────────────────────────────────────────
+    handleDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    }
+
+    handleDragEnter(event) {
+        event.preventDefault();
+        event.currentTarget.classList.add('col--drag-over');
+    }
+
+    handleDragLeave(event) {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+            event.currentTarget.classList.remove('col--drag-over');
         }
     }
 
-    async handleSprintChange(event) {
-        const { id, sprintId } = event.detail;
+    async handleDrop(event) {
+        event.preventDefault();
+        event.currentTarget.classList.remove('col--drag-over');
+        let payload;
+        try { payload = JSON.parse(event.dataTransfer.getData('text/plain')); }
+        catch(e) { return; }
+
+        const { itemId, sprintId: fromSprintId } = payload;
+        const newStage    = event.currentTarget.dataset.stage;
+        const toSprintId  = event.currentTarget.dataset.sprintId || null;
+
         try {
-            await updateSprint({ workItemId: id, sprintId: sprintId || null });
+            await updateStatus({ workItemId: itemId, newStatus: newStage });
+            if (toSprintId !== fromSprintId) {
+                await updateSprint({ workItemId: itemId, sprintId: toSprintId });
+            }
             await refreshApex(this._wiredResult);
         } catch (err) {
-            this.toast('Sprint update failed', err?.body?.message ?? err?.message, 'error');
+            this.toast('Update failed', err?.body?.message ?? err?.message, 'error');
         }
     }
 

@@ -192,6 +192,13 @@
     min-height: 2.5rem;
 }
 
+.kanban__col.col--drag-over,
+.backlog-list.col--drag-over {
+    background: #dbeafe;
+    outline: 2px dashed #0070d2;
+    border-radius: 6px;
+}
+
 .empty-col {
     text-align: center;
     color: #a5adba;

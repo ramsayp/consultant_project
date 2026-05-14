@@ -4,7 +4,7 @@
     --priority-medium:   #1976d2;
     --priority-low:      #757575;
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
 }
 
 .work-card {
@@ -13,13 +13,18 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     display: flex;
     align-items: stretch;
-    cursor: pointer;
+    cursor: grab;
     transition: box-shadow 0.15s;
     overflow: hidden;
+    user-select: none;
 }
 
 .work-card:hover {
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+.work-card:active {
+    cursor: grabbing;
 }
 
 .priority-bar {
@@ -34,7 +39,7 @@
 
 .card__body {
     flex: 1;
-    padding: 0.5rem 0.625rem;
+    padding: 0.4rem 0.5rem;
     min-width: 0;
 }
 
@@ -45,13 +50,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.25rem;
 }
 
 .card__meta {
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
+    align-items: center;
 }
 
 .meta-badge {
@@ -70,26 +76,6 @@
 .meta-badge_type--story   { background: #e8f0fe; color: #1a73e8; }
 .meta-badge_type--task    { background: #fff3e0; color: #e65100; }
 .meta-badge_type--bug     { background: #fce8e6; color: #c5221f; }
-
-.card__actions {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.25rem;
-    padding: 0.375rem;
-}
-
-.status-picker {
-    --slds-c-input-color-border: transparent;
-    font-size: 0.75rem;
-    min-width: 7rem;
-}
-
-.sprint-picker {
-    --slds-c-input-color-border: transparent;
-    font-size: 0.75rem;
-    min-width: 7rem;
-}
 
 .add-chapter-btn {
     font-size: 0.7rem;
