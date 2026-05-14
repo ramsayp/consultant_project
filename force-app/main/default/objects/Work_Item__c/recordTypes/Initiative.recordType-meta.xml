@@ -6,55 +6,22 @@
     <label>Initiative</label>
     <picklistValues>
         <picklist>Priority__c</picklist>
-        <values>
-            <fullName>Critical</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>High</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Low</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Medium</fullName>
-            <default>true</default>
-        </values>
+        <values><fullName>Critical</fullName><default>false</default></values>
+        <values><fullName>High</fullName><default>false</default></values>
+        <values><fullName>Medium</fullName><default>true</default></values>
+        <values><fullName>Low</fullName><default>false</default></values>
     </picklistValues>
     <picklistValues>
         <picklist>Status__c</picklist>
-        <values>
-            <fullName>Active</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Cancelled</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Completed</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Draft</fullName>
-            <default>true</default>
-        </values>
+        <values><fullName>Not Started</fullName><default>true</default></values>
+        <values><fullName>In Progress</fullName><default>false</default></values>
+        <values><fullName>Completed</fullName><default>false</default></values>
+        <values><fullName>Cancelled</fullName><default>false</default></values>
     </picklistValues>
     <picklistValues>
         <picklist>Work_Mode__c</picklist>
-        <values>
-            <fullName>Continuous</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Iterative</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Reactive</fullName>
-            <default>false</default>
-        </values>
+        <values><fullName>Iterative</fullName><default>false</default></values>
+        <values><fullName>Continuous</fullName><default>false</default></values>
+        <values><fullName>Reactive</fullName><default>false</default></values>
     </picklistValues>
 </RecordType>

@@ -136,13 +136,11 @@
                 <fullName>Completed</fullName>
                 <default>false</default>
                 <label>Completed</label>
-                <isActive>false</isActive>
             </value>
             <value>
                 <fullName>Cancelled</fullName>
                 <default>false</default>
                 <label>Cancelled</label>
-                <isActive>false</isActive>
             </value>
         </valueSetDefinition>
     </valueSet>

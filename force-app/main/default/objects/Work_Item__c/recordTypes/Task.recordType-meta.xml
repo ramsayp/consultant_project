@@ -6,47 +6,26 @@
     <label>Task</label>
     <picklistValues>
         <picklist>Priority__c</picklist>
-        <values>
-            <fullName>Critical</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>High</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Low</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Medium</fullName>
-            <default>true</default>
-        </values>
+        <values><fullName>Critical</fullName><default>false</default></values>
+        <values><fullName>High</fullName><default>false</default></values>
+        <values><fullName>Medium</fullName><default>true</default></values>
+        <values><fullName>Low</fullName><default>false</default></values>
     </picklistValues>
     <picklistValues>
         <picklist>Status__c</picklist>
-        <values>
-            <fullName>Backlog</fullName>
-            <default>true</default>
-        </values>
-        <values>
-            <fullName>Blocked</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Done</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>In Progress</fullName>
-            <default>false</default>
-        </values>
+        <values><fullName>Not Started</fullName><default>true</default></values>
+        <values><fullName>To Do</fullName><default>false</default></values>
+        <values><fullName>In Progress</fullName><default>false</default></values>
+        <values><fullName>Blocked</fullName><default>false</default></values>
+        <values><fullName>Code Review</fullName><default>false</default></values>
+        <values><fullName>UAT</fullName><default>false</default></values>
+        <values><fullName>Pipeline</fullName><default>false</default></values>
+        <values><fullName>Released</fullName><default>false</default></values>
+        <values><fullName>Documented</fullName><default>false</default></values>
+        <values><fullName>Done</fullName><default>false</default></values>
     </picklistValues>
     <picklistValues>
         <picklist>Work_Mode__c</picklist>
-        <values>
-            <fullName>Continuous</fullName>
-            <default>true</default>
-        </values>
+        <values><fullName>Continuous</fullName><default>true</default></values>
     </picklistValues>
 </RecordType>
