@@ -13,9 +13,9 @@ const WORK_MODE = {
 };
 
 const DEFAULT_STATUS = {
-    Initiative: 'Draft', Epic: 'Draft',
-    Story: 'Backlog', Task: 'Backlog', Bug: 'Open',
-    Chapter: 'To Do', Step: 'To Do'
+    Initiative: 'Not Started', Epic: 'Not Started',
+    Story: 'Not Started', Task: 'Not Started', Bug: 'Not Started',
+    Chapter: 'Not Started', Step: 'Not Started'
 };
 
 const SPRINT_TYPES   = new Set(['Story', 'Task', 'Bug']);
