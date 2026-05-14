@@ -158,21 +158,41 @@ public with sharing class WorkItemController {
         for (String rt : new List<String>{'Epic','Story','Task','Bug','Chapter'}) {
             rtIds.add(rtId(rt));
         }
-        String q = 'SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c, '
-                 + 'Work_Mode__c, Assignee__c, Assignee__r.Name, Description__c, '
-                 + 'Sprint__c, Sprint__r.Name, Sprint__r.Sequence__c, '
-                 + 'Sprint__r.Start_Date__c, Sprint__r.End_Date__c, '
-                 + 'Parent_Work_Item__c, Parent_Work_Item__r.Name, '
-                 + 'RecordType.Name, RecordTypeId '
-                 + 'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
-        if (initiativeId != null) {
-            // Epics are scoped to the initiative; Stories/Tasks/Bugs/Chapters are global
-            // (a sprint board is cross-initiative — scoping would hide work items)
-            Id epicRtId = rtId('Epic');
-            q += ' AND (RecordTypeId != :epicRtId OR Parent_Work_Item__c = :initiativeId)';
+        String selectClause = 'SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c, '
+            + 'Work_Mode__c, Assignee__c, Assignee__r.Name, Description__c, '
+            + 'Sprint__c, Sprint__r.Name, Sprint__r.Sequence__c, '
+            + 'Sprint__r.Start_Date__c, Sprint__r.End_Date__c, '
+            + 'Parent_Work_Item__c, Parent_Work_Item__r.Name, '
+            + 'RecordType.Name, RecordTypeId '
+            + 'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
+
+        if (initiativeId == null) {
+            return Database.query(selectClause + ' ORDER BY Sprint__r.Sequence__c NULLS LAST, Sequence__c NULLS LAST, CreatedDate ASC');
         }
-        q += ' ORDER BY Sprint__r.Sequence__c NULLS LAST, Sequence__c NULLS LAST, CreatedDate ASC';
-        return Database.query(q);
+
+        // Walk three levels: Initiative → Epic → Story/Task/Bug → Chapter
+        // SOQL can't nest subqueries that deep, so collect valid parent IDs in two passes.
+        Set<Id> validParents = new Set<Id>{ initiativeId };
+
+        // Level 1: Epics that belong to this initiative
+        Set<Id> epicIds = new Set<Id>();
+        for (Work_Item__c w : [SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :initiativeId]) {
+            epicIds.add(w.Id);
+        }
+        validParents.addAll(epicIds);
+
+        // Level 2: Stories/Tasks/Bugs that belong to those epics
+        if (!epicIds.isEmpty()) {
+            for (Work_Item__c w : [SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c IN :epicIds]) {
+                validParents.add(w.Id);
+            }
+        }
+
+        return Database.query(
+            selectClause
+            + ' AND Parent_Work_Item__c IN :validParents'
+            + ' ORDER BY Sprint__r.Sequence__c NULLS LAST, Sequence__c NULLS LAST, CreatedDate ASC'
+        );
     }
 
     @AuraEnabled
