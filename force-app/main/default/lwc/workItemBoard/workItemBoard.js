@@ -146,14 +146,6 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
         this.showCreate   = true;
     }
 
-    handleAddChapter(event) {
-        const { parentId, sprintId } = event.detail;
-        this.createType   = 'Chapter';
-        this.createSprint = sprintId;
-        this.createParent = parentId;
-        this.showCreate   = true;
-    }
-
     handleCreateCancel() {
         this.showCreate   = false;
         this.createParent = null;

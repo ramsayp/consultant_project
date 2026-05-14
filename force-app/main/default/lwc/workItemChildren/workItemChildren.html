@@ -1,0 +1,49 @@
+<template>
+    <template if:true={showApplet}>
+        <div class="children-panel">
+            <div class="children-header">
+                <span class="children-title">{sectionLabel}</span>
+                <span class="children-count">{children.length}</span>
+                <button class="add-btn" onclick={handleAdd}>+ Add</button>
+            </div>
+
+            <template if:false={isEmpty}>
+                <ul class="children-list">
+                    <template for:each={children} for:item="child">
+                        <li key={child.Id} class="child-row" data-id={child.Id} onclick={handleOpenChild}>
+                            <span class="child-name">{child.Name}</span>
+                            <span class="child-status">{child.Status__c}</span>
+                        </li>
+                    </template>
+                </ul>
+            </template>
+            <template if:true={isEmpty}>
+                <p class="children-empty">No {sectionLabel} yet.</p>
+            </template>
+        </div>
+
+        <!-- Create modal -->
+        <template if:true={showCreate}>
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+                <div class="slds-modal__container">
+                    <button
+                        class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        title="Close"
+                        onclick={handleCancel}>
+                        <lightning-icon icon-name="utility:close" size="small" alternative-text="Close"></lightning-icon>
+                    </button>
+                    <div class="slds-modal__content slds-p-around_none">
+                        <c-work-item-create
+                            type={childType}
+                            sprint-id={sprintId}
+                            parent-id={recordId}
+                            oncreated={handleCreated}
+                            oncancel={handleCancel}>
+                        </c-work-item-create>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </template>
+</template>

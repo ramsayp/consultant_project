@@ -23,23 +23,11 @@ export default class WorkItemCard extends LightningElement {
         return `meta-badge meta-badge_type meta-badge_type--${this.workItemType.toLowerCase()}`;
     }
 
-    get isStory() {
-        return this.workItemType === 'Story';
-    }
-
     handleDragStart(event) {
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.setData('text/plain', JSON.stringify({
             itemId: this.workItem.Id,
             sprintId: this.workItem.Sprint__c || null
-        }));
-    }
-
-    handleAddChapter(event) {
-        event.stopPropagation();
-        this.dispatchEvent(new CustomEvent('addchapter', {
-            detail: { parentId: this.workItem.Id, sprintId: this.workItem.Sprint__c || null },
-            bubbles: true
         }));
     }
 

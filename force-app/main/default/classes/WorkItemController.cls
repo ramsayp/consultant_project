@@ -34,6 +34,12 @@ public with sharing class WorkItemController {
     }
 
     @AuraEnabled(cacheable=true)
+    public static Map<String, Object> getWorkItemMeta(Id recordId) {
+        Work_Item__c w = [SELECT RecordType.Name, Sprint__c FROM Work_Item__c WHERE Id = :recordId];
+        return new Map<String, Object>{ 'typeName' => w.RecordType.Name, 'sprintId' => w.Sprint__c };
+    }
+
+    @AuraEnabled(cacheable=true)
     public static List<Work_Item__c> getChildren(Id parentId) {
         return [
             SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c,
