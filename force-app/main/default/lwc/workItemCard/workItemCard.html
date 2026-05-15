@@ -1,24 +1,47 @@
 <template>
-    <div class={cardClass} data-id={workItem.Id} draggable="true" ondragstart={handleDragStart} onclick={handleOpen}>
-        <div class={priorityBar}></div>
-        <div class="card__body">
-            <div class="card__title">{workItem.Name}</div>
-            <div class="card__meta">
-                <template if:true={workItemType}>
-                    <span class={typeBadgeClass}>{workItemType}</span>
-                </template>
-                <template if:true={workItem.Estimate__c}>
-                    <span class="meta-badge meta-badge_pts">{workItem.Estimate__c}pt</span>
-                </template>
-            </div>
-            <div class="card__footer">
-                <template if:true={parentName}>
-                    <span class="meta-badge meta-badge_parent" title={parentName}>{parentName}</span>
-                </template>
-                <template if:true={assigneeName}>
-                    <span class="meta-badge meta-badge_user">{assigneeName}</span>
-                </template>
+    <!-- ── Compact / backlog row ── -->
+    <template if:true={compact}>
+        <div class={rowClass} data-id={workItem.Id} draggable="true" ondragstart={handleDragStart} onclick={handleOpen}>
+            <div class={priorityBar}></div>
+            <span class="row__name">{workItem.Name}</span>
+            <template if:true={workItemType}>
+                <span class={typeBadgeClass}>{workItemType}</span>
+            </template>
+            <template if:true={parentName}>
+                <span class="meta-badge meta-badge_parent" title={parentName}>{parentName}</span>
+            </template>
+            <template if:true={workItem.Estimate__c}>
+                <span class="meta-badge meta-badge_pts">{workItem.Estimate__c}pt</span>
+            </template>
+            <template if:true={assigneeName}>
+                <span class="meta-badge meta-badge_user">{assigneeName}</span>
+            </template>
+        </div>
+    </template>
+
+    <!-- ── Card / kanban tile ── -->
+    <template if:false={compact}>
+        <div class={cardClass} data-id={workItem.Id} draggable="true" ondragstart={handleDragStart} onclick={handleOpen}>
+            <div class={priorityBar}></div>
+            <div class="card__body">
+                <div class="card__title">{workItem.Name}</div>
+                <div class="card__meta">
+                    <template if:true={workItemType}>
+                        <span class={typeBadgeClass}>{workItemType}</span>
+                    </template>
+                    <template if:true={workItem.Estimate__c}>
+                        <span class="meta-badge meta-badge_pts">{workItem.Estimate__c}pt</span>
+                    </template>
+                </div>
+                <div class="card__footer">
+                    <template if:true={parentName}>
+                        <span class="meta-badge meta-badge_parent" title={parentName}>{parentName}</span>
+                    </template>
+                    <template if:true={assigneeName}>
+                        <span class="meta-badge meta-badge_user">{assigneeName}</span>
+                    </template>
+                </div>
             </div>
         </div>
-    </div>
+    </template>
 </template>

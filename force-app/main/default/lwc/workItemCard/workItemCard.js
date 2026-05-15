@@ -2,9 +2,14 @@ import { LightningElement, api } from 'lwc';
 
 export default class WorkItemCard extends LightningElement {
     @api workItem;
+    @api compact = false;
 
     get cardClass() {
         return `work-card priority-${(this.workItem?.Priority__c || 'medium').toLowerCase()}`;
+    }
+
+    get rowClass() {
+        return `work-row priority-${(this.workItem?.Priority__c || 'medium').toLowerCase()}`;
     }
 
     get priorityBar() {
