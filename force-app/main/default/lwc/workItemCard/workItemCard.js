@@ -15,6 +15,19 @@ export default class WorkItemCard extends LightningElement {
         return this.workItem?.Assignee__r?.Name ?? '';
     }
 
+    get parentName() {
+        const type = this.workItemType;
+        // Chapter/Step: parent is Story → grandparent is Epic
+        if (type === 'Chapter' || type === 'Step') {
+            return this.workItem?.Parent_Work_Item__r?.Parent_Work_Item__r?.Name ?? '';
+        }
+        // Story/Task/Bug: parent is Epic directly
+        if (type === 'Story' || type === 'Task' || type === 'Bug') {
+            return this.workItem?.Parent_Work_Item__r?.Name ?? '';
+        }
+        return '';
+    }
+
     get workItemType() {
         return this.workItem?.RecordType?.Name ?? '';
     }

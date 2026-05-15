@@ -10,10 +10,14 @@
                 <template if:true={workItem.Estimate__c}>
                     <span class="meta-badge meta-badge_pts">{workItem.Estimate__c}pt</span>
                 </template>
+            </div>
+            <div class="card__footer">
+                <template if:true={parentName}>
+                    <span class="meta-badge meta-badge_parent" title={parentName}>{parentName}</span>
+                </template>
                 <template if:true={assigneeName}>
                     <span class="meta-badge meta-badge_user">{assigneeName}</span>
                 </template>
-
             </div>
         </div>
     </div>

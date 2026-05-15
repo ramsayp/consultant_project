@@ -169,6 +169,7 @@ public with sharing class WorkItemController {
             + 'Sprint__c, Sprint__r.Name, Sprint__r.Sequence__c, '
             + 'Sprint__r.Start_Date__c, Sprint__r.End_Date__c, '
             + 'Parent_Work_Item__c, Parent_Work_Item__r.Name, '
+            + 'Parent_Work_Item__r.Parent_Work_Item__c, Parent_Work_Item__r.Parent_Work_Item__r.Name, '
             + 'RecordType.Name, RecordTypeId '
             + 'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
 
