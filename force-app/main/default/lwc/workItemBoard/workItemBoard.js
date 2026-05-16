@@ -218,6 +218,9 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     async handleDrop(event) {
         event.preventDefault();
         event.currentTarget.classList.remove('col--drag-over');
+        // Capture hover state before clearing — event.target can be an indicator div, not the card
+        const targetCardId = this.hoverCardId;
+        const insertAfter  = this.hoverPosition === 'below';
         this.hoverCardId   = null;
         this.hoverPosition = null;
         let payload;
@@ -227,11 +230,6 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
         const { itemId, sprintId: fromSprintId } = payload;
         const newStage   = event.currentTarget.dataset.stage;
         const toSprintId = event.currentTarget.dataset.sprintId || null;
-
-        // Detect card-on-card drop for reordering
-        const targetCardId = event.target !== event.currentTarget
-            ? event.target.dataset?.id
-            : null;
 
         try {
             await updateStatus({ workItemId: itemId, newStatus: newStage });
@@ -244,8 +242,6 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
                 const remaining  = colItems.filter(i => i.Id !== itemId);
                 const targetIdx  = remaining.findIndex(i => i.Id === targetCardId);
                 if (targetIdx >= 0) {
-                    const rect        = event.target.getBoundingClientRect();
-                    const insertAfter = event.clientY > rect.top + rect.height / 2;
                     remaining.splice(insertAfter ? targetIdx + 1 : targetIdx, 0, { Id: itemId });
                     await updateSequences({ workItemIds: remaining.map(i => i.Id) });
                 }
