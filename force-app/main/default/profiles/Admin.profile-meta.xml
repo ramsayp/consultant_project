@@ -58,11 +58,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Work_Item__c.Sequence__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
         <field>Work_Item__c.Sprint__c</field>
         <readable>true</readable>
     </fieldPermissions>

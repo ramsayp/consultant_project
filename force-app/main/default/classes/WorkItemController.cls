@@ -13,7 +13,7 @@ public with sharing class WorkItemController {
     @AuraEnabled(cacheable=true)
     public static List<Work_Item__c> getWorkItems(String recordTypeName, Id sprintId, Id initiativeId) {
         Id rtId = rtId(recordTypeName);
-        String q = 'SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c, '
+        String q = 'SELECT Id, Name, Status__c, Priority__c, Estimate__c, '
                  + 'Work_Mode__c, Assignee__c, Assignee__r.Name, Description__c, '
                  + 'Sprint__c, Sprint__r.Name, Parent_Work_Item__c, Parent_Work_Item__r.Name, '
                  + 'RecordType.Name, RecordTypeId '
@@ -29,7 +29,7 @@ public with sharing class WorkItemController {
                 q += ' AND Parent_Work_Item__c IN (SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :initiativeId)';
             }
         }
-        q += ' ORDER BY Sequence__c NULLS LAST, CreatedDate ASC';
+        q += ' ORDER BY CreatedDate ASC';
         return Database.query(q);
     }
 
@@ -42,11 +42,11 @@ public with sharing class WorkItemController {
     @AuraEnabled(cacheable=true)
     public static List<Work_Item__c> getChildren(Id parentId) {
         return [
-            SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c,
+            SELECT Id, Name, Status__c, Priority__c, Estimate__c,
                    RecordType.Name, Assignee__c, Assignee__r.Name
             FROM Work_Item__c
             WHERE Parent_Work_Item__c = :parentId
-            ORDER BY Sequence__c NULLS LAST, CreatedDate ASC
+            ORDER BY CreatedDate ASC
         ];
     }
 
@@ -164,7 +164,7 @@ public with sharing class WorkItemController {
         for (String rt : new List<String>{'Epic','Story','Task','Bug','Chapter'}) {
             rtIds.add(rtId(rt));
         }
-        String selectClause = 'SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c, '
+        String selectClause = 'SELECT Id, Name, Status__c, Priority__c, Estimate__c, '
             + 'Work_Mode__c, Assignee__c, Assignee__r.Name, Description__c, '
             + 'Sprint__c, Sprint__r.Name, Sprint__r.Sequence__c, '
             + 'Sprint__r.Start_Date__c, Sprint__r.End_Date__c, '
@@ -174,7 +174,7 @@ public with sharing class WorkItemController {
             + 'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
 
         if (initiativeId == null) {
-            return Database.query(selectClause + ' ORDER BY Sprint__r.Sequence__c NULLS LAST, Sequence__c NULLS LAST, CreatedDate ASC');
+            return Database.query(selectClause + ' ORDER BY Sprint__r.Sequence__c NULLS LAST, CreatedDate ASC');
         }
 
         // Walk three levels: Initiative → Epic → Story/Task/Bug → Chapter
@@ -198,7 +198,7 @@ public with sharing class WorkItemController {
         return Database.query(
             selectClause
             + ' AND Parent_Work_Item__c IN :validParents'
-            + ' ORDER BY Sprint__r.Sequence__c NULLS LAST, Sequence__c NULLS LAST, CreatedDate ASC'
+            + ' ORDER BY Sprint__r.Sequence__c NULLS LAST, CreatedDate ASC'
         );
     }
 

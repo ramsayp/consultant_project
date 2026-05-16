@@ -95,6 +95,7 @@
                                                 <c-work-item-card
                                                     key={item.Id}
                                                     work-item={item}
+                                                    ondragover={handleDragOver}
                                                     onopen={handleOpenItem}>
                                                 </c-work-item-card>
                                             </template>
@@ -120,6 +121,7 @@
                                         key={item.Id}
                                         work-item={item}
                                         compact={section.isBacklog}
+                                        ondragover={handleDragOver}
                                         onopen={handleOpenItem}>
                                     </c-work-item-card>
                                 </template>
