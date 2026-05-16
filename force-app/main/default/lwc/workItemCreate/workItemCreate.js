@@ -18,9 +18,13 @@ const DEFAULT_STATUS = {
     Chapter: 'Not Started', Step: 'Not Started'
 };
 
-const SPRINT_TYPES   = new Set(['Story', 'Task', 'Bug']);
-const ESTIMATE_TYPES = new Set(['Story', 'Task', 'Bug', 'Chapter', 'Epic']);
-const PARENT_TYPES   = new Set(['Story', 'Task', 'Bug']);
+const SPRINT_TYPES        = new Set(['Story', 'Task', 'Bug']);
+const ESTIMATE_TYPES      = new Set(['Story', 'Task', 'Bug', 'Chapter', 'Epic']);
+const PARENT_TYPES        = new Set(['Story', 'Task', 'Bug']);
+const USER_STORY_TYPES    = new Set(['Story']);
+const AC_TYPES            = new Set(['Story', 'Task', 'Bug']);
+
+const USER_STORY_TEMPLATE = 'As a [user], I want [goal], so that [reason].';
 
 export default class WorkItemCreate extends LightningElement {
     @api type         = 'Story';
@@ -28,13 +32,15 @@ export default class WorkItemCreate extends LightningElement {
     @api sprintId;
     @api initiativeId;
 
-    @track name              = '';
-    @track description       = '';
-    @track priority          = 'Medium';
-    @track estimate          = null;
-    @track selectedSprintId  = null;
-    @track selectedParentId  = null;
-    @track isCreating        = false;
+    @track name               = '';
+    @track description        = '';
+    @track userStory          = '';
+    @track acceptanceCriteria = '';
+    @track priority           = 'Medium';
+    @track estimate           = null;
+    @track selectedSprintId   = null;
+    @track selectedParentId   = null;
+    @track isCreating         = false;
 
     sprints = [];
     epics   = [];
@@ -48,10 +54,18 @@ export default class WorkItemCreate extends LightningElement {
     @wire(getEpics, { initiativeId: null })
     wiredEpics({ data }) { if (data) this.epics = data; }
 
-    get showSprintPicker()  { return SPRINT_TYPES.has(this.type); }
-    get showEstimate()      { return ESTIMATE_TYPES.has(this.type); }
-    get showParentPicker()  { return PARENT_TYPES.has(this.type); }
-    get createLabel()       { return `Create ${this.type}`; }
+    get showSprintPicker()    { return SPRINT_TYPES.has(this.type); }
+    get showEstimate()        { return ESTIMATE_TYPES.has(this.type); }
+    get showParentPicker()    { return PARENT_TYPES.has(this.type); }
+    get showUserStory()       { return USER_STORY_TYPES.has(this.type); }
+    get showAcceptanceCriteria() { return AC_TYPES.has(this.type); }
+    get createLabel()         { return `Create ${this.type}`; }
+
+    connectedCallback() {
+        if (USER_STORY_TYPES.has(this.type)) {
+            this.userStory = USER_STORY_TEMPLATE;
+        }
+    }
 
     get sprintOptions() {
         const opts = [{ label: '— No Sprint —', value: '' }];
@@ -96,11 +110,13 @@ export default class WorkItemCreate extends LightningElement {
 
         this.isCreating = true;
         const fields = {
-            Name:           this.name.trim(),
-            RecordTypeId:   this.recordTypeId,
-            Status__c:      DEFAULT_STATUS[this.type],
-            Priority__c:    this.priority,
-            Description__c: this.description || null
+            Name:                   this.name.trim(),
+            RecordTypeId:           this.recordTypeId,
+            Status__c:              DEFAULT_STATUS[this.type],
+            Priority__c:            this.priority,
+            Description__c:         this.description || null,
+            User_Story__c:          this.userStory || null,
+            Acceptance_Criteria__c: this.acceptanceCriteria || null
         };
 
         if (WORK_MODE[this.type])  fields.Work_Mode__c        = WORK_MODE[this.type];
@@ -130,8 +146,9 @@ export default class WorkItemCreate extends LightningElement {
     handleCancel() { this.reset(); this.dispatchEvent(new CustomEvent('cancel')); }
 
     reset() {
-        this.name = ''; this.description = ''; this.priority = 'Medium';
-        this.estimate = null; this.selectedSprintId = null; this.selectedParentId = null;
+        this.name = ''; this.description = ''; this.userStory = ''; this.acceptanceCriteria = '';
+        this.priority = 'Medium'; this.estimate = null;
+        this.selectedSprintId = null; this.selectedParentId = null;
     }
 
     toast(title, message, variant) {

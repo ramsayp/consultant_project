@@ -21,6 +21,29 @@
                 max-length="32768">
             </lightning-textarea>
 
+            <template if:true={showUserStory}>
+                <lightning-textarea
+                    label="User Story"
+                    value={userStory}
+                    onchange={handleChange}
+                    data-field="userStory"
+                    max-length="32768"
+                    rows="3">
+                </lightning-textarea>
+            </template>
+
+            <template if:true={showAcceptanceCriteria}>
+                <lightning-textarea
+                    label="Acceptance Criteria"
+                    value={acceptanceCriteria}
+                    onchange={handleChange}
+                    data-field="acceptanceCriteria"
+                    max-length="32768"
+                    rows="3"
+                    placeholder="- [ ] ...">
+                </lightning-textarea>
+            </template>
+
             <template if:true={showParentPicker}>
                 <lightning-combobox
                     label="Parent Epic"
