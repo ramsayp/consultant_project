@@ -288,3 +288,20 @@
     background: #fff;
     overflow: hidden;
 }
+
+/* ── Drag-and-drop indicators ── */
+.card-slot {
+    display: contents;
+}
+
+.drop-indicator {
+    height: 2px;
+    margin: 1px 0;
+    border-radius: 1px;
+    background: transparent;
+    transition: background 0.08s;
+}
+
+.drop-indicator--visible {
+    background: #0070d2;
+}

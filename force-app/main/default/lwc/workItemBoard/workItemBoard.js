@@ -48,6 +48,8 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     @track isLoading     = true;
     @track error         = null;
     @track activeTab     = 'boards';
+    @track hoverCardId   = null;
+    @track hoverPosition = null;
 
     workItems = [];
     sprints   = [];
@@ -124,6 +126,14 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     }
 
     // ── Sprint kanban ────────────────────────────────────────────────────────
+    _slotted(item) {
+        return {
+            ...item,
+            aboveClass: (this.hoverCardId === item.Id && this.hoverPosition === 'above') ? 'drop-indicator drop-indicator--visible' : 'drop-indicator',
+            belowClass: (this.hoverCardId === item.Id && this.hoverPosition === 'below') ? 'drop-indicator drop-indicator--visible' : 'drop-indicator'
+        };
+    }
+
     get sprintSections() {
         const sprintIds = new Set(this.sprints.map(s => s.Id));
         return this.sprints.map(sprint => {
@@ -137,7 +147,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
             const stageList = isBacklog ? ['Not Started'] : STAGES;
             const columns = stageList.map(stage => {
                 const colItems = items.filter(i => (STATUS_TO_STAGE[i.Status__c] || 'Not Started') === stage);
-                return { stage, items: colItems, count: colItems.length, empty: colItems.length === 0 };
+                return { stage, items: colItems.map(i => this._slotted(i)), count: colItems.length, empty: colItems.length === 0 };
             });
             return {
                 sprintId:   sprint.Id,
@@ -147,7 +157,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
                 isBacklog,
                 count:      items.length,
                 columns,
-                listItems:  isBacklog ? items : []
+                listItems:  isBacklog ? items.map(i => this._slotted(i)) : []
             };
         });
     }
@@ -187,12 +197,29 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     handleDragLeave(event) {
         if (!event.currentTarget.contains(event.relatedTarget)) {
             event.currentTarget.classList.remove('col--drag-over');
+            this.hoverCardId   = null;
+            this.hoverPosition = null;
+        }
+    }
+
+    handleCardDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        const cardId = event.currentTarget.dataset.id;
+        if (!cardId) return;
+        const rect = event.currentTarget.getBoundingClientRect();
+        const pos  = event.clientY < rect.top + rect.height / 2 ? 'above' : 'below';
+        if (this.hoverCardId !== cardId || this.hoverPosition !== pos) {
+            this.hoverCardId   = cardId;
+            this.hoverPosition = pos;
         }
     }
 
     async handleDrop(event) {
         event.preventDefault();
         event.currentTarget.classList.remove('col--drag-over');
+        this.hoverCardId   = null;
+        this.hoverPosition = null;
         let payload;
         try { payload = JSON.parse(event.dataTransfer.getData('text/plain')); }
         catch(e) { return; }

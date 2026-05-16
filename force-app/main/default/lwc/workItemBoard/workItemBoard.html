@@ -92,13 +92,16 @@
                                         </div>
                                         <div class="kanban__col-body">
                                             <template for:each={col.items} for:item="item">
-                                                <c-work-item-card
-                                                    key={item.Id}
-                                                    data-id={item.Id}
-                                                    work-item={item}
-                                                    ondragover={handleDragOver}
-                                                    onopen={handleOpenItem}>
-                                                </c-work-item-card>
+                                                <div key={item.Id} class="card-slot">
+                                                    <div class={item.aboveClass}></div>
+                                                    <c-work-item-card
+                                                        data-id={item.Id}
+                                                        work-item={item}
+                                                        ondragover={handleCardDragOver}
+                                                        onopen={handleOpenItem}>
+                                                    </c-work-item-card>
+                                                    <div class={item.belowClass}></div>
+                                                </div>
                                             </template>
                                             <template if:true={col.empty}>
                                                 <p class="empty-col">—</p>
@@ -118,14 +121,17 @@
                                  ondragleave={handleDragLeave}
                                  ondrop={handleDrop}>
                                 <template for:each={section.listItems} for:item="item">
-                                    <c-work-item-card
-                                        key={item.Id}
-                                        data-id={item.Id}
-                                        work-item={item}
-                                        compact={section.isBacklog}
-                                        ondragover={handleDragOver}
-                                        onopen={handleOpenItem}>
-                                    </c-work-item-card>
+                                    <div key={item.Id} class="card-slot">
+                                        <div class={item.aboveClass}></div>
+                                        <c-work-item-card
+                                            data-id={item.Id}
+                                            work-item={item}
+                                            compact={section.isBacklog}
+                                            ondragover={handleCardDragOver}
+                                            onopen={handleOpenItem}>
+                                        </c-work-item-card>
+                                        <div class={item.belowClass}></div>
+                                    </div>
                                 </template>
                                 <template if:false={section.count}>
                                     <p class="empty-col">Backlog is empty.</p>

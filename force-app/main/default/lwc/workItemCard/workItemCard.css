@@ -14,7 +14,7 @@
     gap: 0.5rem;
     padding: 0.375rem 0.625rem;
     border-bottom: 1px solid #f0f1f4;
-    cursor: grab;
+    cursor: pointer;
     user-select: none;
     transition: background 0.12s;
     overflow: hidden;
@@ -41,7 +41,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     display: flex;
     align-items: stretch;
-    cursor: grab;
+    cursor: pointer;
     transition: box-shadow 0.15s;
     overflow: hidden;
     user-select: none;
