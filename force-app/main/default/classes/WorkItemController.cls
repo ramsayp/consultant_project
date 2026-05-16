@@ -223,10 +223,10 @@ public with sharing class WorkItemController {
     }
 
     @AuraEnabled(cacheable=true)
-    public static List<Work_Item_Comment__c> getComments(Id workItemId) {
+    public static List<Comment__c> getComments(Id workItemId) {
         return [
             SELECT Id, Body__c, CreatedDate, CreatedBy.Name
-            FROM Work_Item_Comment__c
+            FROM Comment__c
             WHERE Work_Item__c = :workItemId
             ORDER BY CreatedDate DESC
         ];
@@ -234,9 +234,9 @@ public with sharing class WorkItemController {
 
     @AuraEnabled
     public static void addComment(Id workItemId, String body) {
-        Id rtId = Schema.SObjectType.Work_Item_Comment__c
+        Id rtId = Schema.SObjectType.Comment__c
             .getRecordTypeInfosByName().get('Work Item Comments').getRecordTypeId();
-        insert new Work_Item_Comment__c(
+        insert new Comment__c(
             Work_Item__c = workItemId,
             Body__c      = body,
             RecordTypeId = rtId

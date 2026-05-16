@@ -9,13 +9,13 @@
     <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
-    <label>Work Item Comment</label>
+    <label>Comment</label>
     <nameField>
-        <displayFormat>WIC-{0000}</displayFormat>
+        <displayFormat>CMT-{0000}</displayFormat>
         <label>Comment Number</label>
         <type>AutoNumber</type>
     </nameField>
-    <pluralLabel>Work Item Comments</pluralLabel>
+    <pluralLabel>Comments</pluralLabel>
     <searchLayouts/>
     <sharingModel>ReadWrite</sharingModel>
 </CustomObject>

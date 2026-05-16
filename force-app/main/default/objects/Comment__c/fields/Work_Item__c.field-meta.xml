@@ -4,7 +4,7 @@
     <label>Work Item</label>
     <referenceTo>Work_Item__c</referenceTo>
     <relationshipLabel>Comments</relationshipLabel>
-    <relationshipName>Comments</relationshipName>
+    <relationshipName>WorkItemComments</relationshipName>
     <deleteConstraint>SetNull</deleteConstraint>
     <required>false</required>
     <type>Lookup</type>
