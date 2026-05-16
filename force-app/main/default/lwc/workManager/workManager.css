@@ -185,10 +185,26 @@
     gap: 0.25rem;
 }
 
+.crumb-back-btn {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 0.2rem 0.375rem;
+    border-radius: 4px;
+    cursor: pointer;
+    gap: 0.125rem;
+    color: #0070d2;
+    transition: background 0.12s;
+}
+
+.crumb-back-btn:hover {
+    background: #e8f0fe;
+}
+
 .crumb-parent {
     font-size: 0.8125rem;
     color: #0070d2;
-    cursor: pointer;
 }
 
 .crumb-sep {

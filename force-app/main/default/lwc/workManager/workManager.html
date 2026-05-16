@@ -102,13 +102,14 @@
         <!-- ── Board view ── -->
         <template if:true={isBoardView}>
             <div class="wm-breadcrumb slds-p-horizontal_medium slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center">
-                <lightning-button-icon
-                    icon-name="utility:chevronleft"
-                    variant="bare"
-                    onclick={handleBack}
-                    alternative-text="Back to Initiatives">
-                </lightning-button-icon>
-                <span class="slds-m-left_x-small crumb-parent">Initiatives</span>
+                <button class="crumb-back-btn" onclick={handleBack}>
+                    <lightning-icon
+                        icon-name="utility:chevronleft"
+                        size="x-small"
+                        alternative-text="Back to Initiatives">
+                    </lightning-icon>
+                    <span class="slds-m-left_x-small crumb-parent">Initiatives</span>
+                </button>
                 <span class="crumb-sep">/</span>
                 <span class="crumb-current">{selectedInitiative.Name}</span>
             </div>
