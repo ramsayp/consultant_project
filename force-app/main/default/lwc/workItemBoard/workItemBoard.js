@@ -231,10 +231,22 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
         const newStage   = event.currentTarget.dataset.stage;
         const toSprintId = event.currentTarget.dataset.sprintId || null;
 
+        // Capture source column before any updates
+        const sourceItem = this.workItems.find(i => i.Id === itemId);
+        const fromStage  = STATUS_TO_STAGE[sourceItem?.Status__c] || 'Not Started';
+
         try {
             await updateStatus({ workItemId: itemId, newStatus: newStage });
             if (toSprintId !== fromSprintId) {
                 await updateSprint({ workItemId: itemId, sprintId: toSprintId });
+            }
+
+            // Compact sequences in source column when card moves out of it
+            if (fromStage !== newStage || fromSprintId !== toSprintId) {
+                const srcItems = this._colItems(fromStage, fromSprintId).filter(i => i.Id !== itemId);
+                if (srcItems.length > 0) {
+                    await updateSequences({ workItemIds: srcItems.map(i => i.Id) });
+                }
             }
 
             if (targetCardId && targetCardId !== itemId) {
