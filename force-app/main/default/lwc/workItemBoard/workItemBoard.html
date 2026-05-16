@@ -94,6 +94,7 @@
                                             <template for:each={col.items} for:item="item">
                                                 <c-work-item-card
                                                     key={item.Id}
+                                                    data-id={item.Id}
                                                     work-item={item}
                                                     ondragover={handleDragOver}
                                                     onopen={handleOpenItem}>
@@ -119,6 +120,7 @@
                                 <template for:each={section.listItems} for:item="item">
                                     <c-work-item-card
                                         key={item.Id}
+                                        data-id={item.Id}
                                         work-item={item}
                                         compact={section.isBacklog}
                                         ondragover={handleDragOver}

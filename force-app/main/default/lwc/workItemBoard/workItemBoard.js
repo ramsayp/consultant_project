@@ -7,6 +7,7 @@ import getActiveSprints     from '@salesforce/apex/WorkItemController.getActiveS
 import ensureBacklogSprint  from '@salesforce/apex/WorkItemController.ensureBacklogSprint';
 import updateStatus         from '@salesforce/apex/WorkItemController.updateStatus';
 import updateSprint         from '@salesforce/apex/WorkItemController.updateSprint';
+import updateSequences      from '@salesforce/apex/WorkItemController.updateSequences';
 
 const STAGES = [
     'Not Started', 'To Do', 'In Progress', 'Blocked',
@@ -197,18 +198,47 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
         catch(e) { return; }
 
         const { itemId, sprintId: fromSprintId } = payload;
-        const newStage    = event.currentTarget.dataset.stage;
-        const toSprintId  = event.currentTarget.dataset.sprintId || null;
+        const newStage   = event.currentTarget.dataset.stage;
+        const toSprintId = event.currentTarget.dataset.sprintId || null;
+
+        // Detect card-on-card drop for reordering
+        const targetCardId = event.target !== event.currentTarget
+            ? event.target.dataset?.id
+            : null;
 
         try {
             await updateStatus({ workItemId: itemId, newStatus: newStage });
             if (toSprintId !== fromSprintId) {
                 await updateSprint({ workItemId: itemId, sprintId: toSprintId });
             }
+
+            if (targetCardId && targetCardId !== itemId) {
+                const colItems   = this._colItems(newStage, toSprintId);
+                const remaining  = colItems.filter(i => i.Id !== itemId);
+                const targetIdx  = remaining.findIndex(i => i.Id === targetCardId);
+                if (targetIdx >= 0) {
+                    const rect        = event.target.getBoundingClientRect();
+                    const insertAfter = event.clientY > rect.top + rect.height / 2;
+                    remaining.splice(insertAfter ? targetIdx + 1 : targetIdx, 0, { Id: itemId });
+                    await updateSequences({ workItemIds: remaining.map(i => i.Id) });
+                }
+            }
+
             await refreshApex(this._wiredResult);
         } catch (err) {
             this.toast('Update failed', err?.body?.message ?? err?.message, 'error');
         }
+    }
+
+    _colItems(stage, sprintId) {
+        const sprintIds = new Set(this.sprints.map(s => s.Id));
+        const isBacklog = this.sprints.find(s => s.Id === sprintId)?.Status__c === 'Backlog';
+        return this.workItems.filter(i => {
+            if (i.RecordType?.Name === 'Epic') return false;
+            if ((STATUS_TO_STAGE[i.Status__c] || 'Not Started') !== stage) return false;
+            if (isBacklog) return i.Sprint__c === sprintId || !i.Sprint__c || !sprintIds.has(i.Sprint__c);
+            return i.Sprint__c === sprintId;
+        });
     }
 
     handleOpenItem(event) {
