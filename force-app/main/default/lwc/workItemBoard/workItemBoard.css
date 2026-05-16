@@ -15,6 +15,53 @@
     min-width: 8rem;
 }
 
+/* ── Tabs ── */
+.board-tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 2px solid #dde1e8;
+    margin-bottom: 1rem;
+}
+
+.board-tab {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    padding: 0.4rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #5e6c84;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    transition: color 0.12s;
+}
+
+.board-tab:hover {
+    color: #16325c;
+}
+
+.board-tab--active {
+    color: #0070d2;
+    border-bottom-color: #0070d2;
+}
+
+.tab-count {
+    font-size: 0.7rem;
+    background: #dfe1e6;
+    border-radius: 10px;
+    padding: 0 0.35rem;
+    color: #5e6c84;
+    line-height: 1.5;
+}
+
+.board-tab--active .tab-count {
+    background: #d0e8ff;
+    color: #0070d2;
+}
+
 /* ── Epic panel ── */
 .epic-panel {
     border: 1px solid #dde1e8;

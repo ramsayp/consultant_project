@@ -24,104 +24,112 @@
 
         <template if:false={isLoading}>
 
-            <!-- ── Epic panel ── -->
-            <div class="epic-panel slds-m-bottom_medium">
-                <div class="epic-panel__header">
-                    <span class="epic-panel__title">Epics</span>
-                    <span class="sprint-section__count">{epicCount}</span>
-                    <div class="sprint-section__actions">
-                        <lightning-button
-                            label="+ New Epic"
-                            data-type="Epic"
-                            onclick={handleNewClick}>
-                        </lightning-button>
-                    </div>
-                </div>
-                <div class="epic-groups">
-                    <template for:each={epicGroups} for:item="group">
-                        <div key={group.key} class="epic-group">
-                            <div class="epic-group__header">
-                                <span class="epic-group__label">{group.label}</span>
-                                <span class="col-count">{group.count}</span>
-                            </div>
-                            <template for:each={group.items} for:item="epic">
-                                <div key={epic.Id} class="epic-row" data-id={epic.Id} onclick={handleOpenItem}>
-                                    <span class="epic-row__name">{epic.Name}</span>
-                                    <span class="epic-row__status">{epic.Status__c}</span>
-                                </div>
-                            </template>
-                            <template if:true={group.empty}>
-                                <p class="empty-col">—</p>
-                            </template>
-                        </div>
-                    </template>
-                </div>
+            <!-- ── Tabs ── -->
+            <div class="board-tabs slds-m-bottom_medium">
+                <button class={epicsTabClass} data-tab="epics" onclick={handleTabClick}>Epics <span class="tab-count">{epicCount}</span></button>
+                <button class={boardsTabClass} data-tab="boards" onclick={handleTabClick}>Boards</button>
             </div>
 
-            <!-- ── Sprint sections ── -->
-            <template for:each={sprintSections} for:item="section">
-                <div key={section.sprintId} class="sprint-section slds-m-bottom_medium">
-                    <div class="sprint-section__header">
-                        <span class="sprint-section__name">{section.name}</span>
-                        <span class="sprint-section__dates">{section.startDate} – {section.endDate}</span>
-                        <span class="sprint-section__count">{section.count}</span>
+            <!-- ── Epics tab ── -->
+            <template if:true={isEpicsTab}>
+                <div class="epic-panel">
+                    <div class="epic-panel__header">
+                        <span class="epic-panel__title">Epics</span>
+                        <span class="sprint-section__count">{epicCount}</span>
+                        <div class="sprint-section__actions">
+                            <lightning-button
+                                label="+ New Epic"
+                                data-type="Epic"
+                                onclick={handleNewClick}>
+                            </lightning-button>
+                        </div>
                     </div>
-                    <!-- Kanban layout for regular sprints -->
-                    <template if:false={section.isBacklog}>
-                        <div class="kanban">
-                            <template for:each={section.columns} for:item="col">
-                                <div key={col.stage} class="kanban__col"
-                                     data-stage={col.stage}
-                                     data-sprint-id={section.sprintId}
-                                     ondragover={handleDragOver}
-                                     ondragenter={handleDragEnter}
-                                     ondragleave={handleDragLeave}
-                                     ondrop={handleDrop}>
-                                    <div class="kanban__col-header">
-                                        <span class="col-name">{col.stage}</span>
-                                        <span class="col-count">{col.count}</span>
-                                    </div>
-                                    <div class="kanban__col-body">
-                                        <template for:each={col.items} for:item="item">
-                                            <c-work-item-card
-                                                key={item.Id}
-                                                work-item={item}
-                                                onopen={handleOpenItem}
-    >
-                                            </c-work-item-card>
-                                        </template>
-                                        <template if:true={col.empty}>
-                                            <p class="empty-col">—</p>
-                                        </template>
-                                    </div>
+                    <div class="epic-groups">
+                        <template for:each={epicGroups} for:item="group">
+                            <div key={group.key} class="epic-group">
+                                <div class="epic-group__header">
+                                    <span class="epic-group__label">{group.label}</span>
+                                    <span class="col-count">{group.count}</span>
                                 </div>
-                            </template>
-                        </div>
-                    </template>
-                    <!-- List layout for backlog -->
-                    <template if:true={section.isBacklog}>
-                        <div class="backlog-list"
-                             data-stage="Not Started"
-                             data-sprint-id={section.sprintId}
-                             ondragover={handleDragOver}
-                             ondragenter={handleDragEnter}
-                             ondragleave={handleDragLeave}
-                             ondrop={handleDrop}>
-                            <template for:each={section.listItems} for:item="item">
-                                <c-work-item-card
-                                    key={item.Id}
-                                    work-item={item}
-                                    compact={section.isBacklog}
-                                    onopen={handleOpenItem}
-                                    onaddchapter={handleAddChapter}>
-                                </c-work-item-card>
-                            </template>
-                            <template if:false={section.count}>
-                                <p class="empty-col">Backlog is empty.</p>
-                            </template>
-                        </div>
-                    </template>
+                                <template for:each={group.items} for:item="epic">
+                                    <div key={epic.Id} class="epic-row" data-id={epic.Id} onclick={handleOpenItem}>
+                                        <span class="epic-row__name">{epic.Name}</span>
+                                        <span class="epic-row__status">{epic.Status__c}</span>
+                                    </div>
+                                </template>
+                                <template if:true={group.empty}>
+                                    <p class="empty-col">—</p>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
                 </div>
+            </template>
+
+            <!-- ── Boards tab (sprints + backlog) ── -->
+            <template if:true={isBoardsTab}>
+                <template for:each={sprintSections} for:item="section">
+                    <div key={section.sprintId} class="sprint-section slds-m-bottom_medium">
+                        <div class="sprint-section__header">
+                            <span class="sprint-section__name">{section.name}</span>
+                            <span class="sprint-section__dates">{section.startDate} – {section.endDate}</span>
+                            <span class="sprint-section__count">{section.count}</span>
+                        </div>
+                        <!-- Kanban layout for regular sprints -->
+                        <template if:false={section.isBacklog}>
+                            <div class="kanban">
+                                <template for:each={section.columns} for:item="col">
+                                    <div key={col.stage} class="kanban__col"
+                                         data-stage={col.stage}
+                                         data-sprint-id={section.sprintId}
+                                         ondragover={handleDragOver}
+                                         ondragenter={handleDragEnter}
+                                         ondragleave={handleDragLeave}
+                                         ondrop={handleDrop}>
+                                        <div class="kanban__col-header">
+                                            <span class="col-name">{col.stage}</span>
+                                            <span class="col-count">{col.count}</span>
+                                        </div>
+                                        <div class="kanban__col-body">
+                                            <template for:each={col.items} for:item="item">
+                                                <c-work-item-card
+                                                    key={item.Id}
+                                                    work-item={item}
+                                                    onopen={handleOpenItem}>
+                                                </c-work-item-card>
+                                            </template>
+                                            <template if:true={col.empty}>
+                                                <p class="empty-col">—</p>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <!-- List layout for backlog -->
+                        <template if:true={section.isBacklog}>
+                            <div class="backlog-list"
+                                 data-stage="Not Started"
+                                 data-sprint-id={section.sprintId}
+                                 ondragover={handleDragOver}
+                                 ondragenter={handleDragEnter}
+                                 ondragleave={handleDragLeave}
+                                 ondrop={handleDrop}>
+                                <template for:each={section.listItems} for:item="item">
+                                    <c-work-item-card
+                                        key={item.Id}
+                                        work-item={item}
+                                        compact={section.isBacklog}
+                                        onopen={handleOpenItem}>
+                                    </c-work-item-card>
+                                </template>
+                                <template if:false={section.count}>
+                                    <p class="empty-col">Backlog is empty.</p>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
             </template>
 
         </template>

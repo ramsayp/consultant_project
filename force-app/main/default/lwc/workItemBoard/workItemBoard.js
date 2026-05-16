@@ -46,6 +46,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     @track createParent  = null;
     @track isLoading     = true;
     @track error         = null;
+    @track activeTab     = 'boards';
 
     workItems = [];
     sprints   = [];
@@ -71,6 +72,20 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
         this.isLoading = false;
         if (result.data)  { this.workItems = result.data; this.error = null; }
         else if (result.error) { this.error = result.error?.body?.message ?? 'Failed to load items.'; }
+    }
+
+    get isEpicsTab()  { return this.activeTab === 'epics'; }
+    get isBoardsTab() { return this.activeTab === 'boards'; }
+
+    get epicsTabClass() {
+        return 'board-tab' + (this.activeTab === 'epics' ? ' board-tab--active' : '');
+    }
+    get boardsTabClass() {
+        return 'board-tab' + (this.activeTab === 'boards' ? ' board-tab--active' : '');
+    }
+
+    handleTabClick(event) {
+        this.activeTab = event.currentTarget.dataset.tab;
     }
 
     get typeOptions() {

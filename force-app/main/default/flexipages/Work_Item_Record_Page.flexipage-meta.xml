@@ -110,7 +110,6 @@
                 <identifier>RecordCreatedByIdField</identifier>
             </fieldInstance>
         </itemInstances>
-
         <itemInstances>
             <fieldInstance>
                 <fieldInstanceProperties>
@@ -121,7 +120,6 @@
                 <identifier>RecordEstimate_cField</identifier>
             </fieldInstance>
         </itemInstances>
-
         <itemInstances>
             <fieldInstance>
                 <fieldInstanceProperties>
@@ -225,6 +223,34 @@
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Description__c</fieldItem>
+                <identifier>RecordDescription_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <name>Facet-desc-field</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-desc-field</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:column</componentName>
+                <identifier>flexipage_column_desc</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-desc-cols</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
                     <name>columns</name>
@@ -244,8 +270,26 @@
         </itemInstances>
         <itemInstances>
             <componentInstance>
-                <componentName>c:workItemChildren</componentName>
-                <identifier>c_workItemChildren</identifier>
+                <componentInstanceProperties>
+                    <name>columns</name>
+                    <value>Facet-desc-cols</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>horizontalAlignment</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>label</name>
+                    <value>Description</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:fieldSection</componentName>
+                <identifier>flexipage_fieldSection_desc</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentName>workItemComments</componentName>
+                <identifier>c_workItemComments</identifier>
             </componentInstance>
         </itemInstances>
         <mode>Replace</mode>
@@ -303,6 +347,12 @@
                 </componentInstanceProperties>
                 <componentName>flexipage:tabset</componentName>
                 <identifier>flexipage_tabset2</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentName>workItemChildren</componentName>
+                <identifier>c_workItemChildren</identifier>
             </componentInstance>
         </itemInstances>
         <mode>Replace</mode>

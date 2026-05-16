@@ -1,0 +1,47 @@
+<template>
+    <div class="comments-root">
+        <div class="comments-header">
+            <span class="comments-title">Comments</span>
+            <template if:true={hasComments}>
+                <span class="comments-count">{commentCount}</span>
+            </template>
+            <button class="add-btn" onclick={handleAdd}>+ Add</button>
+        </div>
+
+        <template if:true={showCreate}>
+            <div class="comment-compose">
+                <lightning-textarea
+                    label=""
+                    variant="label-hidden"
+                    placeholder="Add a comment..."
+                    value={draftBody}
+                    onchange={handleBodyChange}
+                    rows="3">
+                </lightning-textarea>
+                <div class="compose-actions">
+                    <lightning-button label="Cancel" onclick={handleCancel}></lightning-button>
+                    <lightning-button
+                        variant="brand"
+                        label="Save"
+                        onclick={handleSave}
+                        disabled={saveDisabled}>
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={isEmpty}>
+            <p class="no-comments">No comments yet.</p>
+        </template>
+
+        <template for:each={comments} for:item="comment">
+            <div key={comment.Id} class="comment-item">
+                <div class="comment-meta">
+                    <span class="comment-author">{comment.authorName}</span>
+                    <span class="comment-date">{comment.formattedDate}</span>
+                </div>
+                <div class="comment-body">{comment.body}</div>
+            </div>
+        </template>
+    </div>
+</template>
