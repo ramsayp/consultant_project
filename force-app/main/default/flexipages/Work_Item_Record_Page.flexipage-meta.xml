@@ -280,11 +280,11 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Work_Mode__c</fieldItem>
-                <identifier>RecordWork_Mode_cField</identifier>
+                <fieldItem>Record.Sequence__c</fieldItem>
+                <identifier>RecordSequence_cField</identifier>
             </fieldInstance>
         </itemInstances>
-        <name>Facet-eac5b9b4-1f2a-4755-b8dc-9a2261b05c55</name>
+        <name>Facet-faba35a3-87e2-4b87-8c27-e3f409e03570</name>
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
@@ -294,11 +294,11 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Sequence__c</fieldItem>
-                <identifier>RecordSequence_cField</identifier>
+                <fieldItem>Record.Work_Mode__c</fieldItem>
+                <identifier>RecordWork_Mode_cField</identifier>
             </fieldInstance>
         </itemInstances>
-        <name>Facet-faba35a3-87e2-4b87-8c27-e3f409e03570</name>
+        <name>Facet-eac5b9b4-1f2a-4755-b8dc-9a2261b05c55</name>
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
@@ -497,6 +497,10 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>active</name>
+                    <value>true</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>body</name>
                     <value>Facet-8d55a67c-8479-4b6d-9d27-1ac57801e163</value>
                 </componentInstanceProperties>
@@ -512,7 +516,7 @@
             <componentInstance>
                 <componentInstanceProperties>
                     <name>active</name>
-                    <value>true</value>
+                    <value>false</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>body</name>
