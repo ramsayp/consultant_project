@@ -156,7 +156,7 @@
     <externalSharingModel>Private</externalSharingModel>
     <label>Work Item</label>
     <nameField>
-        <label>Title</label>
+        <label>Summary</label>
         <type>Text</type>
     </nameField>
     <pluralLabel>Work Items</pluralLabel>
