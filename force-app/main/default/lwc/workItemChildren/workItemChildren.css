@@ -6,7 +6,7 @@
     background: #fff;
     border: 1px solid #dde1e8;
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .children-header {
