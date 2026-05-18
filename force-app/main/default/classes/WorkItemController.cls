@@ -39,7 +39,7 @@ public with sharing class WorkItemController {
         return new Map<String, Object>{ 'typeName' => w.RecordType.Name, 'sprintId' => w.Sprint__c };
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Work_Item__c> getChildren(Id parentId) {
         return [
             SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c,

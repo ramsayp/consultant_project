@@ -4,6 +4,15 @@
             <div class="children-header">
                 <span class="children-title">{sectionLabel}</span>
                 <span class="children-count">{children.length}</span>
+                <template if:true={showTypePicker}>
+                    <lightning-combobox
+                        value={createType}
+                        options={epicChildOptions}
+                        onchange={handleTypeChange}
+                        variant="label-hidden"
+                        class="type-picker">
+                    </lightning-combobox>
+                </template>
                 <button class="add-btn" onclick={handleAdd}>+ Add</button>
             </div>
 

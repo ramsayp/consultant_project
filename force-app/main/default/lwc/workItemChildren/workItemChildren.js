@@ -1,43 +1,69 @@
-import { LightningElement, api, wire } from 'lwc';
+import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { refreshApex } from '@salesforce/apex';
 import getWorkItemMeta from '@salesforce/apex/WorkItemController.getWorkItemMeta';
 import getChildren     from '@salesforce/apex/WorkItemController.getChildren';
+
+const CHILD_TYPE = {
+    'Initiative': 'Epic',
+    'Epic':       'Story',
+    'Story':      'Chapter',
+    'Task':       'Step'
+};
+
+const SECTION_LABEL = {
+    'Initiative': 'Epics',
+    'Epic':       'Work Items',
+    'Story':      'Chapters',
+    'Task':       'Steps'
+};
 
 export default class WorkItemChildren extends NavigationMixin(LightningElement) {
     @api recordId;
 
-    showCreate = false;
-    children   = [];
-    sprintId   = null;
-    typeName   = '';
-    _wiredChildren;
+    @track showCreate  = false;
+    @track createType  = 'Story';
+    @track children    = [];
+    @track typeName    = '';
+
+    sprintId = null;
 
     @wire(getWorkItemMeta, { recordId: '$recordId' })
-    wiredMeta({ data }) {
+    async wiredMeta({ data }) {
         if (data) {
-            this.typeName = data.typeName;
-            this.sprintId = data.sprintId || null;
+            this.typeName  = data.typeName;
+            this.sprintId  = data.sprintId || null;
+            this.createType = CHILD_TYPE[this.typeName] || 'Story';
+            await this.loadChildren();
         }
     }
 
-    @wire(getChildren, { parentId: '$recordId' })
-    wiredChildren(result) {
-        this._wiredChildren = result;
-        if (result.data) this.children = result.data;
+    async loadChildren() {
+        try {
+            this.children = await getChildren({ parentId: this.recordId });
+        } catch(e) { /* silent */ }
     }
 
-    get showApplet()  { return this.typeName === 'Story' || this.typeName === 'Task'; }
-    get childType()   { return this.typeName === 'Story' ? 'Chapter' : 'Step'; }
-    get sectionLabel(){ return this.typeName === 'Story' ? 'Chapters' : 'Subtasks'; }
-    get isEmpty()     { return this.children.length === 0; }
+    get showApplet()     { return !!CHILD_TYPE[this.typeName]; }
+    get childType()      { return this.createType; }
+    get sectionLabel()   { return SECTION_LABEL[this.typeName] || 'Children'; }
+    get isEmpty()        { return this.children.length === 0; }
+    get showTypePicker() { return this.typeName === 'Epic'; }
 
+    get epicChildOptions() {
+        return [
+            { label: 'Story', value: 'Story' },
+            { label: 'Task',  value: 'Task' },
+            { label: 'Bug',   value: 'Bug' }
+        ];
+    }
+
+    handleTypeChange(event) { this.createType = event.detail.value; }
     handleAdd()    { this.showCreate = true; }
     handleCancel() { this.showCreate = false; }
 
     async handleCreated() {
         this.showCreate = false;
-        await refreshApex(this._wiredChildren);
+        await this.loadChildren();
     }
 
     handleOpenChild(event) {
