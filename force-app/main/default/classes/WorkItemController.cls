@@ -50,7 +50,7 @@ public with sharing class WorkItemController {
         ];
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Work_Item__c> getEpics(Id initiativeId) {
         Id rtId = rtId('Epic');
         return [

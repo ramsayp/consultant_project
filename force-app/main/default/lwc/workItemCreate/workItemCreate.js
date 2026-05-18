@@ -4,7 +4,7 @@ import { createRecord } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import WORK_ITEM_OBJECT from '@salesforce/schema/Work_Item__c';
 import getActiveSprints from '@salesforce/apex/WorkItemController.getActiveSprints';
-import getEpics from '@salesforce/apex/WorkItemController.getEpics';
+import getEpics         from '@salesforce/apex/WorkItemController.getEpics';
 
 const WORK_MODE = {
     Initiative: null, Epic: null,
@@ -51,9 +51,6 @@ export default class WorkItemCreate extends LightningElement {
     @wire(getActiveSprints)
     wiredSprints({ data }) { if (data) this.sprints = data; }
 
-    @wire(getEpics, { initiativeId: null })
-    wiredEpics({ data }) { if (data) this.epics = data; }
-
     get showSprintPicker()    { return SPRINT_TYPES.has(this.type); }
     get showEstimate()        { return ESTIMATE_TYPES.has(this.type); }
     get showParentPicker()    { return PARENT_TYPES.has(this.type); }
@@ -61,10 +58,14 @@ export default class WorkItemCreate extends LightningElement {
     get showAcceptanceCriteria() { return AC_TYPES.has(this.type); }
     get createLabel()         { return `Create ${this.type}`; }
 
-    connectedCallback() {
+    async connectedCallback() {
         if (USER_STORY_TYPES.has(this.type)) {
             this.userStory = USER_STORY_TEMPLATE;
         }
+        // Fetch epics imperatively so newly created epics always appear
+        try {
+            this.epics = await getEpics({ initiativeId: null });
+        } catch(e) { /* epics optional */ }
     }
 
     get sprintOptions() {
