@@ -73,6 +73,13 @@
     min-width: 0;
 }
 
+.card__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
 .card__title {
     font-size: 0.8125rem;
     font-weight: 500;
@@ -80,7 +87,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: 0.25rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.card__priority-emoji {
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    line-height: 1.4;
 }
 
 .card__meta {

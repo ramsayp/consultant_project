@@ -24,7 +24,12 @@
         <div class={cardClass} data-id={workItem.Id} draggable="true" ondragstart={handleDragStart} onclick={handleOpen}>
             <div class={priorityBar}></div>
             <div class="card__body">
-                <div class="card__title">{workItem.Name}</div>
+                <div class="card__header">
+                    <div class="card__title">{workItem.Name}</div>
+                    <template if:true={priorityEmoji}>
+                        <span class="card__priority-emoji" title={workItem.Priority__c}>{priorityEmoji}</span>
+                    </template>
+                </div>
                 <div class="card__meta">
                     <template if:true={workItemType}>
                         <span class={typeBadgeClass}>{workItemType}</span>

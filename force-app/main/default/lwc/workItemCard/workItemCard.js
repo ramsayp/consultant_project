@@ -1,5 +1,14 @@
 import { LightningElement, api } from 'lwc';
 
+const PRIORITY_EMOJI = {
+    'Critical': '🔴',
+    'Higher':   '🟠',
+    'High':     '🟡',
+    'Medium':   '🟢',
+    'Low':      '🔵',
+    'Lowest':   '⚪'
+};
+
 export default class WorkItemCard extends LightningElement {
     @api workItem;
     @api compact = false;
@@ -35,6 +44,10 @@ export default class WorkItemCard extends LightningElement {
 
     get workItemType() {
         return this.workItem?.RecordType?.Name ?? '';
+    }
+
+    get priorityEmoji() {
+        return PRIORITY_EMOJI[this.workItem?.Priority__c] ?? '';
     }
 
     get typeBadgeClass() {

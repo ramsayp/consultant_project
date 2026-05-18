@@ -38,6 +38,8 @@ const STATUS_TO_STAGE = {
 
 const STAGE_OPTS = STAGES.map(s => ({ label: s, value: s }));
 
+const PRIORITY_ORDER = { 'Critical': 0, 'Higher': 1, 'High': 2, 'Medium': 3, 'Low': 4, 'Lowest': 5 };
+
 export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     @api projectId = null;
 
@@ -150,7 +152,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
             });
             const stageList = isBacklog ? ['Not Started'] : STAGES;
             const columns = stageList.map(stage => {
-                const colItems = items.filter(i => (STATUS_TO_STAGE[i.Status__c] || 'Not Started') === stage);
+                const colItems = this._prioritySort(items.filter(i => (STATUS_TO_STAGE[i.Status__c] || 'Not Started') === stage));
                 return { stage, items: colItems.map(i => this._slotted(i)), count: colItems.length, empty: colItems.length === 0 };
             });
             return {
@@ -161,7 +163,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
                 isBacklog,
                 count:      items.length,
                 columns,
-                listItems:  isBacklog ? items.map(i => this._slotted(i)) : []
+                listItems:  isBacklog ? this._prioritySort(items).map(i => this._slotted(i)) : []
             };
         });
     }
@@ -245,28 +247,51 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
                 await updateSprint({ workItemId: itemId, sprintId: toSprintId });
             }
 
-            // Compact sequences in source column when card moves out of it
+            // Re-sequence source column when card moves out of it
             if (fromStage !== newStage || fromSprintId !== toSprintId) {
-                const srcItems = this._colItems(fromStage, fromSprintId).filter(i => i.Id !== itemId);
+                const srcItems = this._prioritySort(
+                    this._colItems(fromStage, fromSprintId).filter(i => i.Id !== itemId)
+                );
                 if (srcItems.length > 0) {
                     await updateSequences({ workItemIds: srcItems.map(i => i.Id) });
                 }
             }
 
+            // Build destination column order: insert at drop position then stable-sort by priority
+            let destItems = this._prioritySort(
+                this._colItems(newStage, toSprintId).filter(i => i.Id !== itemId)
+            );
+            const draggedItem = sourceItem;
             if (targetCardId && targetCardId !== itemId) {
-                const colItems   = this._colItems(newStage, toSprintId);
-                const remaining  = colItems.filter(i => i.Id !== itemId);
-                const targetIdx  = remaining.findIndex(i => i.Id === targetCardId);
-                if (targetIdx >= 0) {
-                    remaining.splice(insertAfter ? targetIdx + 1 : targetIdx, 0, { Id: itemId });
-                    await updateSequences({ workItemIds: remaining.map(i => i.Id) });
-                }
+                const targetIdx = destItems.findIndex(i => i.Id === targetCardId);
+                destItems.splice(targetIdx >= 0 ? (insertAfter ? targetIdx + 1 : targetIdx) : destItems.length, 0, draggedItem);
+            } else {
+                destItems.push(draggedItem);
             }
+            // Stable sort: priority order, preserving insertion position within same priority
+            const finalOrder = destItems
+                .map((item, idx) => ({ item, idx }))
+                .sort((a, b) => {
+                    const pa = PRIORITY_ORDER[a.item.Priority__c] ?? 99;
+                    const pb = PRIORITY_ORDER[b.item.Priority__c] ?? 99;
+                    return pa !== pb ? pa - pb : a.idx - b.idx;
+                })
+                .map(({ item }) => item);
+            await updateSequences({ workItemIds: finalOrder.map(i => i.Id) });
 
             await this.loadItems();
         } catch (err) {
             this.toast('Update failed', err?.body?.message ?? err?.message, 'error');
         }
+    }
+
+    _prioritySort(items) {
+        return [...items].sort((a, b) => {
+            const pa = PRIORITY_ORDER[a.Priority__c] ?? 99;
+            const pb = PRIORITY_ORDER[b.Priority__c] ?? 99;
+            if (pa !== pb) return pa - pb;
+            return (a.Sequence__c ?? 99999) - (b.Sequence__c ?? 99999);
+        });
     }
 
     _colItems(stage, sprintId) {
