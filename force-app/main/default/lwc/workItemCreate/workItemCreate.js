@@ -110,17 +110,18 @@ export default class WorkItemCreate extends LightningElement {
 
         this.isCreating = true;
         const fields = {
-            Name:                   this.name.trim(),
-            RecordTypeId:           this.recordTypeId,
-            Status__c:              DEFAULT_STATUS[this.type],
-            Priority__c:            this.priority,
-            Description__c:         this.description || null,
-            User_Story__c:          this.userStory || null,
-            Acceptance_Criteria__c: this.acceptanceCriteria || null
+            Name:         this.name.trim(),
+            RecordTypeId: this.recordTypeId,
+            Status__c:    DEFAULT_STATUS[this.type],
+            Priority__c:  this.priority,
         };
 
-        if (WORK_MODE[this.type])  fields.Work_Mode__c        = WORK_MODE[this.type];
-        if (this.estimate != null) fields.Estimate__c         = Number(this.estimate);
+        // Only include optional fields when they have a value — LDS rejects explicit null for LTA fields
+        if (this.description)        fields.Description__c         = this.description;
+        if (this.userStory)          fields.User_Story__c          = this.userStory;
+        if (this.acceptanceCriteria) fields.Acceptance_Criteria__c = this.acceptanceCriteria;
+        if (WORK_MODE[this.type])    fields.Work_Mode__c           = WORK_MODE[this.type];
+        if (this.estimate != null)   fields.Estimate__c            = Number(this.estimate);
 
         // Epics belong to the Initiative; Stories/Tasks/Bugs belong to the selected Epic
         const parentId = this.selectedParentId || this.parentId
