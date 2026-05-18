@@ -16,7 +16,15 @@
             <default>false</default>
         </values>
         <values>
+            <fullName>Higher</fullName>
+            <default>false</default>
+        </values>
+        <values>
             <fullName>Low</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Lowest</fullName>
             <default>false</default>
         </values>
         <values>

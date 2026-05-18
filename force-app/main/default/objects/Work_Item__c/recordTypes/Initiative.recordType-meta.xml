@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Chapter</fullName>
+    <fullName>Initiative</fullName>
     <active>true</active>
     <compactLayoutAssignment>Custom_Work_Item_Compact_Layout</compactLayoutAssignment>
-    <description>Implementation slice of a Story.</description>
-    <label>Chapter</label>
+    <description>Top-level strategic container. Groups Epics into a coherent objective.</description>
+    <label>Initiative</label>
     <picklistValues>
         <picklist>Priority__c</picklist>
         <values>
@@ -35,19 +35,11 @@
     <picklistValues>
         <picklist>Status__c</picklist>
         <values>
-            <fullName>Blocked</fullName>
+            <fullName>Cancelled</fullName>
             <default>false</default>
         </values>
         <values>
-            <fullName>Code Review</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Documented</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Done</fullName>
+            <fullName>Completed</fullName>
             <default>false</default>
         </values>
         <values>
@@ -58,28 +50,20 @@
             <fullName>Not Started</fullName>
             <default>true</default>
         </values>
-        <values>
-            <fullName>Pipeline</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Released</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>To Do</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>UAT</fullName>
-            <default>false</default>
-        </values>
     </picklistValues>
     <picklistValues>
         <picklist>Work_Mode__c</picklist>
         <values>
+            <fullName>Continuous</fullName>
+            <default>false</default>
+        </values>
+        <values>
             <fullName>Iterative</fullName>
-            <default>true</default>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Reactive</fullName>
+            <default>false</default>
         </values>
     </picklistValues>
 </RecordType>

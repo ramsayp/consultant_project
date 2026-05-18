@@ -39,8 +39,39 @@
                 <div class="comment-meta">
                     <span class="comment-author">{comment.authorName}</span>
                     <span class="comment-date">{comment.formattedDate}</span>
+                    <template if:true={comment.isEdited}>
+                        <span class="comment-edited">(edited)</span>
+                    </template>
+                    <div class="comment-actions">
+                        <button class="action-btn" data-id={comment.Id} onclick={handleEdit}>Edit</button>
+                        <button class="action-btn action-btn--danger" data-id={comment.Id} onclick={handleDelete}>Delete</button>
+                    </div>
                 </div>
-                <div class="comment-body">{comment.body}</div>
+
+                <template if:false={comment.isEditing}>
+                    <div class="comment-body">{comment.body}</div>
+                </template>
+
+                <template if:true={comment.isEditing}>
+                    <div class="comment-edit-form">
+                        <lightning-textarea
+                            label=""
+                            variant="label-hidden"
+                            value={editDraft}
+                            onchange={handleEditBodyChange}
+                            rows="3">
+                        </lightning-textarea>
+                        <div class="compose-actions">
+                            <lightning-button label="Cancel" onclick={handleEditCancel}></lightning-button>
+                            <lightning-button
+                                variant="brand"
+                                label="Save"
+                                onclick={handleEditSave}
+                                disabled={editSaveDisabled}>
+                            </lightning-button>
+                        </div>
+                    </div>
+                </template>
             </div>
         </template>
     </div>

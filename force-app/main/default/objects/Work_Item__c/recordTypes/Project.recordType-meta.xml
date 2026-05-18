@@ -16,7 +16,15 @@
             <default>false</default>
         </values>
         <values>
+            <fullName>Higher</fullName>
+            <default>false</default>
+        </values>
+        <values>
             <fullName>Low</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Lowest</fullName>
             <default>false</default>
         </values>
         <values>
@@ -31,7 +39,7 @@
             <default>true</default>
         </values>
         <values>
-            <fullName>On Hold</fullName>
+            <fullName>Cancelled</fullName>
             <default>false</default>
         </values>
         <values>
@@ -39,7 +47,7 @@
             <default>false</default>
         </values>
         <values>
-            <fullName>Cancelled</fullName>
+            <fullName>On Hold</fullName>
             <default>false</default>
         </values>
     </picklistValues>

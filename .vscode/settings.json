@@ -5,5 +5,11 @@
     "**/.sf": true,
     "**/.sfdx": true
   },
-  "xml.preferences.showSchemaDocumentationType": "none"
+  "xml.preferences.showSchemaDocumentationType": "none",
+  "xml.fileAssociations": [
+    {
+      "pattern": "**/*.recordType-meta.xml",
+      "systemId": ".vscode/sf-recordtype.xsd"
+    }
+  ]
 }

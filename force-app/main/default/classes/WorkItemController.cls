@@ -234,7 +234,7 @@ public with sharing class WorkItemController {
     @AuraEnabled(cacheable=true)
     public static List<Comment__c> getComments(Id workItemId) {
         return [
-            SELECT Id, Body__c, CreatedDate, CreatedBy.Name
+            SELECT Id, Body__c, CreatedDate, LastModifiedDate, CreatedBy.Name
             FROM Comment__c
             WHERE Work_Item__c = :workItemId
             ORDER BY CreatedDate DESC
@@ -250,6 +250,16 @@ public with sharing class WorkItemController {
             Body__c      = body,
             RecordTypeId = rtId
         );
+    }
+
+    @AuraEnabled
+    public static void editComment(Id commentId, String body) {
+        update new Comment__c(Id = commentId, Body__c = body);
+    }
+
+    @AuraEnabled
+    public static void deleteComment(Id commentId) {
+        delete new Comment__c(Id = commentId);
     }
 
     @AuraEnabled

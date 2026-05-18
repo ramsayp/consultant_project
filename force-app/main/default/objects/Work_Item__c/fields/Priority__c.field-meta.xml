@@ -16,6 +16,11 @@
                 <label>Critical</label>
             </value>
             <value>
+                <fullName>Higher</fullName>
+                <default>false</default>
+                <label>Higher</label>
+            </value>
+            <value>
                 <fullName>High</fullName>
                 <default>false</default>
                 <label>High</label>
@@ -29,6 +34,11 @@
                 <fullName>Low</fullName>
                 <default>false</default>
                 <label>Low</label>
+            </value>
+            <value>
+                <fullName>Lowest</fullName>
+                <default>false</default>
+                <label>Lowest</label>
             </value>
         </valueSetDefinition>
     </valueSet>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Permissive local schema for Salesforce RecordType metadata files.
+  The schema published at http://soap.sforce.com/2006/04/metadata incorrectly
+  defines <picklistValues> as a simple type, causing false-positive
+  cvc-type.3.1.2 errors in VS Code. This local override defines RecordType
+  with open content so the XML extension validates well-formedness only.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://soap.sforce.com/2006/04/metadata"
+           xmlns:sf="http://soap.sforce.com/2006/04/metadata"
+           elementFormDefault="qualified">
+
+    <xs:complexType name="openContent" mixed="true">
+        <xs:sequence>
+            <xs:any minOccurs="0" maxOccurs="unbounded"
+                    namespace="##any" processContents="skip"/>
+        </xs:sequence>
+        <xs:anyAttribute namespace="##any" processContents="skip"/>
+    </xs:complexType>
+
+    <xs:element name="RecordType" type="sf:openContent"/>
+
+</xs:schema>

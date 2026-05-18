@@ -103,3 +103,42 @@
     white-space: pre-wrap;
     line-height: 1.5;
 }
+
+.comment-edited {
+    font-size: 0.7rem;
+    color: #a5adba;
+    font-style: italic;
+}
+
+.comment-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.4rem;
+}
+
+.action-btn {
+    font-size: 0.75rem;
+    background: none;
+    border: 1px solid #c9cdd4;
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    cursor: pointer;
+    color: #444;
+}
+
+.action-btn:hover {
+    background: #f3f4f6;
+}
+
+.action-btn--danger {
+    color: #c23934;
+    border-color: #c23934;
+}
+
+.action-btn--danger:hover {
+    background: #fdf3f2;
+}
+
+.comment-edit-form {
+    margin-top: 0.5rem;
+}
