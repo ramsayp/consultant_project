@@ -1,4 +1,4 @@
-import { LightningElement, track, wire, api } from 'lwc';
+import { LightningElement, track, wire, api } from 'lwc'; // wire kept for getActiveSprints
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import { NavigationMixin } from 'lightning/navigation';
@@ -53,7 +53,6 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
 
     workItems = [];
     sprints   = [];
-    _wiredResult;
     _wiredSprints;
 
     async connectedCallback() {
@@ -61,20 +60,25 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
             await ensureBacklogSprint();
             if (this._wiredSprints) await refreshApex(this._wiredSprints);
         } catch(e) { /* backlog sprint already exists */ }
+        await this.loadItems();
+    }
+
+    async loadItems() {
+        this.isLoading = true;
+        try {
+            this.workItems = await getBoardItems({ initiativeId: this.initiativeId });
+            this.error = null;
+        } catch(e) {
+            this.error = e?.body?.message ?? 'Failed to load items.';
+        } finally {
+            this.isLoading = false;
+        }
     }
 
     @wire(getActiveSprints)
     wiredSprints(result) {
         this._wiredSprints = result;
         if (result.data) this.sprints = result.data;
-    }
-
-    @wire(getBoardItems, { initiativeId: '$initiativeId' })
-    wiredItems(result) {
-        this._wiredResult = result;
-        this.isLoading = false;
-        if (result.data)  { this.workItems = result.data; this.error = null; }
-        else if (result.error) { this.error = result.error?.body?.message ?? 'Failed to load items.'; }
     }
 
     get isEpicsTab()  { return this.activeTab === 'epics'; }
@@ -180,7 +184,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     async handleItemCreated() {
         this.showCreate   = false;
         this.createParent = null;
-        await refreshApex(this._wiredResult);
+        await this.loadItems();
     }
 
     // ── Drag and drop ────────────────────────────────────────────────────────
@@ -259,7 +263,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
                 }
             }
 
-            await refreshApex(this._wiredResult);
+            await this.loadItems();
         } catch (err) {
             this.toast('Update failed', err?.body?.message ?? err?.message, 'error');
         }

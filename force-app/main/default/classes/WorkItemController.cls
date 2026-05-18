@@ -158,7 +158,7 @@ public with sharing class WorkItemController {
         return d.addDays(daysUntilMonday);
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Work_Item__c> getBoardItems(Id initiativeId) {
         List<Id> rtIds = new List<Id>();
         for (String rt : new List<String>{'Epic','Story','Task','Bug','Chapter'}) {
