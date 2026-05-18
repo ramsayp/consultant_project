@@ -252,6 +252,41 @@ public with sharing class WorkItemController {
         );
     }
 
+    @AuraEnabled
+    public static Map<String, Object> getParentContext(Id recordId) {
+        Work_Item__c w = [
+            SELECT RecordType.Name, Parent_Work_Item__c, Parent_Work_Item__r.Name
+            FROM Work_Item__c WHERE Id = :recordId
+        ];
+        return new Map<String, Object>{
+            'recordTypeName' => w.RecordType.Name,
+            'parentId'       => w.Parent_Work_Item__c,
+            'parentName'     => w.Parent_Work_Item__r?.Name
+        };
+    }
+
+    @AuraEnabled
+    public static List<Work_Item__c> getCandidateParents(String recordTypeName) {
+        Map<String, String> parentTypeMap = new Map<String, String>{
+            'Epic'    => 'Initiative',
+            'Story'   => 'Epic',
+            'Task'    => 'Epic',
+            'Bug'     => 'Epic',
+            'Chapter' => 'Story',
+            'Step'    => 'Chapter'
+        };
+        String parentType = parentTypeMap.get(recordTypeName);
+        if (parentType == null) return new List<Work_Item__c>();
+        Id rtId = rtId(parentType);
+        return [
+            SELECT Id, Name
+            FROM Work_Item__c
+            WHERE RecordTypeId = :rtId
+            ORDER BY Name ASC
+            LIMIT 200
+        ];
+    }
+
     private static Id rtId(String name) {
         return Schema.SObjectType.Work_Item__c
             .getRecordTypeInfosByName()

@@ -1,0 +1,43 @@
+<template>
+    <template if:true={hasParentType}>
+        <div class="ps-root">
+            <div class="ps-header">
+                <span class="ps-label">{parentTypeLabel}</span>
+                <template if:false={isEditing}>
+                    <button class="ps-edit-btn" onclick={handleEdit}>Change</button>
+                </template>
+            </div>
+
+            <template if:false={isEditing}>
+                <template if:true={parentId}>
+                    <button class="ps-parent-link" onclick={handleNavigate}>{parentName}</button>
+                </template>
+                <template if:false={parentId}>
+                    <span class="ps-empty">Not set</span>
+                </template>
+            </template>
+
+            <template if:true={isEditing}>
+                <lightning-combobox
+                    value={selectedParentId}
+                    options={parentOptions}
+                    onchange={handleChange}
+                    placeholder="Select...">
+                </lightning-combobox>
+                <div class="ps-actions">
+                    <lightning-button
+                        label="Cancel"
+                        onclick={handleCancel}
+                        disabled={isSaving}>
+                    </lightning-button>
+                    <lightning-button
+                        variant="brand"
+                        label="Save"
+                        onclick={handleSave}
+                        disabled={isSaving}>
+                    </lightning-button>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

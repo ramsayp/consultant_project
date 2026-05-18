@@ -100,16 +100,7 @@
                 <identifier>RecordEstimate_cField</identifier>
             </fieldInstance>
         </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Parent_Work_Item__c</fieldItem>
-                <identifier>RecordParent_Work_Item_cField</identifier>
-            </fieldInstance>
-        </itemInstances>
+
         <itemInstances>
             <fieldInstance>
                 <fieldInstanceProperties>
