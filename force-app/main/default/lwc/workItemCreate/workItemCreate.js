@@ -7,13 +7,13 @@ import getActiveSprints from '@salesforce/apex/WorkItemController.getActiveSprin
 import getEpics         from '@salesforce/apex/WorkItemController.getEpics';
 
 const WORK_MODE = {
-    Initiative: null, Epic: null,
+    Project: null, Epic: null,
     Story: 'Iterative', Chapter: 'Iterative',
     Task: 'Continuous', Bug: 'Reactive', Step: null
 };
 
 const DEFAULT_STATUS = {
-    Initiative: 'Not Started', Epic: 'Not Started',
+    Project: 'Active', Epic: 'Not Started',
     Story: 'Not Started', Task: 'Not Started', Bug: 'Not Started',
     Chapter: 'Not Started', Step: 'Not Started'
 };
@@ -30,7 +30,7 @@ export default class WorkItemCreate extends LightningElement {
     @api type         = 'Story';
     @api parentId;
     @api sprintId;
-    @api initiativeId;
+    @api projectId;
 
     @track name               = '';
     @track description        = '';
@@ -57,6 +57,7 @@ export default class WorkItemCreate extends LightningElement {
     get showUserStory()       { return USER_STORY_TYPES.has(this.type); }
     get showAcceptanceCriteria() { return AC_TYPES.has(this.type); }
     get createLabel()         { return `Create ${this.type}`; }
+    get isCreateDisabled()    { return this.isCreating || !this.recordTypeId; }
 
     async connectedCallback() {
         if (USER_STORY_TYPES.has(this.type)) {
@@ -64,7 +65,7 @@ export default class WorkItemCreate extends LightningElement {
         }
         // Fetch epics imperatively so newly created epics always appear
         try {
-            this.epics = await getEpics({ initiativeId: null });
+            this.epics = await getEpics({ projectId: null });
         } catch(e) { /* epics optional */ }
     }
 
@@ -77,8 +78,8 @@ export default class WorkItemCreate extends LightningElement {
     get parentOptions() {
         const opts = [{ label: '— No Parent —', value: '' }];
         this.epics.forEach(e => {
-            const initiative = e.Parent_Work_Item__r?.Name;
-            const label = initiative ? `${e.Name} (${initiative})` : e.Name;
+            const project = e.Parent_Work_Item__r?.Name;
+            const label = project ? `${e.Name} (${project})` : e.Name;
             opts.push({ label, value: e.Id });
         });
         return opts;
@@ -124,9 +125,8 @@ export default class WorkItemCreate extends LightningElement {
         if (WORK_MODE[this.type])    fields.Work_Mode__c           = WORK_MODE[this.type];
         if (this.estimate != null)   fields.Estimate__c            = Number(this.estimate);
 
-        // Epics belong to the Initiative; Stories/Tasks/Bugs belong to the selected Epic
         const parentId = this.selectedParentId || this.parentId
-            || (this.type === 'Epic' ? this.initiativeId : null)
+            || (this.type === 'Epic' ? this.projectId : null)
             || null;
         if (parentId) fields.Parent_Work_Item__c = parentId;
 

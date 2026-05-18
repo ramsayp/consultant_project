@@ -6,7 +6,7 @@ import getParentContext     from '@salesforce/apex/WorkItemController.getParentC
 import getCandidateParents  from '@salesforce/apex/WorkItemController.getCandidateParents';
 
 const PARENT_LABEL = {
-    'Epic':    'Initiative',
+    'Epic':    'Project',
     'Story':   'Epic',
     'Task':    'Epic',
     'Bug':     'Epic',

@@ -4,42 +4,42 @@
         <!-- ── Top nav (hidden in board sub-view) ── -->
         <template if:false={isBoardView}>
             <nav class="wm-nav">
-                <button class={initiativesTabClass} onclick={showInitiatives}>Initiatives</button>
+                <button class={projectsTabClass} onclick={showProjects}>Projects</button>
                 <button class={sprintsTabClass} onclick={showSprints}>Sprints</button>
             </nav>
         </template>
 
-        <!-- ── Initiatives list ── -->
-        <template if:true={isInitiativesView}>
-            <div class="wm-initiatives slds-p-around_medium">
+        <!-- ── Projects list ── -->
+        <template if:true={isProjectsView}>
+            <div class="wm-projects slds-p-around_medium">
                 <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_medium">
-                    <h2 class="slds-col slds-text-heading_small wm-section-title">Initiatives</h2>
+                    <h2 class="slds-col slds-text-heading_small wm-section-title">Projects</h2>
                     <div class="slds-col slds-shrink">
                         <lightning-button
                             variant="brand"
-                            label="+ New Initiative"
-                            onclick={handleNewInitiative}>
+                            label="+ New Project"
+                            onclick={handleNewProject}>
                         </lightning-button>
                     </div>
                 </div>
 
-                <template if:false={hasInitiatives}>
+                <template if:false={hasProjects}>
                     <div class="wm-empty">
-                        <p>No initiatives yet — create one to get started.</p>
+                        <p>No projects yet — create one to get started.</p>
                     </div>
                 </template>
 
                 <div class="wm-grid">
-                    <template for:each={initiatives} for:item="init">
-                        <div key={init.Id}
+                    <template for:each={projects} for:item="proj">
+                        <div key={proj.Id}
                              class="init-card"
-                             onclick={handleInitiativeSelect}
-                             data-id={init.Id}
-                             data-name={init.Name}>
+                             onclick={handleProjectSelect}
+                             data-id={proj.Id}
+                             data-name={proj.Name}>
                             <div class="init-card__bar"></div>
                             <div class="init-card__body">
-                                <div class="init-card__name">{init.Name}</div>
-                                <div class="init-card__status">{init.Status__c}</div>
+                                <div class="init-card__name">{proj.Name}</div>
+                                <div class="init-card__status">{proj.Status__c}</div>
                             </div>
                             <lightning-icon
                                 icon-name="utility:chevronright"
@@ -106,17 +106,17 @@
                     <lightning-icon
                         icon-name="utility:chevronleft"
                         size="x-small"
-                        alternative-text="Back to Initiatives">
+                        alternative-text="Back to Projects">
                     </lightning-icon>
-                    <span class="slds-m-left_x-small crumb-parent">Initiatives</span>
+                    <span class="slds-m-left_x-small crumb-parent">Projects</span>
                 </button>
                 <span class="crumb-sep">/</span>
-                <span class="crumb-current">{selectedInitiative.Name}</span>
+                <span class="crumb-current">{selectedProject.Name}</span>
             </div>
-            <c-work-item-board initiative-id={selectedInitiativeId}></c-work-item-board>
+            <c-work-item-board project-id={selectedProjectId}></c-work-item-board>
         </template>
 
-        <!-- ── New Initiative modal ── -->
+        <!-- ── New Project modal ── -->
         <template if:true={showCreate}>
             <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
                 <div class="slds-modal__container">
@@ -127,8 +127,8 @@
                     </button>
                     <div class="slds-modal__content slds-p-around_none">
                         <c-work-item-create
-                            type="Initiative"
-                            oncreated={handleInitiativeCreated}
+                            type="Project"
+                            oncreated={handleProjectCreated}
                             oncancel={handleCreateCancel}>
                         </c-work-item-create>
                     </div>

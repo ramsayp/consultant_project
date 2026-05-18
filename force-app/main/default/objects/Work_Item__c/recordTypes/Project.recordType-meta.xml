@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Initiative</fullName>
+    <fullName>Project</fullName>
     <active>true</active>
     <compactLayoutAssignment>Custom_Work_Item_Compact_Layout</compactLayoutAssignment>
     <description>Top-level strategic container. Groups Epics into a coherent objective.</description>
-    <label>Initiative</label>
+    <label>Project</label>
     <picklistValues>
         <picklist>Priority__c</picklist>
         <values>
@@ -27,7 +27,11 @@
     <picklistValues>
         <picklist>Status__c</picklist>
         <values>
-            <fullName>Cancelled</fullName>
+            <fullName>Active</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>On Hold</fullName>
             <default>false</default>
         </values>
         <values>
@@ -35,12 +39,8 @@
             <default>false</default>
         </values>
         <values>
-            <fullName>In Progress</fullName>
+            <fullName>Cancelled</fullName>
             <default>false</default>
-        </values>
-        <values>
-            <fullName>Not Started</fullName>
-            <default>true</default>
         </values>
     </picklistValues>
     <picklistValues>

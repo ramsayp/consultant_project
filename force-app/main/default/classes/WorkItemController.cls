@@ -1,7 +1,7 @@
 public with sharing class WorkItemController {
 
     static final Map<String, List<String>> STATUS_COLUMNS = new Map<String, List<String>>{
-        'Initiative' => new List<String>{'Draft', 'Active', 'Completed', 'Cancelled'},
+        'Project'    => new List<String>{'Active', 'On Hold', 'Completed', 'Cancelled'},
         'Epic'       => new List<String>{'Draft', 'Active', 'In Progress', 'Completed', 'Cancelled'},
         'Story'      => new List<String>{'Backlog', 'Ready', 'In Progress', 'In Review', 'Done'},
         'Task'       => new List<String>{'Backlog', 'In Progress', 'Blocked', 'Done'},
@@ -11,7 +11,7 @@ public with sharing class WorkItemController {
     };
 
     @AuraEnabled(cacheable=true)
-    public static List<Work_Item__c> getWorkItems(String recordTypeName, Id sprintId, Id initiativeId) {
+    public static List<Work_Item__c> getWorkItems(String recordTypeName, Id sprintId, Id projectId) {
         Id rtId = rtId(recordTypeName);
         String q = 'SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c, '
                  + 'Work_Mode__c, Assignee__c, Assignee__r.Name, Description__c, '
@@ -22,11 +22,11 @@ public with sharing class WorkItemController {
         if (sprintId != null) {
             q += ' AND Sprint__c = :sprintId';
         }
-        if (initiativeId != null) {
+        if (projectId != null) {
             if (recordTypeName == 'Epic') {
-                q += ' AND Parent_Work_Item__c = :initiativeId';
-            } else if (recordTypeName != 'Initiative') {
-                q += ' AND Parent_Work_Item__c IN (SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :initiativeId)';
+                q += ' AND Parent_Work_Item__c = :projectId';
+            } else if (recordTypeName != 'Project') {
+                q += ' AND Parent_Work_Item__c IN (SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :projectId)';
             }
         }
         q += ' ORDER BY Sequence__c NULLS LAST, CreatedDate ASC';
@@ -51,7 +51,7 @@ public with sharing class WorkItemController {
     }
 
     @AuraEnabled
-    public static List<Work_Item__c> getEpics(Id initiativeId) {
+    public static List<Work_Item__c> getEpics(Id projectId) {
         Id rtId = rtId('Epic');
         return [
             SELECT Id, Name, Parent_Work_Item__c, Parent_Work_Item__r.Name
@@ -159,7 +159,7 @@ public with sharing class WorkItemController {
     }
 
     @AuraEnabled
-    public static List<Work_Item__c> getBoardItems(Id initiativeId) {
+    public static List<Work_Item__c> getBoardItems(Id projectId) {
         List<Id> rtIds = new List<Id>();
         for (String rt : new List<String>{'Epic','Story','Task','Bug','Chapter'}) {
             rtIds.add(rtId(rt));
@@ -173,17 +173,17 @@ public with sharing class WorkItemController {
             + 'RecordType.Name, RecordTypeId '
             + 'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
 
-        if (initiativeId == null) {
+        if (projectId == null) {
             return Database.query(selectClause + ' ORDER BY Sprint__r.Sequence__c NULLS LAST, Sequence__c NULLS LAST, CreatedDate ASC');
         }
 
-        // Walk three levels: Initiative → Epic → Story/Task/Bug → Chapter
+        // Walk three levels: Project → Epic → Story/Task/Bug → Chapter
         // SOQL can't nest subqueries that deep, so collect valid parent IDs in two passes.
-        Set<Id> validParents = new Set<Id>{ initiativeId };
+        Set<Id> validParents = new Set<Id>{ projectId };
 
-        // Level 1: Epics that belong to this initiative
+        // Level 1: Epics that belong to this project
         Set<Id> epicIds = new Set<Id>();
-        for (Work_Item__c w : [SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :initiativeId]) {
+        for (Work_Item__c w : [SELECT Id FROM Work_Item__c WHERE Parent_Work_Item__c = :projectId]) {
             epicIds.add(w.Id);
         }
         validParents.addAll(epicIds);
@@ -268,7 +268,7 @@ public with sharing class WorkItemController {
     @AuraEnabled
     public static List<Work_Item__c> getCandidateParents(String recordTypeName) {
         Map<String, String> parentTypeMap = new Map<String, String>{
-            'Epic'    => 'Initiative',
+            'Epic'    => 'Project',
             'Story'   => 'Epic',
             'Task'    => 'Epic',
             'Bug'     => 'Epic',

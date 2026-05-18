@@ -4,18 +4,24 @@ import getWorkItemMeta from '@salesforce/apex/WorkItemController.getWorkItemMeta
 import getChildren     from '@salesforce/apex/WorkItemController.getChildren';
 
 const CHILD_TYPE = {
-    'Initiative': 'Epic',
+    'Project': 'Epic',
     'Epic':       'Story',
     'Story':      'Chapter',
     'Task':       'Step'
 };
 
 const SECTION_LABEL = {
-    'Initiative': 'Epics',
+    'Project': 'Epics',
     'Epic':       'Work Items',
     'Story':      'Chapters',
     'Task':       'Steps'
 };
+
+const EPIC_GROUPS = [
+    { label: 'Stories', type: 'Story' },
+    { label: 'Tasks',   type: 'Task' },
+    { label: 'Bugs',    type: 'Bug' }
+];
 
 export default class WorkItemChildren extends NavigationMixin(LightningElement) {
     @api recordId;
@@ -43,22 +49,25 @@ export default class WorkItemChildren extends NavigationMixin(LightningElement) 
         } catch(e) { /* silent */ }
     }
 
-    get showApplet()     { return !!CHILD_TYPE[this.typeName]; }
-    get childType()      { return this.createType; }
-    get sectionLabel()   { return SECTION_LABEL[this.typeName] || 'Children'; }
-    get isEmpty()        { return this.children.length === 0; }
-    get showTypePicker() { return this.typeName === 'Epic'; }
+    get showApplet()      { return !!CHILD_TYPE[this.typeName]; }
+    get childType()       { return this.createType; }
+    get sectionLabel()    { return SECTION_LABEL[this.typeName] || 'Children'; }
+    get isEmpty()         { return this.children.length === 0; }
+    get isEpic()          { return this.typeName === 'Epic'; }
 
-    get epicChildOptions() {
-        return [
-            { label: 'Story', value: 'Story' },
-            { label: 'Task',  value: 'Task' },
-            { label: 'Bug',   value: 'Bug' }
-        ];
+    get epicChildGroups() {
+        return EPIC_GROUPS.map(g => ({
+            ...g,
+            items:   this.children.filter(c => c.RecordType.Name === g.type),
+            isEmpty: this.children.filter(c => c.RecordType.Name === g.type).length === 0
+        }));
     }
 
-    handleTypeChange(event) { this.createType = event.detail.value; }
     handleAdd()    { this.showCreate = true; }
+    handleAddType(event) {
+        this.createType = event.currentTarget.dataset.type;
+        this.showCreate = true;
+    }
     handleCancel() { this.showCreate = false; }
 
     async handleCreated() {

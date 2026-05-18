@@ -106,7 +106,7 @@
     </recordTypeVisibilities>
     <recordTypeVisibilities>
         <default>false</default>
-        <recordType>Work_Item__c.Initiative</recordType>
+        <recordType>Work_Item__c.Project</recordType>
         <visible>false</visible>
     </recordTypeVisibilities>
     <recordTypeVisibilities>

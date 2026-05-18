@@ -39,7 +39,7 @@ const STATUS_TO_STAGE = {
 const STAGE_OPTS = STAGES.map(s => ({ label: s, value: s }));
 
 export default class WorkItemBoard extends NavigationMixin(LightningElement) {
-    @api initiativeId = null;
+    @api projectId = null;
 
     @track showCreate    = false;
     @track createType    = 'Story';
@@ -66,7 +66,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     async loadItems() {
         this.isLoading = true;
         try {
-            this.workItems = await getBoardItems({ initiativeId: this.initiativeId });
+            this.workItems = await getBoardItems({ projectId: this.projectId });
             this.error = null;
         } catch(e) {
             this.error = e?.body?.message ?? 'Failed to load items.';

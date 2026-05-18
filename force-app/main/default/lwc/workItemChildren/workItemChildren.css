@@ -100,3 +100,27 @@
     font-size: 0.8125rem;
     color: #a5adba;
 }
+
+.child-group {
+    border-top: 1px solid #f3f4f7;
+}
+
+.child-group:first-child {
+    border-top: none;
+}
+
+.child-group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.875rem;
+    background: #f8f9fb;
+}
+
+.child-group-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #5e6c84;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}

@@ -149,7 +149,7 @@
     <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>Custom_Work_Item_Compact_Layout</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
-    <description>Unified work item differentiated by record type: Initiative, Epic, Story, Task, Bug, Chapter, Step.</description>
+    <description>Unified work item differentiated by record type: Project, Epic, Story, Task, Bug, Chapter, Step.</description>
     <enableActivities>true</enableActivities>
     <enableBulkApi>true</enableBulkApi>
     <enableFeeds>false</enableFeeds>

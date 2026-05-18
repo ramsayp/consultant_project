@@ -7,20 +7,20 @@ import generateSprints  from '@salesforce/apex/WorkItemController.generateSprint
 import closeSprint      from '@salesforce/apex/WorkItemController.closeSprint';
 
 export default class WorkManager extends LightningElement {
-    @track view               = 'initiatives';
-    @track selectedInitiative = null;
-    @track showCreate         = false;
-    @track isGenerating       = false;
+    @track view            = 'projects';
+    @track selectedProject = null;
+    @track showCreate      = false;
+    @track isGenerating    = false;
 
-    initiatives  = [];
+    projects     = [];
     allSprints   = [];
-    _wiredInitiatives;
+    _wiredProjects;
     _wiredSprints;
 
-    @wire(getWorkItems, { recordTypeName: 'Initiative', sprintId: null, initiativeId: null })
-    wiredInitiatives(result) {
-        this._wiredInitiatives = result;
-        if (result.data) this.initiatives = result.data;
+    @wire(getWorkItems, { recordTypeName: 'Project', sprintId: null, projectId: null })
+    wiredProjects(result) {
+        this._wiredProjects = result;
+        if (result.data) this.projects = result.data;
     }
 
     @wire(getAllSprints)
@@ -29,15 +29,15 @@ export default class WorkManager extends LightningElement {
         if (result.data) this.allSprints = result.data;
     }
 
-    get isInitiativesView()    { return this.view === 'initiatives'; }
-    get isSprintsView()        { return this.view === 'sprints'; }
-    get isBoardView()          { return this.view === 'board'; }
-    get hasInitiatives()       { return this.initiatives.length > 0; }
-    get hasSprints()           { return this.allSprints.length > 0; }
-    get selectedInitiativeId() { return this.selectedInitiative?.Id ?? null; }
+    get isProjectsView()   { return this.view === 'projects'; }
+    get isSprintsView()    { return this.view === 'sprints'; }
+    get isBoardView()      { return this.view === 'board'; }
+    get hasProjects()      { return this.projects.length > 0; }
+    get hasSprints()       { return this.allSprints.length > 0; }
+    get selectedProjectId() { return this.selectedProject?.Id ?? null; }
 
-    get initiativesTabClass() {
-        return 'wm-nav__tab' + (this.view === 'initiatives' ? ' wm-nav__tab--active' : '');
+    get projectsTabClass() {
+        return 'wm-nav__tab' + (this.view === 'projects' ? ' wm-nav__tab--active' : '');
     }
     get sprintsTabClass() {
         return 'wm-nav__tab' + (this.view === 'sprints' ? ' wm-nav__tab--active' : '');
@@ -56,25 +56,25 @@ export default class WorkManager extends LightningElement {
         }));
     }
 
-    showInitiatives()  { this.view = 'initiatives'; }
-    showSprints()      { this.view = 'sprints'; }
+    showProjects()  { this.view = 'projects'; }
+    showSprints()   { this.view = 'sprints'; }
 
-    handleNewInitiative()      { this.showCreate = true; }
-    handleCreateCancel()       { this.showCreate = false; }
-    handleInitiativeSelect(event) {
+    handleNewProject()   { this.showCreate = true; }
+    handleCreateCancel() { this.showCreate = false; }
+    handleProjectSelect(event) {
         const { id, name } = event.currentTarget.dataset;
-        this.selectedInitiative = { Id: id, Name: name };
+        this.selectedProject = { Id: id, Name: name };
         this.view = 'board';
     }
 
     handleBack() {
-        this.view = 'initiatives';
-        this.selectedInitiative = null;
+        this.view = 'projects';
+        this.selectedProject = null;
     }
 
-    async handleInitiativeCreated() {
+    async handleProjectCreated() {
         this.showCreate = false;
-        await refreshApex(this._wiredInitiatives);
+        await refreshApex(this._wiredProjects);
     }
 
     async handleGenerateSprints() {
