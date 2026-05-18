@@ -3,6 +3,7 @@
     <fullName>Acceptance_Criteria__c</fullName>
     <label>Acceptance Criteria</label>
     <length>32768</length>
+    <trackTrending>false</trackTrending>
     <type>LongTextArea</type>
     <visibleLines>4</visibleLines>
 </CustomField>

@@ -3,7 +3,7 @@
     <fullName>Estimate__c</fullName>
     <description>Story point estimate representing the relative complexity and effort required to complete this item.</description>
     <externalId>false</externalId>
-    <inlineHelpText>Enter a point value (e.g. 1, 2, 3, 5, 8) using your team's scale. Higher numbers mean more complexity or uncertainty.</inlineHelpText>
+    <inlineHelpText>Enter a point value (e.g. 1, 2, 3, 5, 8) using your team&apos;s scale. Higher numbers mean more complexity or uncertainty.</inlineHelpText>
     <label>Estimate (Points)</label>
     <precision>4</precision>
     <required>false</required>

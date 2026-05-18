@@ -3,6 +3,7 @@
     <fullName>User_Story__c</fullName>
     <label>User Story</label>
     <length>32768</length>
+    <trackTrending>false</trackTrending>
     <type>LongTextArea</type>
     <visibleLines>4</visibleLines>
 </CustomField>
