@@ -12,3 +12,6 @@ package.xml
 **/lwc/**/__tests__/**
 
 node_modules/
+
+# Standard Salesforce utility bars — not part of this project
+**/*_UtilityBar.flexipage-meta.xml
