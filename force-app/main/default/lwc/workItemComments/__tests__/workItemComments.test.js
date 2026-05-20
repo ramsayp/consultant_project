@@ -42,9 +42,15 @@ function getBrandBtnIn(container) {
 }
 function getCancelBtnIn(container) {
   return [...container.querySelectorAll("lightning-button")].find(
-    (b) => !b.variant
+    (b) => b.label === "Cancel"
   );
 }
+
+const flushAllPromises = () =>
+  Promise.resolve()
+    .then(() => Promise.resolve())
+    .then(() => Promise.resolve())
+    .then(() => Promise.resolve());
 
 // ── Test data ───────────────────────────────────────────────────────────────
 const NOW = "2025-01-01T10:00:00.000Z";
@@ -164,10 +170,7 @@ describe("add comment", () => {
     ).dispatchEvent(
       new CustomEvent("click", { bubbles: true, composed: true })
     );
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushAllPromises();
 
     expect(addComment).toHaveBeenCalledWith({
       workItemId: "wi001",
@@ -220,10 +223,7 @@ describe("edit comment", () => {
     ).dispatchEvent(
       new CustomEvent("click", { bubbles: true, composed: true })
     );
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushAllPromises();
 
     expect(editComment).toHaveBeenCalledWith({
       commentId: COMMENTS[0].Id,
@@ -262,10 +262,7 @@ describe("delete comment", () => {
     el.shadowRoot
       .querySelector(".action-btn--danger")
       .dispatchEvent(new CustomEvent("click"));
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushAllPromises();
 
     expect(deleteComment).toHaveBeenCalledWith({ commentId: COMMENTS[0].Id });
   });
@@ -279,8 +276,7 @@ describe("delete comment", () => {
     el.shadowRoot
       .querySelector(".action-btn--danger")
       .dispatchEvent(new CustomEvent("click"));
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushAllPromises();
 
     expect(deleteComment).not.toHaveBeenCalled();
   });

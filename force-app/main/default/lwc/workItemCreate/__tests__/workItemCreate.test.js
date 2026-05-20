@@ -3,8 +3,6 @@ import WorkItemCreate from "c/workItemCreate";
 import { getObjectInfo } from "lightning/uiObjectInfoApi";
 
 // ── Apex wire mocks ─────────────────────────────────────────────────────────
-const mockGetEpics = jest.fn().mockResolvedValue([]);
-
 jest.mock("@salesforce/apex/WorkItemController.getActiveSprints", () => {
   const {
     createApexTestWireAdapter
@@ -13,7 +11,7 @@ jest.mock("@salesforce/apex/WorkItemController.getActiveSprints", () => {
   return { default: adapter, __esModule: true };
 });
 jest.mock("@salesforce/apex/WorkItemController.getEpics", () => ({
-  default: mockGetEpics,
+  default: jest.fn().mockResolvedValue([]),
   __esModule: true
 }));
 
@@ -29,8 +27,16 @@ function getBrandBtn(root) {
   );
 }
 function getCancelBtn(root) {
-  return [...root.querySelectorAll("lightning-button")].find((b) => !b.variant);
+  return [...root.querySelectorAll("lightning-button")].find(
+    (b) => b.label === "Cancel"
+  );
 }
+
+const flushAllPromises = () =>
+  Promise.resolve()
+    .then(() => Promise.resolve())
+    .then(() => Promise.resolve())
+    .then(() => Promise.resolve());
 
 const MOCK_RT_ID = "rt001AAA";
 const MOCK_OBJ_INFO = {
@@ -147,15 +153,15 @@ describe("handleCreate", () => {
     el.addEventListener("created", createdHandler);
 
     getBrandBtn(el.shadowRoot).dispatchEvent(new CustomEvent("click"));
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushAllPromises();
 
     expect(createRecord).toHaveBeenCalledWith(
       expect.objectContaining({
         fields: expect.objectContaining({
           Name: "My Story",
           RecordTypeId: MOCK_RT_ID,
-          Status__c: "Not Started"
+          Status__c: "Not Started",
+          Priority__c: "Medium"
         })
       })
     );

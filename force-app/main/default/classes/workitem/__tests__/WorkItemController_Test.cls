@@ -140,7 +140,7 @@ private class WorkItemController_Test {
   @isTest
   static void testGetWorkItemMeta() {
     Work_Item__c story = [
-      SELECT Id
+      SELECT Id, Sprint__c
       FROM Work_Item__c
       WHERE Name = 'Test Story'
       LIMIT 1
@@ -149,7 +149,7 @@ private class WorkItemController_Test {
     Map<String, Object> meta = WorkItemController.getWorkItemMeta(story.Id);
     Test.stopTest();
     System.assertEquals('Story', meta.get('typeName'));
-    System.assertNotEquals(null, meta.get('sprintId'));
+    System.assertEquals(story.Sprint__c, meta.get('sprintId'));
   }
 
   // ── getChildren ───────────────────────────────────────────────────────────
@@ -186,7 +186,8 @@ private class WorkItemController_Test {
     Test.startTest();
     List<Sprint__c> sprints = WorkItemController.getActiveSprints();
     Test.stopTest();
-    System.assert(!sprints.isEmpty());
+    System.assertEquals(2, sprints.size());
+    System.assertEquals('Sprint 1', sprints[0].Name);
   }
 
   @isTest
@@ -194,7 +195,7 @@ private class WorkItemController_Test {
     Test.startTest();
     List<Sprint__c> sprints = WorkItemController.getAllSprints();
     Test.stopTest();
-    System.assert(!sprints.isEmpty());
+    System.assertEquals(2, sprints.size());
   }
 
   // ── ensureBacklogSprint ───────────────────────────────────────────────────
@@ -251,7 +252,7 @@ private class WorkItemController_Test {
     Test.startTest();
     List<Work_Item__c> items = WorkItemController.getBoardItems(project.Id);
     Test.stopTest();
-    System.assert(!items.isEmpty());
+    System.assertEquals(4, items.size());
     for (Work_Item__c w : items) {
       System.assertNotEquals(
         'Project',
@@ -266,7 +267,7 @@ private class WorkItemController_Test {
     Test.startTest();
     List<Work_Item__c> items = WorkItemController.getBoardItems(null);
     Test.stopTest();
-    System.assert(!items.isEmpty());
+    System.assertEquals(4, items.size());
   }
 
   // ── updateStatus ──────────────────────────────────────────────────────────
@@ -399,6 +400,12 @@ private class WorkItemController_Test {
 
   @isTest
   static void testGetParentContext() {
+    Work_Item__c epic = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Epic'
+      LIMIT 1
+    ];
     Work_Item__c story = [
       SELECT Id
       FROM Work_Item__c
@@ -409,7 +416,7 @@ private class WorkItemController_Test {
     Map<String, Object> ctx = WorkItemController.getParentContext(story.Id);
     Test.stopTest();
     System.assertEquals('Story', ctx.get('recordTypeName'));
-    System.assertNotEquals(null, ctx.get('parentId'));
+    System.assertEquals(epic.Id, ctx.get('parentId'));
     System.assertEquals('Test Epic', ctx.get('parentName'));
   }
 
