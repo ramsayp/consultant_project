@@ -1,4 +1,4 @@
-# Work Management App — Overview
+# Project Management App — Overview
 
 ## What it does
 

@@ -1,4 +1,4 @@
-# Technical Documentation — Consultant Project Work Management App
+# Technical Documentation — Consultant Project Management App
 
 ## Overview
 
@@ -12,19 +12,19 @@ A Salesforce-native project management tool built on Lightning Web Components (L
 
 The central object. A self-referential hierarchy connects all item types through a single lookup field.
 
-| Field | Type | Purpose |
-|---|---|---|
-| `Name` | Text | Title of the work item |
-| `RecordTypeId` | Record Type | Determines item type (see below) |
-| `Status__c` | Picklist | Workflow stage |
-| `Priority__c` | Picklist | Critical / High / Medium / Low |
-| `Estimate__c` | Number | Story-point estimate |
-| `Sequence__c` | Number | Manual ordering within a column |
-| `Sprint__c` | Lookup → Sprint__c | Sprint assignment (null = backlog) |
-| `Parent_Work_Item__c` | Lookup → Work_Item__c (self) | Parent in hierarchy |
-| `Assignee__c` | Lookup → User | Assigned team member |
-| `Work_Mode__c` | Picklist | Remote / On-site / Hybrid |
-| `Description__c` | Long Text | Free-form description |
+| Field                 | Type                           | Purpose                            |
+| --------------------- | ------------------------------ | ---------------------------------- |
+| `Name`                | Text                           | Title of the work item             |
+| `RecordTypeId`        | Record Type                    | Determines item type (see below)   |
+| `Status__c`           | Picklist                       | Workflow stage                     |
+| `Priority__c`         | Picklist                       | Critical / High / Medium / Low     |
+| `Estimate__c`         | Number                         | Story-point estimate               |
+| `Sequence__c`         | Number                         | Manual ordering within a column    |
+| `Sprint__c`           | Lookup → Sprint\_\_c           | Sprint assignment (null = backlog) |
+| `Parent_Work_Item__c` | Lookup → Work_Item\_\_c (self) | Parent in hierarchy                |
+| `Assignee__c`         | Lookup → User                  | Assigned team member               |
+| `Work_Mode__c`        | Picklist                       | Remote / On-site / Hybrid          |
+| `Description__c`      | Long Text                      | Free-form description              |
 
 #### Record Types and their hierarchy positions
 
@@ -35,12 +35,12 @@ Initiative
                      └─ Chapter | Step
 ```
 
-| Record Type | Status picklist values |
-|---|---|
-| Initiative | Not Started, In Progress, Completed, Cancelled |
-| Epic | Not Started, In Progress, Completed, Cancelled |
+| Record Type        | Status picklist values                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| Initiative         | Not Started, In Progress, Completed, Cancelled                                                   |
+| Epic               | Not Started, In Progress, Completed, Cancelled                                                   |
 | Story / Task / Bug | Not Started, To Do, In Progress, Blocked, Code Review, UAT, Pipeline, Released, Documented, Done |
-| Chapter / Step | Not Started, To Do, In Progress, Blocked, Code Review, UAT, Pipeline, Released, Documented, Done |
+| Chapter / Step     | Not Started, To Do, In Progress, Blocked, Code Review, UAT, Pipeline, Released, Documented, Done |
 
 Default status for all types: **Not Started**.
 
@@ -53,13 +53,13 @@ Default status for all types: **Not Started**.
 
 ### `Sprint__c` (custom object)
 
-| Field | Type | Purpose |
-|---|---|---|
-| `Name` | Text | Display name (e.g. "Sprint 3") |
-| `Status__c` | Picklist | Backlog / Planning / Active / Completed |
-| `Start_Date__c` | Date | Sprint start |
-| `End_Date__c` | Date | Sprint end |
-| `Sequence__c` | Number | Sort order |
+| Field           | Type     | Purpose                                 |
+| --------------- | -------- | --------------------------------------- |
+| `Name`          | Text     | Display name (e.g. "Sprint 3")          |
+| `Status__c`     | Picklist | Backlog / Planning / Active / Completed |
+| `Start_Date__c` | Date     | Sprint start                            |
+| `End_Date__c`   | Date     | Sprint end                              |
+| `Sequence__c`   | Number   | Sort order                              |
 
 One sprint record has `Status__c = 'Backlog'` and `Sequence__c = 9999`. This is the permanent backlog container. It is created automatically on first board load if it does not exist.
 
@@ -71,25 +71,25 @@ All methods are `with sharing`. Methods annotated `cacheable=true` are safe for 
 
 ### Cacheable methods (usable with `@wire`)
 
-| Method | Purpose |
-|---|---|
-| `getActiveSprints()` | Returns Planning, Active, and Backlog sprints ordered by sequence |
-| `getAllSprints()` | Returns all non-completed sprints plus those completed within the last 30 days |
-| `getBoardItems(Id initiativeId)` | Returns all non-Epic, non-Initiative work items scoped to an initiative (see hierarchy scoping below) |
-| `getWorkItems(String recordTypeName, Id sprintId, Id initiativeId)` | Filtered item query for the Initiatives list view |
-| `getEpics(Id initiativeId)` | Returns all Epics |
-| `getWorkItemMeta(Id recordId)` | Returns `typeName` and `sprintId` for a given record — used by the children applet |
-| `getChildren(Id parentId)` | Returns direct children of a work item |
+| Method                                                              | Purpose                                                                                               |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `getActiveSprints()`                                                | Returns Planning, Active, and Backlog sprints ordered by sequence                                     |
+| `getAllSprints()`                                                   | Returns all non-completed sprints plus those completed within the last 30 days                        |
+| `getBoardItems(Id initiativeId)`                                    | Returns all non-Epic, non-Initiative work items scoped to an initiative (see hierarchy scoping below) |
+| `getWorkItems(String recordTypeName, Id sprintId, Id initiativeId)` | Filtered item query for the Initiatives list view                                                     |
+| `getEpics(Id initiativeId)`                                         | Returns all Epics                                                                                     |
+| `getWorkItemMeta(Id recordId)`                                      | Returns `typeName` and `sprintId` for a given record — used by the children applet                    |
+| `getChildren(Id parentId)`                                          | Returns direct children of a work item                                                                |
 
 ### DML methods (called imperatively)
 
-| Method | Purpose |
-|---|---|
-| `ensureBacklogSprint()` | Creates the Backlog sprint if none exists |
-| `generateSprints()` | Creates 6 two-week sprints starting on the next Monday |
-| `closeSprint(Id sprintId)` | Marks a sprint Completed and inserts the next sprint in sequence; throws if target is the Backlog sprint |
-| `updateStatus(Id workItemId, String newStatus)` | Sets Status__c on a single item |
-| `updateSprint(Id workItemId, Id sprintId)` | Sets Sprint__c on a work item and cascades to its Chapter children |
+| Method                                          | Purpose                                                                                                  |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `ensureBacklogSprint()`                         | Creates the Backlog sprint if none exists                                                                |
+| `generateSprints()`                             | Creates 6 two-week sprints starting on the next Monday                                                   |
+| `closeSprint(Id sprintId)`                      | Marks a sprint Completed and inserts the next sprint in sequence; throws if target is the Backlog sprint |
+| `updateStatus(Id workItemId, String newStatus)` | Sets Status\_\_c on a single item                                                                        |
+| `updateSprint(Id workItemId, Id sprintId)`      | Sets Sprint\_\_c on a work item and cascades to its Chapter children                                     |
 
 ### Initiative hierarchy scoping in `getBoardItems`
 
@@ -185,10 +185,10 @@ Clicking "+ New" opens `c-work-item-create` in an SLDS modal overlay. On creatio
 
 Renders a single work item in one of two layouts, controlled by the `@api compact` boolean.
 
-| Layout | Used in | Description |
-|---|---|---|
+| Layout                   | Used in               | Description                                                                                   |
+| ------------------------ | --------------------- | --------------------------------------------------------------------------------------------- |
 | Card (`compact = false`) | Sprint kanban columns | White card with colour priority bar, title, type badge, estimate badge, parent name, assignee |
-| Row (`compact = true`) | Backlog list | Single-line flex row, all metadata inline left-to-right |
+| Row (`compact = true`)   | Backlog list          | Single-line flex row, all metadata inline left-to-right                                       |
 
 **Priority bar:** a 4px left-edge strip coloured by `Priority__c` (Critical = red, High = orange, Medium = blue, Low = grey).
 
@@ -196,10 +196,10 @@ Renders a single work item in one of two layouts, controlled by the `@api compac
 
 ```javascript
 // Chapter or Step → follow two hops to reach the Epic
-Parent_Work_Item__r.Parent_Work_Item__r.Name
+Parent_Work_Item__r.Parent_Work_Item__r.Name;
 
 // Story, Task, Bug → direct parent is the Epic
-Parent_Work_Item__r.Name
+Parent_Work_Item__r.Name;
 ```
 
 The SOQL in `getBoardItems` fetches `Parent_Work_Item__r.Parent_Work_Item__r.Name` explicitly to support this.
@@ -222,9 +222,13 @@ All types default to `Status__c = 'Not Started'` via the `DEFAULT_STATUS` map:
 
 ```javascript
 const DEFAULT_STATUS = {
-    Initiative: 'Not Started', Epic: 'Not Started',
-    Story: 'Not Started', Task: 'Not Started', Bug: 'Not Started',
-    Chapter: 'Not Started', Step: 'Not Started'
+  Initiative: "Not Started",
+  Epic: "Not Started",
+  Story: "Not Started",
+  Task: "Not Started",
+  Bug: "Not Started",
+  Chapter: "Not Started",
+  Step: "Not Started"
 };
 ```
 
@@ -269,18 +273,18 @@ Note: the record type column uses the metadata key `RECORDTYPE` (not `RecordType
 
 The 10 canonical stages map to left-to-right columns on sprint kanban boards:
 
-| # | Stage | Typical meaning |
-|---|---|---|
-| 1 | Not Started | In sprint, not yet begun |
-| 2 | To Do | Ready to pick up |
-| 3 | In Progress | Active development |
-| 4 | Blocked | Impediment present |
-| 5 | Code Review | PR open / awaiting review |
-| 6 | UAT | User acceptance testing |
-| 7 | Pipeline | In CI/CD pipeline |
-| 8 | Released | Deployed to production |
-| 9 | Documented | Release notes / docs written |
-| 10 | Done | Fully complete |
+| #   | Stage       | Typical meaning              |
+| --- | ----------- | ---------------------------- |
+| 1   | Not Started | In sprint, not yet begun     |
+| 2   | To Do       | Ready to pick up             |
+| 3   | In Progress | Active development           |
+| 4   | Blocked     | Impediment present           |
+| 5   | Code Review | PR open / awaiting review    |
+| 6   | UAT         | User acceptance testing      |
+| 7   | Pipeline    | In CI/CD pipeline            |
+| 8   | Released    | Deployed to production       |
+| 9   | Documented  | Release notes / docs written |
+| 10  | Done        | Fully complete               |
 
 Legacy status values (from before the 10-stage model) are mapped to the nearest current stage in `STATUS_TO_STAGE` in `workItemBoard.js` to avoid items disappearing from the board.
 

@@ -1,6 +1,6 @@
 # ConsultantProject — Claude Context
 
-Salesforce-native work management app. LWC + Apex, deployed to a scratch/developer org.
+Salesforce-native project management app. LWC + Apex, deployed to a scratch/developer org.
 
 @.claude/pipeline.md
 @.claude/standards.md
