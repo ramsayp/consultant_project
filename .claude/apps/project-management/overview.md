@@ -30,7 +30,7 @@ sprintCreate                    (standalone sprint creation form)
 
 ## Data model summary
 
-See `.claude/apps/work-management/salesforce.md` for field-level detail.
+See `.claude/apps/project-management/salesforce.md` for field-level detail.
 
 ```
 Project

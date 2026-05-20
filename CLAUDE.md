@@ -6,4 +6,4 @@ Salesforce-native work management app. LWC + Apex, deployed to a scratch/develop
 @.claude/standards.md
 @.claude/salesforce.md
 @.claude/memory.md
-@.claude/apps/work-management/overview.md
+@.claude/apps/project-management/overview.md

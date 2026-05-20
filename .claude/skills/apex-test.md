@@ -68,7 +68,7 @@ Do NOT select just `Id` when you also need relationship fields — add them to t
 Work_Item__c story = [SELECT Id, Sprint__c FROM Work_Item__c WHERE Name = 'Test Story' LIMIT 1];
 ```
 
-## @TestSetup data for work-management
+## @TestSetup data for project-management
 
 The standard `@TestSetup` creates:
 
