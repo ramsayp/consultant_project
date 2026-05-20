@@ -5,6 +5,9 @@
     "**/.sf": true,
     "**/.sfdx": true
   },
+  "files.associations": {
+    "**/__tests__/**/*.test.js": "javascript"
+  },
   "xml.preferences.showSchemaDocumentationType": "none",
   "xml.fileAssociations": [
     {
