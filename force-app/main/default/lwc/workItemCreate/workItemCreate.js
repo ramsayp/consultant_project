@@ -1,3 +1,4 @@
+// ── Imports ───────────────────────────────────────────────────────────────────
 import { LightningElement, api, wire, track } from "lwc";
 import { getObjectInfo } from "lightning/uiObjectInfoApi";
 import { createRecord } from "lightning/uiRecordApi";
@@ -6,6 +7,9 @@ import WORK_ITEM_OBJECT from "@salesforce/schema/Work_Item__c";
 import getActiveSprints from "@salesforce/apex/WorkItemController.getActiveSprints";
 import getEpics from "@salesforce/apex/WorkItemController.getEpics";
 
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+// Work_Mode__c value to stamp on each record type (null = field left blank)
 const WORK_MODE = {
   Project: null,
   Epic: null,
@@ -16,6 +20,7 @@ const WORK_MODE = {
   Step: null
 };
 
+// Default Status__c for each record type on creation
 const DEFAULT_STATUS = {
   Project: "Active",
   Epic: "Not Started",
@@ -26,6 +31,7 @@ const DEFAULT_STATUS = {
   Step: "Not Started"
 };
 
+// Sets of record types that show each optional field section
 const SPRINT_TYPES = new Set(["Story", "Task", "Bug"]);
 const ESTIMATE_TYPES = new Set(["Story", "Task", "Bug", "Chapter", "Epic"]);
 const PARENT_TYPES = new Set(["Story", "Task", "Bug"]);
@@ -34,33 +40,55 @@ const AC_TYPES = new Set(["Story", "Task", "Bug"]);
 
 const USER_STORY_TEMPLATE = "As a [user], I want [goal], so that [reason].";
 
+// Form component for creating a new Work_Item__c record.
+// The rendered fields adapt to the record type specified via the `type` @api prop.
+// Fired events: 'created' (with { id }) on success, 'cancel' on cancel.
 export default class WorkItemCreate extends LightningElement {
-  @api type = "Story";
-  @api parentId;
-  @api sprintId;
-  @api projectId;
+  // ── Public API ──────────────────────────────────────────────────────────────
+  @api type = "Story"; // record type to create (controls which fields are shown)
+  @api parentId; // pre-selected parent work item Id
+  @api sprintId; // pre-selected sprint Id
+  @api projectId; // project scope used when creating Epics
 
+  // ── State ────────────────────────────────────────────────────────────────────
   @track name = "";
   @track description = "";
   @track userStory = "";
   @track acceptanceCriteria = "";
-  @track priority = "Medium";
+  @track priority = "Medium"; // default priority on every new item
   @track estimate = null;
   @track selectedSprintId = null;
   @track selectedParentId = null;
   @track isCreating = false;
 
-  sprints = [];
-  epics = [];
+  sprints = []; // populated by the getActiveSprints wire
+  epics = []; // populated imperatively in connectedCallback
 
+  // ── Wire adapters ─────────────────────────────────────────────────────────
+  // Provides the recordTypeId for the current type — create button is disabled until this resolves
   @wire(getObjectInfo, { objectApiName: WORK_ITEM_OBJECT })
   objectInfo;
 
+  // Populates the sprint picker dropdown
   @wire(getActiveSprints)
   wiredSprints({ data }) {
     if (data) this.sprints = data;
   }
 
+  // ── Lifecycle ────────────────────────────────────────────────────────────────
+  // Fetches epics imperatively (not via wire) so newly created epics are always included
+  async connectedCallback() {
+    if (USER_STORY_TYPES.has(this.type)) {
+      this.userStory = USER_STORY_TEMPLATE; // pre-fill the user story template for Story type
+    }
+    try {
+      this.epics = (await getEpics({ projectId: null })) ?? [];
+    } catch {
+      /* epics are optional — parent picker just won't populate */
+    }
+  }
+
+  // ── Field visibility flags ────────────────────────────────────────────────
   get showSprintPicker() {
     return SPRINT_TYPES.has(this.type);
   }
@@ -76,31 +104,25 @@ export default class WorkItemCreate extends LightningElement {
   get showAcceptanceCriteria() {
     return AC_TYPES.has(this.type);
   }
+
+  // ── Computed properties ───────────────────────────────────────────────────
   get createLabel() {
     return `Create ${this.type}`;
   }
+
+  // Button is disabled until objectInfo resolves (provides the recordTypeId)
   get isCreateDisabled() {
     return this.isCreating || !this.recordTypeId;
   }
 
-  async connectedCallback() {
-    if (USER_STORY_TYPES.has(this.type)) {
-      this.userStory = USER_STORY_TEMPLATE;
-    }
-    // Fetch epics imperatively so newly created epics always appear
-    try {
-      this.epics = (await getEpics({ projectId: null })) ?? [];
-    } catch {
-      /* epics optional */
-    }
-  }
-
+  // Builds the sprint dropdown options with a blank "No Sprint" entry at the top
   get sprintOptions() {
     const opts = [{ label: "— No Sprint —", value: "" }];
     this.sprints.forEach((s) => opts.push({ label: s.Name, value: s.Id }));
     return opts;
   }
 
+  // Builds the parent dropdown options, showing epic name and its project in parentheses
   get parentOptions() {
     const opts = [{ label: "— No Parent —", value: "" }];
     this.epics.forEach((e) => {
@@ -120,6 +142,7 @@ export default class WorkItemCreate extends LightningElement {
     ];
   }
 
+  // Looks up the recordTypeId for the current type from the objectInfo wire result
   get recordTypeId() {
     if (!this.objectInfo?.data?.recordTypeInfos) return null;
     const match = Object.values(this.objectInfo.data.recordTypeInfos).find(
@@ -128,11 +151,17 @@ export default class WorkItemCreate extends LightningElement {
     return match?.recordTypeId ?? null;
   }
 
+  // ── Field change handler ──────────────────────────────────────────────────
+  // Uses data-field attributes on inputs to route changes to the correct state property
   handleChange(event) {
     const field = event.target.dataset.field;
     this[field] = event.target.value;
   }
 
+  // ── Create handler ────────────────────────────────────────────────────────
+  // Validates required fields, builds the fields payload, then calls LDS createRecord.
+  // Optional fields are only included when they have a value — LDS rejects explicit null
+  // for Long Text Area fields.
   async handleCreate() {
     if (!this.name?.trim()) {
       this.toast("Title is required", "", "error");
@@ -151,7 +180,7 @@ export default class WorkItemCreate extends LightningElement {
       Priority__c: this.priority
     };
 
-    // Only include optional fields when they have a value — LDS rejects explicit null for LTA fields
+    // Optional fields — omit entirely when blank to avoid LDS validation errors
     if (this.description) fields.Description__c = this.description;
     if (this.userStory) fields.User_Story__c = this.userStory;
     if (this.acceptanceCriteria)
@@ -159,6 +188,7 @@ export default class WorkItemCreate extends LightningElement {
     if (WORK_MODE[this.type]) fields.Work_Mode__c = WORK_MODE[this.type];
     if (this.estimate != null) fields.Estimate__c = Number(this.estimate);
 
+    // Resolve parent: user selection > @api prop > projectId (for Epics) > null
     const parentId =
       this.selectedParentId ||
       this.parentId ||
@@ -190,11 +220,13 @@ export default class WorkItemCreate extends LightningElement {
     }
   }
 
+  // ── Cancel handler ────────────────────────────────────────────────────────
   handleCancel() {
     this.reset();
     this.dispatchEvent(new CustomEvent("cancel"));
   }
 
+  // ── Utility ───────────────────────────────────────────────────────────────
   reset() {
     this.name = "";
     this.description = "";
