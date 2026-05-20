@@ -1,0 +1,82 @@
+# Standards — Coding Conventions
+
+## Apex
+
+- All classes and methods use `with sharing`
+- `@AuraEnabled(cacheable=true)` only on read-only methods (safe for `@wire`)
+- DML methods must NOT be cacheable — call them imperatively in JS
+- Use `AuraHandledException` for user-facing error messages
+- Test class conventions: see `.claude/skills/apex-test.md`
+
+## LWC JavaScript
+
+### ESLint rules that commonly trip up
+
+| Mistake                              | Fix                                                                                                                                        |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `catch(e) { }` when `e` is unused    | `catch { }` (ES2019 optional catch binding)                                                                                                |
+| `setTimeout` inside LWC files        | Chained `.then()` — `setTimeout` is restricted by `@lwc/lwc/no-async-operation`                                                            |
+| `querySelector('[variant="brand"]')` | CSS attribute selectors don't match `@api` props — use JS: `[...el.querySelectorAll('lightning-button')].find(b => b.variant === 'brand')` |
+
+### Jest mock patterns
+
+**Imperative Apex** — inline `jest.fn()` in the factory; never use variable capture outside the factory (hoisting creates a different instance):
+
+```javascript
+jest.mock("@salesforce/apex/Controller.method", () => ({
+  default: jest.fn(),
+  __esModule: true
+}));
+import method from "@salesforce/apex/Controller.method";
+```
+
+**Wire Apex adapters** — `createApexTestWireAdapter` inside `require()` inside the factory:
+
+```javascript
+jest.mock("@salesforce/apex/Controller.getItems", () => {
+  const {
+    createApexTestWireAdapter
+  } = require("@salesforce/wire-service-jest-util");
+  return { default: createApexTestWireAdapter(jest.fn()), __esModule: true };
+});
+```
+
+**`lightning/uiRecordApi`** — use `moduleNameMapper` in `jest.config.js`, NOT `jest.mock()`. The custom resolver and Jest's mock registry keys mismatch on Windows:
+
+```javascript
+// jest.config.js
+moduleNameMapper: { '^lightning/uiRecordApi$': '<rootDir>/__mocks__/lightning/uiRecordApi.js' }
+```
+
+**`@salesforce/schema/SObject`** — mock MUST export `.default` (the transformer compiles to `require(...).default`):
+
+```javascript
+// __mocks__/@salesforce/schema.js
+module.exports = {
+  __esModule: true,
+  default: { objectApiName: "Work_Item__c" }
+};
+```
+
+**`flushAllPromises`** — use chained `.then()`, not `setTimeout` (restricted):
+
+```javascript
+const flushAllPromises = () =>
+  Promise.resolve()
+    .then(() => Promise.resolve())
+    .then(() => Promise.resolve())
+    .then(() => Promise.resolve());
+```
+
+**Wire emit** — `createLdsTestWireAdapter.emit(value)` wraps in `{ data, error }` automatically. Do NOT double-wrap.
+
+## Comments
+
+- Block headers: `// ── Section name ─────────────────────`
+- Inline end-of-line tags on non-obvious lines only
+- No comments on self-explanatory getters, simple assignments, or obvious SOQL
+
+## General
+
+- Start small, think about how it grows — don't add abstractions until the third repetition
+- No backwards-compat shims for removed code — delete it cleanly
