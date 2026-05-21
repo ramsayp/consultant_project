@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description
+  >Documentation hub — Technical docs for admins and devs, User docs for end users, and the Change Log that bridges Work Items to documentation.</description>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>Documentation</label>
+    <navType>Standard</navType>
+    <tabs>Documentation__c</tabs>
+    <tabs>Change_Log__c</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

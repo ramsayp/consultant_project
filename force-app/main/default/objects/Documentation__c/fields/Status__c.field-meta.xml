@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Status__c</fullName>
+    <description
+  >The publication state of this document. Draft = work in progress; Published = approved and visible; Archived = superseded or no longer relevant.</description>
+    <inlineHelpText
+  >Set to Published once the document has been reviewed and is ready for its intended audience.</inlineHelpText>
+    <label>Status</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Draft</fullName>
+                <default>true</default>
+                <label>Draft</label>
+            </value>
+            <value>
+                <fullName>Published</fullName>
+                <default>false</default>
+                <label>Published</label>
+            </value>
+            <value>
+                <fullName>Archived</fullName>
+                <default>false</default>
+                <label>Archived</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

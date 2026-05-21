@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Changed_By__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description
+  >The person (or agent identity) who made this change. Separate from the Salesforce record owner — records created by an agent should still identify the human responsible.</description>
+    <inlineHelpText
+  >Who made this change? Defaults to the logged-in user but can be updated if an agent acted on someone's behalf.</inlineHelpText>
+    <label>Changed By</label>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>Change Logs (Changed By)</relationshipLabel>
+    <relationshipName>Change_Logs_Changed_By</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Version__c</fullName>
+    <description
+  >Optional version label for this change — e.g. "v1.2", "Sprint 4", "2026-05-21". Useful for tracking which version of the system this change applies to.</description>
+    <inlineHelpText
+  >Tag this change with a version or sprint label for traceability.</inlineHelpText>
+    <label>Version</label>
+    <length>20</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

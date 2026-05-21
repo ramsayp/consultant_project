@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Technical</fullName>
+    <active>true</active>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <description
+  >Technical documentation for Salesforce admins, developers, and architects. Covers API references, configuration steps, data model decisions, and implementation detail.</description>
+    <label>Technical</label>
+    <picklistValues>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Draft</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>Published</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Archived</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

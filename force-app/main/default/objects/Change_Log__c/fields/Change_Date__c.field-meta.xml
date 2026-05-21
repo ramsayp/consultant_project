@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Change_Date__c</fullName>
+    <description
+  >When the change was made. Defaults to the current date and time but can be backdated if the change was made outside Salesforce (e.g. a manual config change applied earlier).</description>
+    <inlineHelpText
+  >The date and time the change was applied. Adjust if the change occurred outside of Salesforce.</inlineHelpText>
+    <label>Change Date</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>DateTime</type>
+</CustomField>

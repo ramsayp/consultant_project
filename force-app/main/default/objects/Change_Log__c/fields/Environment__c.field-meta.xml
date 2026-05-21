@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Environment__c</fullName>
+    <description
+  >The Salesforce org environment where this change was applied. Helps distinguish sandbox validation from production deployment.</description>
+    <inlineHelpText
+  >Where was this change deployed? Select the environment this change log entry describes.</inlineHelpText>
+    <label>Environment</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Scratch Org</fullName>
+                <default>true</default>
+                <label>Scratch Org</label>
+            </value>
+            <value>
+                <fullName>Sandbox</fullName>
+                <default>false</default>
+                <label>Sandbox</label>
+            </value>
+            <value>
+                <fullName>Production</fullName>
+                <default>false</default>
+                <label>Production</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
