@@ -10,11 +10,5 @@
   },
   "xml.preferences.showSchemaDocumentationType": "none",
   "xml.validation.noGrammar": "ignore",
-  "xml.downloadExternalResources.enabled": false,
-  "xml.fileAssociations": [
-    {
-      "pattern": "**/*.recordType-meta.xml",
-      "systemId": ".vscode/sf-recordtype.xsd"
-    }
-  ]
+  "xml.downloadExternalResources.enabled": false
 }
