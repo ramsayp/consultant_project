@@ -9,6 +9,7 @@
     "**/__tests__/**/*.test.js": "javascript"
   },
   "xml.preferences.showSchemaDocumentationType": "none",
+  "xml.validation.noGrammar": "ignore",
   "xml.fileAssociations": [
     {
       "pattern": "**/*.recordType-meta.xml",
