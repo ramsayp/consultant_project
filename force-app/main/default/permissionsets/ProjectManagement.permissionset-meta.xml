@@ -155,7 +155,7 @@
         <visible>true</visible>
     </recordTypeVisibilities>
     <tabSettings>
-        <tab>ProjectManagement</tab>
+        <tab>Kanbans</tab>
         <visibility>Visible</visibility>
     </tabSettings>
 </PermissionSet>

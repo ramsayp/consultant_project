@@ -8,7 +8,7 @@
     <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
     <label>Project Management</label>
     <navType>Standard</navType>
-    <tabs>ProjectManagement</tabs>
+    <tabs>Kanbans</tabs>
     <tabs>Work_Item__c</tabs>
     <tabs>Sprint__c</tabs>
     <uiType>Lightning</uiType>
