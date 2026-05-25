@@ -18,6 +18,10 @@
     {
       "pattern": "**/*.cls-meta.xml",
       "systemId": ""
+    },
+    {
+      "pattern": "**/*.permissionset-meta.xml",
+      "systemId": ""
     }
   ]
 }
