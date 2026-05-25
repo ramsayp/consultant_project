@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
     <customObject>true</customObject>
-    <label>Change Log</label>
-    <motif>Custom71: Document</motif>
+    <motif>Custom57: Building Block</motif>
 </CustomTab>
