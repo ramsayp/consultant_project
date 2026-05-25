@@ -102,11 +102,11 @@
         <visible>true</visible>
     </recordTypeVisibilities>
     <tabSettings>
-        <tab>Documentation__c</tab>
+        <tab>Change_Log__c</tab>
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>
-        <tab>Change_Log__c</tab>
+        <tab>Documentation__c</tab>
         <visibility>Visible</visibility>
     </tabSettings>
 </PermissionSet>
