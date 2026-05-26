@@ -1,6 +1,6 @@
-# MCP Security Policy
+# MCP Server Policy
 
-**Principle: bare minimal access.** Only activate what is actively needed. Deactivate everything else.
+Follows the [core security principle](README.md): bare minimal access.
 
 ---
 
@@ -36,7 +36,7 @@ Managed in **Setup → Integrations → API Catalog → MCP Servers**.
 
 ## 2. Claude Code MCP (`@salesforce/mcp`)
 
-Configured in `.mcp.json` at the project root. Connects Claude Code to the **Salesforce CLI tooling** (LWC dev, code analysis, metadata deploy/retrieve). Separate from the hosted servers above — no OAuth required, runs locally via npx.
+Configured in `.mcp.json` at the project root. Connects Claude Code to **Salesforce CLI tooling** (LWC dev, code analysis, metadata deploy/retrieve). Separate from the hosted servers above — no OAuth required, runs locally via npx.
 
 Current config: `--toolsets all --allow-non-ga-tools`  
 Review and tighten toolsets if the active tool list grows beyond what is regularly used.
