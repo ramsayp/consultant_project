@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "Salesforce DX": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@salesforce/mcp",
+        "--orgs",
+        "consultant-project",
+        "--toolsets",
+        "all",
+        "--allow-non-ga-tools"
+      ]
+    }
+  }
+}
