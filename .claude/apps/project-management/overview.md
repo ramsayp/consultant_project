@@ -46,7 +46,7 @@ One sprint has `Status__c = 'Backlog'` and acts as the permanent backlog contain
 ## Apex controller
 
 `WorkItemController.cls` — single controller, `with sharing`.
-All board data flows through this class. See inline comments and `PROJECT_MANAGEMENT_GUIDE.md` for method-level detail.
+All board data flows through this class. See inline comments and `docs/technical/project-management-guide.md` for method-level detail.
 
 ## Tests
 
