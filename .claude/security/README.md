@@ -12,6 +12,10 @@ This applies to every layer of the system: MCP servers, connected apps, permissi
 | --------------------- | --------------------------------------------------------- |
 | [MCP Servers](mcp.md) | Salesforce hosted MCP servers and Claude Code MCP tooling |
 
+## Related
+
+Setup and configuration guides live in [`.claude/integrations/`](../integrations/) — separate from policy so the two concerns don't mix.
+
 ## General Rules
 
 - Prefer scoped access over broad access — narrow to the exact resource needed

@@ -2,6 +2,8 @@
 
 Follows the [core security principle](README.md): bare minimal access.
 
+For setup and configuration, see [`.claude/integrations/salesforce-mcp.md`](../integrations/salesforce-mcp.md).
+
 ---
 
 ## 1. Salesforce Hosted MCP Servers
@@ -43,12 +45,15 @@ Review and tighten toolsets if the active tool list grows beyond what is regular
 
 ---
 
-## 3. OAuth / External Client App
+## 3. OAuth / External Client App — Scopes
 
-The **Claude MCP** External Client App in this org provides OAuth credentials for connecting Claude Code to the hosted MCP servers. Scopes granted:
+The **Claude MCP** External Client App provides OAuth credentials for Claude Code → Salesforce Hosted MCP.
 
-- _Access MCP servers_
-- _Perform requests at any time (refresh_token)_
-- PKCE required: yes
+### Scopes granted
+
+- _Access MCP servers_ (`MCP`)
+- _Perform requests at any time_ (`RefreshToken`)
 
 Do not expand the scopes on this app without a documented reason.
+
+The required OAuth settings (PKCE, JWT tokens, callback URL, no secrets) are documented in [`.claude/integrations/salesforce-mcp.md`](../integrations/salesforce-mcp.md).
