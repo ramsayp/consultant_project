@@ -49,3 +49,6 @@ $RECYCLE.BIN/
 # Claude Code settings (may contain org credentials) — docs are tracked
 .claude/settings.json
 .claude/settings.local.json
+
+# MCP config — contains OAuth client secret
+.mcp.json
