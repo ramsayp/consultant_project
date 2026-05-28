@@ -2,7 +2,7 @@
 
 ## What it does
 
-A Salesforce-native documentation hub, separate from the Project Management App but connected via shared lookups to `Work_Item__c`. Stores technical docs for admins/devs, plain-language docs for end users, and an immutable change log that bridges the two.
+A Salesforce-native documentation hub, separate from the Project Management App. Stores technical docs for admins/devs, plain-language docs for end users, and an immutable change log that acts as the bridge to `Work_Item__c`. Documentation records have no direct link to Work Items — that connection runs exclusively through Change Log.
 
 ## Lightning App
 
@@ -23,14 +23,16 @@ Work_Item__c ──── Change_Log__c ──── Documentation__c (Technical
 
 Two Record Types: **Technical** and **User**
 
-| Field                      | Type                                   | Notes                                               |
-| -------------------------- | -------------------------------------- | --------------------------------------------------- |
-| `Name` (Title)             | Text                                   | Document title — the standard name field            |
-| `Body__c`                  | Rich Text (32,768)                     | Full document content with formatting               |
-| `Work_Item__c`             | Lookup → Work_Item\_\_c                | Scopes doc to a work area (many docs per Work Item) |
-| `Related_User_Doc__c`      | Lookup → Documentation\_\_c            | On Technical RT: link to companion User doc         |
-| `Related_Technical_Doc__c` | Lookup → Documentation\_\_c            | On User RT: link to companion Technical doc         |
-| `Status__c`                | Picklist: Draft / Published / Archived | Publication state                                   |
+| Field                      | Type                                   | Notes                                            |
+| -------------------------- | -------------------------------------- | ------------------------------------------------ |
+| `Name` (Title)             | Text                                   | Document title — the standard name field         |
+| `Body__c`                  | Rich Text (32,768)                     | Full document content with formatting            |
+| `Folder__c`                | Lookup → Folder\_\_c (required)        | Organises docs into folders; deletion restricted |
+| `Related_User_Doc__c`      | Lookup → Documentation\_\_c            | On Technical RT: link to companion User doc      |
+| `Related_Technical_Doc__c` | Lookup → Documentation\_\_c            | On User RT: link to companion Technical doc      |
+| `Status__c`                | Picklist: Draft / Published / Archived | Publication state                                |
+
+No direct link to `Work_Item__c` — the connection runs through `Change_Log__c`.
 
 ### `Change_Log__c`
 
@@ -55,7 +57,7 @@ Auto-number name format: `CL-{0000}`
 
 **Bidirectional lookups between Tech and User docs** — `Related_User_Doc__c` on the Technical record and `Related_Technical_Doc__c` on the User record. Navigate directly from either record to its companion without going via a related list.
 
-**Many Documentation records per Work Item** — `Work_Item__c` is a nullable lookup on Documentation\_\_c. One Work Item can produce multiple doc records (e.g. a feature touching two API areas gets two Technical docs and two User docs).
+**Documentation connects to Work Items only through Change Log** — `Change_Log__c` is the bridge. One Work Item can produce multiple Change Log entries, each linked to a Technical doc. Documentation records have no direct `Work_Item__c` field.
 
 ## Agent integration (future)
 

@@ -53,11 +53,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Documentation__c.Folder__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
         <field>Folder__c.Description__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -81,11 +76,7 @@
         <field>Documentation__c.Status__c</field>
         <readable>true</readable>
     </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>Documentation__c.Work_Item__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
+
     <hasActivationRequired>false</hasActivationRequired>
     <label>Documentation</label>
     <objectPermissions>
