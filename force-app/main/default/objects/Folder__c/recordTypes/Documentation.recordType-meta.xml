@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Documentation</fullName>
+    <active>true</active>
+    <description>Folders for organising Documentation records — Technical docs, User docs, and related content.</description>
+    <label>Documentation</label>
+</RecordType>
