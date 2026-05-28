@@ -5,6 +5,7 @@
     <referenceTo>Folder__c</referenceTo>
     <relationshipLabel>Documentation</relationshipLabel>
     <relationshipName>Documentation</relationshipName>
-    <required>false</required>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <required>true</required>
     <type>Lookup</type>
 </CustomField>
