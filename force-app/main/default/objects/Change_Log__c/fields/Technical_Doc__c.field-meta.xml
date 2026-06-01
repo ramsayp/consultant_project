@@ -1,11 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Technical_Doc__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
-    <description
-  >The Technical Documentation record that was created or updated as a result of this change. Forms the bridge between the Work Item and the living documentation.</description>
-    <inlineHelpText
-  >Link to the Technical doc that this change log entry produced or updated.</inlineHelpText>
+    <description>The Technical Documentation record that was created or updated as a result of this change. Forms the bridge between the Work Item and the living documentation.</description>
+    <inlineHelpText>Link to the Technical doc that this change log entry produced or updated.</inlineHelpText>
     <label>Technical Doc</label>
     <referenceTo>Documentation__c</referenceTo>
     <relationshipLabel>Change Logs</relationshipLabel>

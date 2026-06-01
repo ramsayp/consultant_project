@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Summary__c</fullName>
-    <description
-  >Full rich text description of the change: what was done, why, what was affected, and any caveats or follow-up items.</description>
-    <inlineHelpText
-  >Describe the change in detail. Include what was added or modified, the reason, and any known side effects or dependencies.</inlineHelpText>
+    <description>Full rich text description of the change: what was done, why, what was affected, and any caveats or follow-up items.</description>
+    <inlineHelpText>Describe the change in detail. Include what was added or modified, the reason, and any known side effects or dependencies.</inlineHelpText>
     <label>Summary</label>
     <length>32768</length>
     <trackTrending>false</trackTrending>

@@ -1,23 +1,22 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>User</fullName>
     <active>true</active>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
-    <description
-  >End-user documentation for Salesforce users who work in the app but do not configure or develop it. Plain-language feature guides, how-tos, and FAQs.</description>
+    <description>End-user documentation for Salesforce users who work in the app but do not configure or develop it. Plain-language feature guides, how-tos, and FAQs.</description>
     <label>User</label>
     <picklistValues>
         <picklist>Status__c</picklist>
+        <values>
+            <fullName>Archived</fullName>
+            <default>false</default>
+        </values>
         <values>
             <fullName>Draft</fullName>
             <default>true</default>
         </values>
         <values>
             <fullName>Published</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Archived</fullName>
             <default>false</default>
         </values>
     </picklistValues>

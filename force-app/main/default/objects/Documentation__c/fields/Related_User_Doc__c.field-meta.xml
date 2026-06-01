@@ -1,11 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Related_User_Doc__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
-    <description
-  >For Technical docs: the companion User-facing document that explains the same feature in plain language. Enables navigation between the two audiences.</description>
-    <inlineHelpText
-  >Link to the User documentation record that covers the same feature as this Technical doc.</inlineHelpText>
+    <description>For Technical docs: the companion User-facing document that explains the same feature in plain language. Enables navigation between the two audiences.</description>
+    <inlineHelpText>Link to the User documentation record that covers the same feature as this Technical doc.</inlineHelpText>
     <label>Related User Doc</label>
     <referenceTo>Documentation__c</referenceTo>
     <relationshipLabel>Technical Docs (User Doc)</relationshipLabel>

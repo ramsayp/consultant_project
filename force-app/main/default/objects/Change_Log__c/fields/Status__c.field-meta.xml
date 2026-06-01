@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Status__c</fullName>
-    <description
-  >The review state of this change log entry. Draft = being written; Reviewed = confirmed accurate by a second person; Published = final and shared.</description>
-    <inlineHelpText
-  >Move to Reviewed once someone has confirmed the change log accurately reflects what was deployed.</inlineHelpText>
+    <description>The review state of this change log entry. Draft = being written; Reviewed = confirmed accurate by a second person; Published = final and shared.</description>
+    <inlineHelpText>Move to Reviewed once someone has confirmed the change log accurately reflects what was deployed.</inlineHelpText>
     <label>Status</label>
     <required>false</required>
     <trackTrending>false</trackTrending>
