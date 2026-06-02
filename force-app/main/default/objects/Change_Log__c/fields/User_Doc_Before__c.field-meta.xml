@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>User_Doc_Before__c</fullName>
+    <description>Snapshot of the User documentation body before this change was applied. Auto-populated via the linked Technical doc's Related User Doc at Change Log creation.</description>
+    <label>User Doc (Before)</label>
+    <length>32768</length>
+    <type>Html</type>
+    <visibleLines>25</visibleLines>
+</CustomField>
