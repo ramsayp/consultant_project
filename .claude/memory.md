@@ -25,3 +25,26 @@ Decisions made during development that are not obvious from reading the code.
 ## Compact card layout for backlog
 
 The backlog can grow large. Single-line rows (`compact = true`) allow more items to be visible without scrolling. Sprint columns use taller cards for more detail.
+
+## Documentation — source of truth
+
+Salesforce is the source of truth for `docs/technical/` and `docs/user/`. Users may edit `Body__c` directly in the org; the repo copy may lag. Before editing any file in those folders:
+
+1. Query the `Documentation__c` record via MCP
+2. If SF is newer, overwrite the repo file first
+3. Make edits
+4. Update both the repo file and the SF record (`updateSobjectRecord`)
+
+| Repo file                                    | SF Record ID         | SF Name                                  |
+| -------------------------------------------- | -------------------- | ---------------------------------------- |
+| `docs/technical/project-management-guide.md` | `a05g5000007RVGbAAO` | Project Management App — Technical Guide |
+| `docs/technical/documentation-guide.md`      | `a05g5000007li9dAAA` | Documentation App — Technical Guide      |
+| `docs/user/documentation-guide.md`           | `a05g5000007liBFAAY` | Documentation App — User Guide           |
+
+## Workflow
+
+**After every `git commit`**, report outcome explicitly:
+
+- ✅ Committed to GitHub
+- ✅ Branch is up to date with `origin/main` (or flag if ahead/behind)
+- ✅ Pushed to Salesforce — when MCP write operations were also performed in the same task
