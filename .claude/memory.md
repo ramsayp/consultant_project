@@ -30,17 +30,21 @@ The backlog can grow large. Single-line rows (`compact = true`) allow more items
 
 Salesforce is the source of truth for `docs/technical/` and `docs/user/`. Users may edit `Body__c` directly in the org; the repo copy may lag. Before editing any file in those folders:
 
-1. Query the `Documentation__c` record via MCP
+1. Query the `Documentation__c` record via MCP using `Claude_Doc_Id__c`:
+   `SELECT Id, Name, Body__c FROM Documentation__c WHERE Claude_Doc_Id__c = 'slug-here'`
 2. If SF is newer, overwrite the repo file first
 3. Make edits
 4. Update both the repo file and the SF record (`updateSobjectRecord`)
 
-| Repo file                                    | SF Record ID         | SF Name                                  |
-| -------------------------------------------- | -------------------- | ---------------------------------------- |
-| `docs/technical/project-management-guide.md` | `a05g5000007RVGbAAO` | Project Management App — Technical Guide |
-| `docs/technical/documentation-guide.md`      | `a05g5000007li9dAAA` | Documentation App — Technical Guide      |
-| `docs/user/documentation-guide.md`           | `a05g5000007liBFAAY` | Documentation App — User Guide           |
-| `docs/user/project-management-guide.md`      | `a05g5000007kAMvAAM` | Project Management App — User Guide      |
+`Claude_Doc_Id__c` is an External ID field on `Documentation__c` — use it to locate records without hard-coding Salesforce IDs.
+
+| Repo file                                    | `Claude_Doc_Id__c`             | SF Name                                  |
+| -------------------------------------------- | ------------------------------ | ---------------------------------------- |
+| `docs/technical/project-management-guide.md` | `project-management-technical` | Project Management App — Technical Guide |
+| `docs/technical/documentation-guide.md`      | `documentation-technical`      | Documentation App — Technical Guide      |
+| `docs/technical/mcp-setup-guide.md`          | `mcp-setup-technical`          | MCP Setup — Technical Guide              |
+| `docs/user/documentation-guide.md`           | `documentation-user`           | Documentation App — User Guide           |
+| `docs/user/project-management-guide.md`      | `project-management-user`      | Project Management App — User Guide      |
 
 ## Workflow
 
