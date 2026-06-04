@@ -40,6 +40,7 @@ Salesforce is the source of truth for `docs/technical/` and `docs/user/`. Users 
 | `docs/technical/project-management-guide.md` | `a05g5000007RVGbAAO` | Project Management App — Technical Guide |
 | `docs/technical/documentation-guide.md`      | `a05g5000007li9dAAA` | Documentation App — Technical Guide      |
 | `docs/user/documentation-guide.md`           | `a05g5000007liBFAAY` | Documentation App — User Guide           |
+| `docs/user/project-management-guide.md`      | `a05g5000007kAMvAAM` | Project Management App — User Guide      |
 
 ## Workflow
 
