@@ -61,15 +61,16 @@ Default status on creation: **Project → Active**, all others → **Not Started
 
 ### `Sprint__c` (custom object)
 
-| Field           | Type     | Purpose                                                                        |
-| --------------- | -------- | ------------------------------------------------------------------------------ |
-| `Name`          | Text     | Display name in date-range format (e.g. "Sprint - 15 Jun 2026 to 28 Jun 2026") |
-| `Status__c`     | Picklist | Backlog / Planning / Active / Completed                                        |
-| `Start_Date__c` | Date     | Sprint start date                                                              |
-| `End_Date__c`   | Date     | Sprint end date                                                                |
-| `Sequence__c`   | Number   | Sort order (lower = earlier)                                                   |
+| Field           | Type        | Purpose                                                                        |
+| --------------- | ----------- | ------------------------------------------------------------------------------ |
+| `Name`          | Text        | Display name in date-range format (e.g. "Sprint - 15 Jun 2026 to 28 Jun 2026") |
+| `RecordTypeId`  | Record Type | `Sprint` (regular iteration) or `Backlog` (permanent catch-all)                |
+| `Status__c`     | Picklist    | Backlog / Planning / Active / Completed                                        |
+| `Start_Date__c` | Date        | Sprint start date                                                              |
+| `End_Date__c`   | Date        | Sprint end date                                                                |
+| `Sequence__c`   | Number      | Sort order (lower = earlier)                                                   |
 
-One sprint record has `Status__c = 'Backlog'` and `Sequence__c = 9999`. This is the permanent backlog container — unassigned items fall here automatically.
+Two record types: **Sprint** (regular two-week iterations) and **Backlog** (permanent catch-all, `Sequence__c = 9999`). Unassigned Story/Task/Bug items are auto-assigned to the Backlog sprint via `WorkItemTrigger`. On the board, the Backlog section always renders last regardless of sequence number.
 
 ---
 
@@ -99,21 +100,21 @@ All methods use `with sharing`. Methods marked cacheable are safe for `@wire`; a
 
 ### Imperative-only methods
 
-| Method                                          | Purpose                                                                                                                                                                                                                                             |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getChildren(Id parentId)`                      | Direct child work items of a given parent                                                                                                                                                                                                           |
-| `getEpics(Id projectId)`                        | All Epics — called fresh (not cached) so newly created epics appear immediately                                                                                                                                                                     |
-| `getParentContext(Id recordId)`                 | Returns `recordTypeName`, `parentId`, `parentName` — used by the parent selector applet                                                                                                                                                             |
-| `getCandidateParents(String recordTypeName)`    | Eligible parent records for a given child type (e.g. Epics for a Story)                                                                                                                                                                             |
-| `ensureBacklogSprint()`                         | Creates the Backlog sprint if one doesn't exist; idempotent                                                                                                                                                                                         |
-| `generateSprints()`                             | Creates 6 two-week Planning sprints starting the next Monday; exits early if sprints exist                                                                                                                                                          |
-| `closeSprint(Id sprintId)`                      | Marks a sprint Completed; activates the next sprint in sequence; rolls non-terminal items (any status except Completed, Cancelled, Done, Fixed, Closed) forward to it; creates a new Planning sprint at the end of the chain with a date-range name |
-| `updateStatus(Id workItemId, String newStatus)` | Sets `Status__c` on one item (called on kanban drop)                                                                                                                                                                                                |
-| `updateSprint(Id workItemId, Id sprintId)`      | Sets `Sprint__c` and cascades to Chapter children                                                                                                                                                                                                   |
-| `updateSequences(List<Id> workItemIds)`         | Writes 1-based `Sequence__c` values to persist card order after drag-and-drop                                                                                                                                                                       |
-| `addComment(Id workItemId, String body)`        | Inserts a new Comment\_\_c record                                                                                                                                                                                                                   |
-| `editComment(Id commentId, String body)`        | Updates an existing comment body                                                                                                                                                                                                                    |
-| `deleteComment(Id commentId)`                   | Permanently deletes a comment                                                                                                                                                                                                                       |
+| Method                                          | Purpose                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getChildren(Id parentId)`                      | Direct child work items of a given parent                                                                                                                                                                                                                                                                                                           |
+| `getEpics(Id projectId)`                        | All Epics — called fresh (not cached) so newly created epics appear immediately                                                                                                                                                                                                                                                                     |
+| `getParentContext(Id recordId)`                 | Returns `recordTypeName`, `parentId`, `parentName` — used by the parent selector applet                                                                                                                                                                                                                                                             |
+| `getCandidateParents(String recordTypeName)`    | Eligible parent records for a given child type (e.g. Epics for a Story)                                                                                                                                                                                                                                                                             |
+| `ensureBacklogSprint()`                         | Ensures a Backlog-RT sprint exists. On first deploy, migrates any existing Status='Backlog' sprint to the Backlog record type; otherwise creates fresh with the Backlog RT                                                                                                                                                                          |
+| `generateSprints()`                             | Creates 6 two-week Planning sprints (Sprint RT) starting the next Monday; exits early if sprints exist                                                                                                                                                                                                                                              |
+| `closeSprint(Id sprintId)`                      | Guards against closing the Backlog sprint (checked via `RecordType.DeveloperName`). Marks a sprint Completed; activates the next sprint in sequence; rolls non-terminal items (any status except Completed, Cancelled, Done, Fixed, Closed) forward to it; creates a new Planning sprint (Sprint RT) at the end of the chain with a date-range name |
+| `updateStatus(Id workItemId, String newStatus)` | Sets `Status__c` on one item (called on kanban drop)                                                                                                                                                                                                                                                                                                |
+| `updateSprint(Id workItemId, Id sprintId)`      | Sets `Sprint__c` and cascades to Chapter children                                                                                                                                                                                                                                                                                                   |
+| `updateSequences(List<Id> workItemIds)`         | Writes 1-based `Sequence__c` values to persist card order after drag-and-drop                                                                                                                                                                                                                                                                       |
+| `addComment(Id workItemId, String body)`        | Inserts a new Comment\_\_c record                                                                                                                                                                                                                                                                                                                   |
+| `editComment(Id commentId, String body)`        | Updates an existing comment body                                                                                                                                                                                                                                                                                                                    |
+| `deleteComment(Id commentId)`                   | Permanently deletes a comment                                                                                                                                                                                                                                                                                                                       |
 
 #### Project hierarchy scoping in `getBoardItems`
 
@@ -127,6 +128,17 @@ Main query: WHERE Parent_Work_Item__c IN :validParents
 ```
 
 This prevents items from other projects appearing on the board.
+
+---
+
+## Triggers
+
+### `WorkItemTrigger`
+
+**File:** `force-app/main/default/triggers/WorkItemTrigger.trigger`
+**Fires:** before insert on `Work_Item__c`
+
+Assigns the Backlog sprint to any Story, Task, or Bug inserted with a null `Sprint__c`. Queries the Backlog sprint by `RecordTypeId` (Backlog record type) once per transaction. Exits silently if no Backlog sprint exists — no error thrown. Bulkified and safe for data load and API creation.
 
 ---
 
@@ -175,7 +187,9 @@ loadItems() → getBoardItems({ projectId }) → this.workItems  // imperative, 
 For each sprint, builds a section with columns:
 
 - **Regular sprints**: 10 columns, one per kanban stage in `STAGES`. Items bucketed by `STATUS_TO_STAGE[item.Status__c]`.
-- **Backlog sprint** (`isBacklog = true`): single "Not Started" column. Absorbs items where `Sprint__c` is null, equals the backlog sprint ID, or references a sprint not in the active set.
+- **Backlog sprint** (`isBacklog = sprint.RecordType?.DeveloperName === 'Backlog'`): single "Not Started" column. Absorbs items where `Sprint__c` is null, equals the backlog sprint ID, or references a sprint not in the active set.
+
+Sprint sections are sorted client-side so the Backlog section always appears at the bottom regardless of `Sequence__c`.
 
 `STATUS_TO_STAGE` maps legacy status values to the nearest current stage, so items created under old picklist values still appear on the board.
 
@@ -377,7 +391,7 @@ closeSprint(id) → marks Completed
 (repeat)
 ```
 
-The Backlog sprint (`Status__c = 'Backlog'`, `Sequence__c = 9999`) is excluded from `closeSprint` and never appears in the Sprints view.
+The Backlog sprint (Record Type: `Backlog`, `Sequence__c = 9999`) is excluded from `closeSprint` and never appears in the Sprints view. On the board, it always renders last — the `sprintSections` getter sorts sprint sections client-side to guarantee this.
 
 **Terminal statuses** (items stay on closed sprint): `Completed`, `Cancelled`, `Done`, `Fixed`, `Closed`. All other statuses roll forward to the next sprint.
 
@@ -404,7 +418,7 @@ To seed sprints for a new org: open the **Sprints** tab in Project Management an
 
 ## Key Design Decisions
 
-**Backlog as a sprint record:** One `Sprint__c` record with `Status__c = 'Backlog'` absorbs all unassigned items. Keeps the data model uniform and avoids a nullable-sprint special case everywhere except the `sprintSections` getter.
+**Backlog as a sprint record:** One `Sprint__c` record (Record Type: `Backlog`, `Sequence__c = 9999`) absorbs all unassigned items. Keeps the data model uniform and avoids a nullable-sprint special case everywhere except the `sprintSections` getter. The Backlog RT is the canonical identifier — detection code uses `RecordType.DeveloperName === 'Backlog'` rather than `Status__c`.
 
 **`getActiveSprints` stays cacheable:** `ensureBacklogSprint` is called imperatively from `connectedCallback`. This preserves `@wire` reactivity on `getActiveSprints` while still guaranteeing the Backlog sprint exists before the board renders.
 
@@ -421,3 +435,5 @@ To seed sprints for a new org: open the **Sprints** tab in Project Management an
 **Sprint close is a cascade operation:** `closeSprint` does four things atomically — marks Completed, activates the next sprint in sequence, rolls non-terminal work items forward to it, then appends a new Planning sprint at the end of the chain. Sprint names use a date-range format (`Sprint - 1 Jun 2026 to 14 Jun 2026`) generated from `Start_Date__c` and `End_Date__c`, so sprints are self-describing without a manual naming step.
 
 **Backlog hidden from Sprints view:** The Backlog sprint never appears in `allSprintsForDisplay` (filtered in the LWC getter). It is a system-internal record — users cannot close it and seeing it in the sprint panel adds noise.
+
+**Backlog pinned last on the board:** The `sprintSections` getter sorts sprint sections client-side so the Backlog always renders at the bottom, regardless of `Sequence__c`. This prevents any future sprint with a sequence number above 9999 from appearing after the Backlog.
