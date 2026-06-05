@@ -2,6 +2,7 @@
 
 ## feedback/
 
+- [App docs structure convention](feedback/app_docs_structure.md) — overview.md = architecture + diagram; salesforce.md = field tables + record types; overview.md @-imported, salesforce.md is reference only
 - [LWC Jest module mocking patterns](feedback/lwc_jest_module_mocking.md) — what works on Windows with sfdx-lwc-jest (imperative vs wire, moduleNameMapper, schema .default)
 - [Search all name variants on rename](feedback/search_variations.md) — grep hyphenated, spaced, title-cased, and camelCased forms; one pattern misses others
 - [Prettier + VS Code XML config for Salesforce](feedback/sf_metadata_prettier_xml.md) — exclude xml from Prettier; noGrammar+downloadExternalResources+validation.filters fix; systemId:'' anti-pattern; targetNamespace cascade bug; required field permission set error
