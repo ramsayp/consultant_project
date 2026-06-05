@@ -99,7 +99,10 @@ Salesforce defaults this to `false`, which lets users add/remove/reorder tabs an
 
 ```json
 "xml.validation.noGrammar": "ignore",
-"xml.downloadExternalResources.enabled": false
+"xml.downloadExternalResources.enabled": false,
+"xml.validation.filters": [
+  { "pattern": "**/*-meta.xml", "enabled": false }
+]
 ```
 
-Both settings are needed together. After applying, run **XML: Clear Schema Cache** + **Developer: Reload Window** to flush previously cached XSDs.
+All three settings are needed. `xml.validation.filters` is the key one — it disables validation for all `-meta.xml` files immediately without requiring a cache clear or window reload. The other two prevent the extension from downloading Salesforce XSDs in the first place.

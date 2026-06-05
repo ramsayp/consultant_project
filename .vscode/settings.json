@@ -10,5 +10,8 @@
   },
   "xml.preferences.showSchemaDocumentationType": "none",
   "xml.validation.noGrammar": "ignore",
-  "xml.downloadExternalResources.enabled": false
+  "xml.downloadExternalResources.enabled": false,
+  "xml.validation.filters": [
+    { "pattern": "**/*-meta.xml", "enabled": false }
+  ]
 }
