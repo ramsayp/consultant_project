@@ -6,18 +6,20 @@ metadata:
   type: feedback
 ---
 
-When saving or updating a memory file, always write it to TWO locations:
+When saving or updating a memory file, always write it to TWO locations in the SAME response — treat it as one atomic operation, never do one without the other:
 
 1. **Machine path:** `C:\Users\PaulS\.claude\projects\c--Users-PaulS-Projects-Coding-Languages-Salesforce-ConsultantProject\memory\`
 2. **Repo path:** `.claude/memory/` in the project repo (tracked in git)
 
-Update `MEMORY.md` in both locations to match, then commit the repo copy.
+Then commit and push the repo copy immediately.
 
-**Why:** The machine path is where the harness loads memories automatically each session. The repo path is a backup — if the machine is reformatted, restore by copying `.claude/memory/` files back to the machine path. Without the repo copy, all accumulated context is permanently lost.
+**Why:** The user explicitly called out that a memory update was applied to the machine path but not synced to the repo copy in the same session. If only the machine copy is updated, the repo diverges and the backup is stale — defeating the entire purpose of dual-save.
 
 **How to apply:**
 
-- Every Write or Edit to a memory file must happen twice — once to each path
+- NEVER edit a memory file at the machine path without immediately making the identical edit at the repo path in the same response — do both tool calls in the same message turn
+- NEVER edit a memory file at the repo path without doing the same at the machine path
+- After both edits, commit and push the repo change before the response ends
 - `MEMORY.md` must be kept in sync between both locations
 - On a new machine after a reformat: copy all files from `.claude/memory/` into the machine path to restore context
 - If the two copies ever diverge, the repo copy is authoritative (it has commit history); merge any machine-only changes back in
