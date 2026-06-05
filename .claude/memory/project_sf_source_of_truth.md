@@ -20,6 +20,7 @@ Technical guides, user guides, and change log entries live in Salesforce (`Docum
 2. Compare with the repo file — if SF is newer or different, overwrite the repo file first
 3. Make your edits
 4. Update both: the repo file AND the Salesforce record (`updateSobjectRecord`)
+5. Create a `Change_Log__c` record linking `Technical_Doc__c` to the updated doc, with `Title__c`, `Summary__c`, `Version__c`, `Changed_By__c`, `Change_Date__c`, `Environment__c`, and `Status__c` filled in. If there is a related `Work_Item__c`, link it too.
 
 ## Folder structure
 
