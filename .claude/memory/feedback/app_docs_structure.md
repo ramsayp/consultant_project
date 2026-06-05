@@ -14,4 +14,4 @@ Each app under `.claude/apps/*/` must have two files:
 
 **Why:** overview.md grew unwieldy when it contained both architecture and schema detail. Splitting keeps each file focused and mirrors how project-management docs are structured.
 
-**How to apply:** When adding a new app or object detail, put field tables in salesforce.md, not overview.md. When adding a new app, create both files and add only overview.md to CLAUDE.md @-imports.
+**How to apply:** When adding a new app or object detail, put field tables in salesforce.md, not overview.md. When adding a new app, copy from `.claude/apps/_template/` (overview.md and salesforce.md), then add only overview.md to CLAUDE.md @-imports.

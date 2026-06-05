@@ -27,3 +27,7 @@ _List controllers and their purpose._
 ## Tests
 
 _LWC Jest suites and Apex test classes._
+
+## Key design decisions
+
+_Non-obvious decisions: data model trade-offs, why something is structured the way it is, what was rejected and why._
