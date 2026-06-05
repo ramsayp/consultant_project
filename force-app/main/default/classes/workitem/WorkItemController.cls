@@ -194,7 +194,7 @@ public with sharing class WorkItemController {
     for (Integer i = 1; i <= 6; i++) {
       sprints.add(
         new Sprint__c(
-          Name = 'Sprint ' + i,
+          Name = sprintName(startDate, startDate.addDays(13)),
           Start_Date__c = startDate,
           End_Date__c = startDate.addDays(13), // two-week sprint (inclusive end date)
           Status__c = 'Planning',
@@ -207,41 +207,82 @@ public with sharing class WorkItemController {
   }
 
   // ── closeSprint ───────────────────────────────────────────────────────────
-  // Marks the given sprint as Completed, then creates the next sprint automatically.
-  // The new sprint is sequenced after the current highest-sequence sprint and
-  // starts the day after the latest end date in the system.
+  // Marks the sprint Completed, activates the next sprint in sequence,
+  // rolls non-terminal work items forward to that next sprint, then creates
+  // a new Planning sprint at the end of the chain with a date-range name.
   // Throws AuraHandledException if the Backlog sprint is targeted.
   @AuraEnabled
   public static Sprint__c closeSprint(Id sprintId) {
-    Sprint__c check = [SELECT Status__c FROM Sprint__c WHERE Id = :sprintId];
-    if (check.Status__c == 'Backlog')
+    Sprint__c closing = [
+      SELECT Status__c, Sequence__c
+      FROM Sprint__c
+      WHERE Id = :sprintId
+    ];
+    if (closing.Status__c == 'Backlog')
       throw new AuraHandledException('Cannot close the Backlog sprint.');
     update new Sprint__c(Id = sprintId, Status__c = 'Completed');
 
-    // Find the latest end date across all sprints to anchor the new sprint start
+    // Activate the next sprint in sequence and roll non-terminal items forward to it
+    List<Sprint__c> nextList = [
+      SELECT Id
+      FROM Sprint__c
+      WHERE
+        Sequence__c > :closing.Sequence__c
+        AND Status__c NOT IN ('Backlog', 'Completed')
+      ORDER BY Sequence__c ASC
+      LIMIT 1
+    ];
+    if (!nextList.isEmpty()) {
+      Id nextSprintId = nextList[0].Id;
+      update new Sprint__c(Id = nextSprintId, Status__c = 'Active');
+      List<String> terminal = new List<String>{
+        'Completed',
+        'Cancelled',
+        'Done',
+        'Fixed',
+        'Closed'
+      };
+      List<Work_Item__c> open = [
+        SELECT Id
+        FROM Work_Item__c
+        WHERE Sprint__c = :sprintId AND Status__c NOT IN :terminal
+      ];
+      for (Work_Item__c wi : open)
+        wi.Sprint__c = nextSprintId;
+      if (!open.isEmpty())
+        update open;
+    }
+
+    // Find the latest end date across non-Backlog sprints to anchor the new sprint start
     Sprint__c lastSprint = [
       SELECT End_Date__c
       FROM Sprint__c
-      WHERE End_Date__c != NULL
+      WHERE End_Date__c != NULL AND Status__c != 'Backlog'
       ORDER BY End_Date__c DESC
       LIMIT 1
     ];
 
-    // Determine the next sequence number by incrementing the current maximum
-    AggregateResult[] agg = [SELECT MAX(Sequence__c) maxSeq FROM Sprint__c];
+    // Determine the next sequence number, excluding the Backlog sentinel value (9999)
+    AggregateResult[] agg = [
+      SELECT MAX(Sequence__c) maxSeq
+      FROM Sprint__c
+      WHERE Status__c != 'Backlog'
+    ];
     Integer nextSeq = agg[0].get('maxSeq') != null
       ? Integer.valueOf((Decimal) agg[0].get('maxSeq')) + 1
       : 1;
 
+    Date startDate = lastSprint.End_Date__c.addDays(1);
+    Date endDate = startDate.addDays(13);
     Sprint__c next = new Sprint__c(
-      Name = 'Sprint ' + nextSeq,
-      Start_Date__c = lastSprint.End_Date__c.addDays(1), // starts the day after the last sprint ends
-      End_Date__c = lastSprint.End_Date__c.addDays(14), // two-week sprint
+      Name = sprintName(startDate, endDate),
+      Start_Date__c = startDate,
+      End_Date__c = endDate,
       Status__c = 'Planning',
       Sequence__c = nextSeq
     );
     insert next;
-    return next; // returned to the caller for immediate UI update
+    return next;
   }
 
   // ── getBoardItems ─────────────────────────────────────────────────────────
@@ -440,6 +481,36 @@ public with sharing class WorkItemController {
       .getRecordTypeInfosByName()
       .get(name)
       .getRecordTypeId();
+  }
+
+  // Formats a sprint name from its date range: "Sprint - 1 Jun 2026 to 14 Jun 2026"
+  private static String sprintName(Date startDate, Date endDate) {
+    return 'Sprint - ' +
+      formatSprintDate(startDate) +
+      ' to ' +
+      formatSprintDate(endDate);
+  }
+
+  private static String formatSprintDate(Date d) {
+    String[] months = new List<String>{
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    };
+    return String.valueOf(d.day()) +
+      ' ' +
+      months[d.month() - 1] +
+      ' ' +
+      String.valueOf(d.year());
   }
 
   // Calculates the start date of the next sprint, snapping to the nearest Monday.

@@ -491,5 +491,64 @@ private class WorkItemController_Test {
       [SELECT Status__c FROM Sprint__c WHERE Id = :sprint.Id].Status__c
     );
     System.assertEquals('Planning', next.Status__c);
+    System.assertEquals(2, next.Sequence__c.intValue()); // not 10000 — Backlog excluded from MAX
+    System.assert(
+      next.Name.startsWith('Sprint - '),
+      'Expected date-range name, got: ' + next.Name
+    );
+  }
+
+  @isTest
+  static void testCloseSprint_rolloverAndActivatesNext() {
+    Sprint__c sprint1 = [
+      SELECT Id, Sequence__c
+      FROM Sprint__c
+      WHERE Status__c = 'Active'
+      LIMIT 1
+    ];
+    Sprint__c sprint2 = new Sprint__c(
+      Name = 'Sprint 2',
+      Status__c = 'Planning',
+      Start_Date__c = Date.today().addDays(14),
+      End_Date__c = Date.today().addDays(27),
+      Sequence__c = 2
+    );
+    insert sprint2;
+
+    // Mark one item terminal so it stays on the closed sprint
+    Work_Item__c story = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Story'
+      LIMIT 1
+    ];
+    update new Work_Item__c(Id = story.Id, Status__c = 'Done');
+
+    Test.startTest();
+    WorkItemController.closeSprint(sprint1.Id);
+    Test.stopTest();
+
+    // Sprint 2 should now be Active
+    System.assertEquals(
+      'Active',
+      [SELECT Status__c FROM Sprint__c WHERE Id = :sprint2.Id].Status__c
+    );
+    // Non-terminal items (Task, Bug) rolled over to Sprint 2
+    for (Work_Item__c wi : [
+      SELECT Sprint__c
+      FROM Work_Item__c
+      WHERE Name IN ('Test Task', 'Test Bug')
+    ]) {
+      System.assertEquals(
+        sprint2.Id,
+        wi.Sprint__c,
+        wi.Id + ' should have moved to sprint2'
+      );
+    }
+    // Terminal item (Story — Done) stays on Sprint 1
+    System.assertEquals(
+      sprint1.Id,
+      [SELECT Sprint__c FROM Work_Item__c WHERE Id = :story.Id].Sprint__c
+    );
   }
 }

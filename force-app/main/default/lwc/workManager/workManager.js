@@ -77,11 +77,12 @@ export default class WorkManager extends LightningElement {
   // Only one sprint at a time is eligible to be closed (the first non-completed,
   // non-backlog sprint found), so canClose is set only on that record.
   get allSprintsForDisplay() {
-    const closable = this.allSprints.find(
+    const sprints = this.allSprints.filter((s) => s.Status__c !== "Backlog");
+    const closable = sprints.find(
       // first sprint that can be closed
-      (s) => s.Status__c !== "Completed" && s.Status__c !== "Backlog"
+      (s) => s.Status__c !== "Completed"
     );
-    return this.allSprints.map((s) => ({
+    return sprints.map((s) => ({
       Id: s.Id,
       Name: s.Name,
       Status__c: s.Status__c,
