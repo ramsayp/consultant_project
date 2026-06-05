@@ -23,10 +23,14 @@ trigger WorkItemTrigger on Work_Item__c(before insert) {
   if (!anyNeedsBacklog)
     return;
 
+  Id sprintBacklogRtId = Schema.SObjectType.Sprint__c
+    .getRecordTypeInfosByDeveloperName()
+    .get('Backlog')
+    .getRecordTypeId();
   Sprint__c[] backlogs = [
     SELECT Id
     FROM Sprint__c
-    WHERE Status__c = 'Backlog'
+    WHERE RecordTypeId = :sprintBacklogRtId
     LIMIT 1
   ];
   if (backlogs.isEmpty())

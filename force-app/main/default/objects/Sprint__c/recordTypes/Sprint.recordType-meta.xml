@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Sprint</fullName>
+    <active>true</active>
+    <description>A time-boxed iteration containing planned work items.</description>
+    <label>Sprint</label>
+</RecordType>

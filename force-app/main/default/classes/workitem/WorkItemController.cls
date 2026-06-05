@@ -126,7 +126,14 @@ public with sharing class WorkItemController {
   @AuraEnabled(cacheable=true)
   public static List<Sprint__c> getActiveSprints() {
     return [
-      SELECT Id, Name, Start_Date__c, End_Date__c, Status__c, Sequence__c
+      SELECT
+        Id,
+        Name,
+        Start_Date__c,
+        End_Date__c,
+        Status__c,
+        Sequence__c,
+        RecordType.DeveloperName
       FROM Sprint__c
       WHERE Status__c IN ('Planning', 'Active', 'Backlog')
       ORDER BY Sequence__c NULLS LAST, Start_Date__c ASC
@@ -134,17 +141,34 @@ public with sharing class WorkItemController {
   }
 
   // ── ensureBacklogSprint ───────────────────────────────────────────────────
-  // Creates a Backlog sprint if one does not already exist.
-  // Called on board load so there is always somewhere to place unscheduled items.
+  // Ensures a Backlog-RT sprint exists. On first deploy, migrates any existing
+  // Status='Backlog' sprint to the Backlog record type rather than creating a duplicate.
   @AuraEnabled
   public static void ensureBacklogSprint() {
-    Integer count = [SELECT COUNT() FROM Sprint__c WHERE Status__c = 'Backlog'];
+    Id backlogRtId = sprintBacklogRtId();
+    Integer count = [
+      SELECT COUNT()
+      FROM Sprint__c
+      WHERE RecordTypeId = :backlogRtId
+    ];
     if (count == 0) {
-      insert new Sprint__c(
-        Name = 'Backlog',
-        Status__c = 'Backlog',
-        Sequence__c = 9999 // placed last in sequence so it appears at the bottom
-      );
+      // Migrate an old-style backlog sprint (no RT yet) if one exists
+      Sprint__c[] old = [
+        SELECT Id
+        FROM Sprint__c
+        WHERE Status__c = 'Backlog'
+        LIMIT 1
+      ];
+      if (!old.isEmpty()) {
+        update new Sprint__c(Id = old[0].Id, RecordTypeId = backlogRtId);
+      } else {
+        insert new Sprint__c(
+          Name = 'Backlog',
+          Status__c = 'Backlog',
+          Sequence__c = 9999, // placed last in sequence so it appears at the bottom
+          RecordTypeId = backlogRtId
+        );
+      }
     }
   }
 
@@ -156,7 +180,14 @@ public with sharing class WorkItemController {
   public static List<Sprint__c> getAllSprints() {
     Date cutoff = Date.today().addDays(-30); // 30-day lookback for completed sprints
     return [
-      SELECT Id, Name, Start_Date__c, End_Date__c, Status__c, Sequence__c
+      SELECT
+        Id,
+        Name,
+        Start_Date__c,
+        End_Date__c,
+        Status__c,
+        Sequence__c,
+        RecordType.DeveloperName
       FROM Sprint__c
       WHERE
         Status__c != 'Completed'
@@ -189,6 +220,7 @@ public with sharing class WorkItemController {
     if (existingCount > 0)
       return; // sprints already exist — nothing to generate
 
+    Id sprintRtId = sprintRegularRtId();
     Date startDate = nextSprintStart(Date.today());
     List<Sprint__c> sprints = new List<Sprint__c>();
     for (Integer i = 1; i <= 6; i++) {
@@ -198,7 +230,8 @@ public with sharing class WorkItemController {
           Start_Date__c = startDate,
           End_Date__c = startDate.addDays(13), // two-week sprint (inclusive end date)
           Status__c = 'Planning',
-          Sequence__c = i
+          Sequence__c = i,
+          RecordTypeId = sprintRtId
         )
       );
       startDate = startDate.addDays(14); // advance by 14 days for the next sprint
@@ -214,11 +247,11 @@ public with sharing class WorkItemController {
   @AuraEnabled
   public static Sprint__c closeSprint(Id sprintId) {
     Sprint__c closing = [
-      SELECT Status__c, Sequence__c
+      SELECT Status__c, Sequence__c, RecordType.DeveloperName
       FROM Sprint__c
       WHERE Id = :sprintId
     ];
-    if (closing.Status__c == 'Backlog')
+    if (closing.RecordType.DeveloperName == 'Backlog')
       throw new AuraHandledException('Cannot close the Backlog sprint.');
     update new Sprint__c(Id = sprintId, Status__c = 'Completed');
 
@@ -279,7 +312,8 @@ public with sharing class WorkItemController {
       Start_Date__c = startDate,
       End_Date__c = endDate,
       Status__c = 'Planning',
-      Sequence__c = nextSeq
+      Sequence__c = nextSeq,
+      RecordTypeId = sprintRegularRtId()
     );
     insert next;
     return next;
@@ -480,6 +514,20 @@ public with sharing class WorkItemController {
     return Schema.SObjectType.Work_Item__c
       .getRecordTypeInfosByName()
       .get(name)
+      .getRecordTypeId();
+  }
+
+  private static Id sprintBacklogRtId() {
+    return Schema.SObjectType.Sprint__c
+      .getRecordTypeInfosByDeveloperName()
+      .get('Backlog')
+      .getRecordTypeId();
+  }
+
+  private static Id sprintRegularRtId() {
+    return Schema.SObjectType.Sprint__c
+      .getRecordTypeInfosByDeveloperName()
+      .get('Sprint')
       .getRecordTypeId();
   }
 

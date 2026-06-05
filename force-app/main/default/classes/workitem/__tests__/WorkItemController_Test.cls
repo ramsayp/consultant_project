@@ -16,6 +16,20 @@ private class WorkItemController_Test {
       .getRecordTypeId();
   }
 
+  static Id sprintBacklogRtId() {
+    return Schema.SObjectType.Sprint__c
+      .getRecordTypeInfosByDeveloperName()
+      .get('Backlog')
+      .getRecordTypeId();
+  }
+
+  static Id sprintRegularRtId() {
+    return Schema.SObjectType.Sprint__c
+      .getRecordTypeInfosByDeveloperName()
+      .get('Sprint')
+      .getRecordTypeId();
+  }
+
   // ── Test setup ────────────────────────────────────────────────────────────
 
   @TestSetup
@@ -23,14 +37,16 @@ private class WorkItemController_Test {
     Sprint__c backlog = new Sprint__c(
       Name = 'Backlog',
       Status__c = 'Backlog',
-      Sequence__c = 9999
+      Sequence__c = 9999,
+      RecordTypeId = sprintBacklogRtId()
     );
     Sprint__c sprint1 = new Sprint__c(
       Name = 'Sprint 1',
       Status__c = 'Active',
       Start_Date__c = Date.today(),
       End_Date__c = Date.today().addDays(13),
-      Sequence__c = 1
+      Sequence__c = 1,
+      RecordTypeId = sprintRegularRtId()
     );
     insert new List<Sprint__c>{ backlog, sprint1 };
 
@@ -511,7 +527,8 @@ private class WorkItemController_Test {
       Status__c = 'Planning',
       Start_Date__c = Date.today().addDays(14),
       End_Date__c = Date.today().addDays(27),
-      Sequence__c = 2
+      Sequence__c = 2,
+      RecordTypeId = sprintRegularRtId()
     );
     insert sprint2;
 

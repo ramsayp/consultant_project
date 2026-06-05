@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Backlog</fullName>
+    <active>true</active>
+    <description>The permanent catch-all sprint for unscheduled work items. Only one Backlog sprint should exist at a time.</description>
+    <label>Backlog</label>
+</RecordType>

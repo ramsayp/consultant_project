@@ -127,6 +127,14 @@
         <visible>true</visible>
     </recordTypeVisibilities>
     <recordTypeVisibilities>
+        <recordType>Sprint__c.Backlog</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+    <recordTypeVisibilities>
+        <recordType>Sprint__c.Sprint</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+    <recordTypeVisibilities>
         <recordType>Work_Item__c.Bug</recordType>
         <visible>true</visible>
     </recordTypeVisibilities>

@@ -206,10 +206,18 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
   // Builds the full data structure the template iterates over:
   // one section per sprint, each containing columns keyed by stage.
   // The Backlog sprint absorbs items with no sprint or with a deleted sprint Id.
+  // Backlog is always sorted to the end regardless of Sequence__c.
   get sprintSections() {
     const sprintIds = new Set(this.sprints.map((s) => s.Id));
-    return this.sprints.map((sprint) => {
-      const isBacklog = sprint.Status__c === "Backlog";
+    const sorted = [...this.sprints].sort((a, b) => {
+      const aIsBacklog = a.RecordType?.DeveloperName === "Backlog";
+      const bIsBacklog = b.RecordType?.DeveloperName === "Backlog";
+      if (aIsBacklog && !bIsBacklog) return 1;
+      if (!aIsBacklog && bIsBacklog) return -1;
+      return 0;
+    });
+    return sorted.map((sprint) => {
+      const isBacklog = sprint.RecordType?.DeveloperName === "Backlog";
       const items = this.workItems.filter((i) => {
         if (i.RecordType?.Name === "Epic") return false; // epics appear on the epics tab only
         // Backlog absorbs items with no sprint or an unknown sprint Id
@@ -407,7 +415,8 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
   _colItems(stage, sprintId) {
     const sprintIds = new Set(this.sprints.map((s) => s.Id));
     const isBacklog =
-      this.sprints.find((s) => s.Id === sprintId)?.Status__c === "Backlog";
+      this.sprints.find((s) => s.Id === sprintId)?.RecordType?.DeveloperName ===
+      "Backlog";
     return this.workItems.filter((i) => {
       if (i.RecordType?.Name === "Epic") return false;
       if ((STATUS_TO_STAGE[i.Status__c] || "Not Started") !== stage)
