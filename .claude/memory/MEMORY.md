@@ -11,10 +11,12 @@
 - [Always name the terminal](feedback/be_specific_about_terminal.md) — never say "run in the terminal"; always specify PowerShell in VS Code, Bash tool, or Claude Code chat
 - [git status after every commit](feedback/git_status_after_commit.md) — run git status after every commit; flag if ahead of origin (push needed) or behind (investigate); offer to commit after any approved file change
 - [Memory dual-save rule](feedback/memory_dual_save.md) — always write memory files to both machine path and .claude/memory/ in repo; repo copy survives machine reformat; restore by copying back on new machine
+- [Trust your own edits](feedback/trust_your_own_edits.md) — don't re-read files you just wrote, don't stage files to pre-check length limits, don't run anonymous Apex/temp scripts to answer simple questions — just attempt the operation
+- [Prefer MCP over anonymous Apex](feedback/prefer_mcp_over_anon_apex.md) — one-time data migrations: use soqlQuery+updateSobjectRecord, not .apex script files via sf apex run; avoids temp files in the repo entirely
 
 ## project/
 
-- [Salesforce is source of truth for docs](project/sf_source_of_truth.md) — always pull from SF before editing docs/technical/ or docs/user/; update both repo and SF record after changes; current doc IDs listed here
+- [Salesforce is source of truth for docs](project/sf_source_of_truth.md) — pull from SF before editing docs/; update repo+SF+Change_Log after; only Title**c required on Change_Log**c, don't hunt for a Work_Item\_\_c to link; Rich Text Area cap is a fixed 32,768 (don't pre-check)
 
 ## reference/
 
