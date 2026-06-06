@@ -1,176 +1,210 @@
 <template>
-    <div class="board-root slds-p-around_medium">
-
-        <!-- Board header: type picker + new button -->
-        <div class="board-header slds-m-bottom_medium">
-            <lightning-combobox
-                label=""
-                variant="label-hidden"
-                value={createType}
-                options={typeOptions}
-                onchange={handleTypeChange}
-                class="type-picker">
-            </lightning-combobox>
-            <lightning-button
-                variant="brand"
-                label="+ New"
-                onclick={handleNewClick}>
-            </lightning-button>
-        </div>
-
-        <template if:true={isLoading}>
-            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
-        </template>
-
-        <template if:false={isLoading}>
-
-            <!-- ── Tabs ── -->
-            <div class="board-tabs slds-m-bottom_medium">
-                <button class={epicsTabClass} data-tab="epics" onclick={handleTabClick}>Epics <span class="tab-count">{epicCount}</span></button>
-                <button class={boardsTabClass} data-tab="boards" onclick={handleTabClick}>Boards</button>
-            </div>
-
-            <!-- ── Epics tab ── -->
-            <template if:true={isEpicsTab}>
-                <div class="epic-panel">
-                    <div class="epic-panel__header">
-                        <span class="epic-panel__title">Epics</span>
-                        <span class="sprint-section__count">{epicCount}</span>
-                        <div class="sprint-section__actions">
-                            <lightning-button
-                                label="+ New Epic"
-                                data-type="Epic"
-                                onclick={handleNewClick}>
-                            </lightning-button>
-                        </div>
-                    </div>
-                    <div class="epic-groups">
-                        <template for:each={epicGroups} for:item="group">
-                            <div key={group.key} class="epic-group">
-                                <div class="epic-group__header">
-                                    <span class="epic-group__label">{group.label}</span>
-                                    <span class="col-count">{group.count}</span>
-                                </div>
-                                <template for:each={group.items} for:item="epic">
-                                    <div key={epic.Id} class="epic-row" data-id={epic.Id} onclick={handleOpenItem}>
-                                        <span class="epic-row__name">{epic.Name}</span>
-                                        <span class="epic-row__status">{epic.Status__c}</span>
-                                    </div>
-                                </template>
-                                <template if:true={group.empty}>
-                                    <p class="empty-col">—</p>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </template>
-
-            <!-- ── Boards tab (sprints + backlog) ── -->
-            <template if:true={isBoardsTab}>
-                <template for:each={sprintSections} for:item="section">
-                    <div key={section.sprintId} class="sprint-section slds-m-bottom_medium">
-                        <div class="sprint-section__header">
-                            <span class="sprint-section__name">{section.name}</span>
-                            <span class="sprint-section__dates">{section.startDate} – {section.endDate}</span>
-                            <span class="sprint-section__count">{section.count}</span>
-                        </div>
-                        <!-- Kanban layout for regular sprints -->
-                        <template if:false={section.isBacklog}>
-                            <div class="kanban">
-                                <template for:each={section.columns} for:item="col">
-                                    <div key={col.stage} class="kanban__col"
-                                         data-stage={col.stage}
-                                         data-sprint-id={section.sprintId}
-                                         ondragover={handleDragOver}
-                                         ondragenter={handleDragEnter}
-                                         ondragleave={handleDragLeave}
-                                         ondrop={handleDrop}>
-                                        <div class="kanban__col-header">
-                                            <span class="col-name">{col.stage}</span>
-                                            <span class="col-count">{col.count}</span>
-                                        </div>
-                                        <div class="kanban__col-body">
-                                            <template for:each={col.items} for:item="item">
-                                                <div key={item.Id} class="card-slot">
-                                                    <div class={item.aboveClass}></div>
-                                                    <c-work-item-card
-                                                        data-id={item.Id}
-                                                        work-item={item}
-                                                        ondragover={handleCardDragOver}
-                                                        onopen={handleOpenItem}>
-                                                    </c-work-item-card>
-                                                    <div class={item.belowClass}></div>
-                                                </div>
-                                            </template>
-                                            <template if:true={col.empty}>
-                                                <p class="empty-col">—</p>
-                                            </template>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                        <!-- List layout for backlog -->
-                        <template if:true={section.isBacklog}>
-                            <div class="backlog-list"
-                                 data-stage="Not Started"
-                                 data-sprint-id={section.sprintId}
-                                 ondragover={handleDragOver}
-                                 ondragenter={handleDragEnter}
-                                 ondragleave={handleDragLeave}
-                                 ondrop={handleDrop}>
-                                <template for:each={section.listItems} for:item="item">
-                                    <div key={item.Id} class="card-slot">
-                                        <div class={item.aboveClass}></div>
-                                        <c-work-item-card
-                                            data-id={item.Id}
-                                            work-item={item}
-                                            compact={section.isBacklog}
-                                            ondragover={handleCardDragOver}
-                                            onopen={handleOpenItem}>
-                                        </c-work-item-card>
-                                        <div class={item.belowClass}></div>
-                                    </div>
-                                </template>
-                                <template if:false={section.count}>
-                                    <p class="empty-col">Backlog is empty.</p>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
-                </template>
-            </template>
-
-        </template>
-
-        <template if:true={error}>
-            <p class="slds-text-color_error">{error}</p>
-        </template>
+  <div class="board-root slds-p-around_medium">
+    <!-- Board header: type picker + new button -->
+    <div class="board-header slds-m-bottom_medium">
+      <lightning-combobox
+        label=""
+        variant="label-hidden"
+        value={createType}
+        options={typeOptions}
+        onchange={handleTypeChange}
+        class="type-picker"
+      >
+      </lightning-combobox>
+      <lightning-button variant="brand" label="+ New" onclick={handleNewClick}>
+      </lightning-button>
     </div>
 
-    <!-- Create modal -->
-    <template if:true={showCreate}>
-        <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
-            <div class="slds-modal__container">
-                <button
-                    class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
-                    title="Close"
-                    onclick={handleCreateCancel}>
-                    <lightning-icon icon-name="utility:close" size="small" alternative-text="Close"></lightning-icon>
-                </button>
-                <div class="slds-modal__content slds-p-around_none">
-                    <c-work-item-create
-                        type={createType}
-                        sprint-id={createSprint}
-                        parent-id={createParent}
-                        project-id={projectId}
-                        oncreated={handleItemCreated}
-                        oncancel={handleCreateCancel}>
-                    </c-work-item-create>
-                </div>
-            </div>
-        </section>
-        <div class="slds-backdrop slds-backdrop_open"></div>
+    <template if:true={isLoading}>
+      <lightning-spinner
+        alternative-text="Loading"
+        size="medium"
+      ></lightning-spinner>
     </template>
+
+    <template if:false={isLoading}>
+      <!-- ── Tabs ── -->
+      <div class="board-tabs slds-m-bottom_medium">
+        <button class={epicsTabClass} data-tab="epics" onclick={handleTabClick}>
+          Epics <span class="tab-count">{epicCount}</span>
+        </button>
+        <button
+          class={boardsTabClass}
+          data-tab="boards"
+          onclick={handleTabClick}
+        >
+          Boards
+        </button>
+      </div>
+
+      <!-- ── Epics tab ── -->
+      <template if:true={isEpicsTab}>
+        <div class="epic-panel">
+          <div class="epic-panel__header">
+            <span class="epic-panel__title">Epics</span>
+            <span class="sprint-section__count">{epicCount}</span>
+            <div class="sprint-section__actions">
+              <lightning-button
+                label="+ New Epic"
+                data-type="Epic"
+                onclick={handleNewClick}
+              >
+              </lightning-button>
+            </div>
+          </div>
+          <div class="epic-groups">
+            <template for:each={epicGroups} for:item="group">
+              <div key={group.key} class="epic-group">
+                <div class="epic-group__header">
+                  <span class="epic-group__label">{group.label}</span>
+                  <span class="col-count">{group.count}</span>
+                </div>
+                <template for:each={group.items} for:item="epic">
+                  <div
+                    key={epic.Id}
+                    class="epic-row"
+                    data-id={epic.Id}
+                    onclick={handleOpenItem}
+                  >
+                    <span class="epic-row__name">{epic.Name}</span>
+                    <span class="epic-row__status">{epic.Status__c}</span>
+                  </div>
+                </template>
+                <template if:true={group.empty}>
+                  <p class="empty-col">—</p>
+                </template>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <!-- ── Boards tab (sprints + backlog) ── -->
+      <template if:true={isBoardsTab}>
+        <template for:each={sprintSections} for:item="section">
+          <div key={section.sprintId} class={section.sectionClass}>
+            <div class="sprint-section__header">
+              <span class="sprint-section__name">{section.name}</span>
+              <template if:true={section.isActive}>
+                <span class="sprint-section__badge">Active</span>
+              </template>
+              <span class="sprint-section__dates"
+                >{section.startDate} – {section.endDate}</span
+              >
+              <span class="sprint-section__count">{section.count}</span>
+            </div>
+            <!-- Kanban layout: Active sprint only -->
+            <template if:true={section.isActive}>
+              <div class="kanban">
+                <template for:each={section.columns} for:item="col">
+                  <div
+                    key={col.stage}
+                    class="kanban__col"
+                    data-stage={col.stage}
+                    data-sprint-id={section.sprintId}
+                    ondragover={handleDragOver}
+                    ondragenter={handleDragEnter}
+                    ondragleave={handleDragLeave}
+                    ondrop={handleDrop}
+                  >
+                    <div class="kanban__col-header">
+                      <span class="col-name">{col.stage}</span>
+                      <span class="col-count">{col.count}</span>
+                    </div>
+                    <div class="kanban__col-body">
+                      <template for:each={col.items} for:item="item">
+                        <div key={item.Id} class="card-slot">
+                          <div class={item.aboveClass}></div>
+                          <c-work-item-card
+                            data-id={item.Id}
+                            work-item={item}
+                            ondragover={handleCardDragOver}
+                            onopen={handleOpenItem}
+                          >
+                          </c-work-item-card>
+                          <div class={item.belowClass}></div>
+                        </div>
+                      </template>
+                      <template if:true={col.empty}>
+                        <p class="empty-col">—</p>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <!-- List layout: every other sprint (Planning + Backlog) — no data-stage,
+                             so handleDrop knows to let updateSprint derive the selection status -->
+            <template if:true={section.isListView}>
+              <div
+                class="backlog-list"
+                data-sprint-id={section.sprintId}
+                ondragover={handleDragOver}
+                ondragenter={handleDragEnter}
+                ondragleave={handleDragLeave}
+                ondrop={handleDrop}
+              >
+                <template for:each={section.listItems} for:item="item">
+                  <div key={item.Id} class="card-slot">
+                    <div class={item.aboveClass}></div>
+                    <c-work-item-card
+                      data-id={item.Id}
+                      work-item={item}
+                      compact={section.isListView}
+                      ondragover={handleCardDragOver}
+                      onopen={handleOpenItem}
+                    >
+                    </c-work-item-card>
+                    <div class={item.belowClass}></div>
+                  </div>
+                </template>
+                <template if:false={section.count}>
+                  <p class="empty-col">{section.emptyMessage}</p>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+      </template>
+    </template>
+
+    <template if:true={error}>
+      <p class="slds-text-color_error">{error}</p>
+    </template>
+  </div>
+
+  <!-- Create modal -->
+  <template if:true={showCreate}>
+    <section
+      class="slds-modal slds-fade-in-open"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="slds-modal__container">
+        <button
+          class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+          title="Close"
+          onclick={handleCreateCancel}
+        >
+          <lightning-icon
+            icon-name="utility:close"
+            size="small"
+            alternative-text="Close"
+          ></lightning-icon>
+        </button>
+        <div class="slds-modal__content slds-p-around_none">
+          <c-work-item-create
+            type={createType}
+            sprint-id={createSprint}
+            parent-id={createParent}
+            project-id={projectId}
+            oncreated={handleItemCreated}
+            oncancel={handleCreateCancel}
+          >
+          </c-work-item-create>
+        </div>
+      </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+  </template>
 </template>

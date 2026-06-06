@@ -49,6 +49,8 @@ Project
 
 Default status on creation: **Project → Active**, all others → **Not Started**.
 
+Two additional values exist outside the per-record-type kanban lists above — **`Not Selected`** and **`Selected`** — used exclusively to track where a Story/Task/Bug sits relative to the Active sprint (see [Selection status](#selection-status) below). They never appear as kanban columns.
+
 #### Hierarchy rules
 
 - Epic's parent is a Project.
@@ -100,21 +102,21 @@ All methods use `with sharing`. Methods marked cacheable are safe for `@wire`; a
 
 ### Imperative-only methods
 
-| Method                                          | Purpose                                                                                                                                                                                                                                                                                                                                             |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getChildren(Id parentId)`                      | Direct child work items of a given parent                                                                                                                                                                                                                                                                                                           |
-| `getEpics(Id projectId)`                        | All Epics — called fresh (not cached) so newly created epics appear immediately                                                                                                                                                                                                                                                                     |
-| `getParentContext(Id recordId)`                 | Returns `recordTypeName`, `parentId`, `parentName` — used by the parent selector applet                                                                                                                                                                                                                                                             |
-| `getCandidateParents(String recordTypeName)`    | Eligible parent records for a given child type (e.g. Epics for a Story)                                                                                                                                                                                                                                                                             |
-| `ensureBacklogSprint()`                         | Ensures a Backlog-RT sprint exists. On first deploy, migrates any existing Status='Backlog' sprint to the Backlog record type; otherwise creates fresh with the Backlog RT                                                                                                                                                                          |
-| `generateSprints()`                             | Creates 6 two-week Planning sprints (Sprint RT) starting the next Monday; exits early if sprints exist                                                                                                                                                                                                                                              |
-| `closeSprint(Id sprintId)`                      | Guards against closing the Backlog sprint (checked via `RecordType.DeveloperName`). Marks a sprint Completed; activates the next sprint in sequence; rolls non-terminal items (any status except Completed, Cancelled, Done, Fixed, Closed) forward to it; creates a new Planning sprint (Sprint RT) at the end of the chain with a date-range name |
-| `updateStatus(Id workItemId, String newStatus)` | Sets `Status__c` on one item (called on kanban drop)                                                                                                                                                                                                                                                                                                |
-| `updateSprint(Id workItemId, Id sprintId)`      | Sets `Sprint__c` and cascades to Chapter children                                                                                                                                                                                                                                                                                                   |
-| `updateSequences(List<Id> workItemIds)`         | Writes 1-based `Sequence__c` values to persist card order after drag-and-drop                                                                                                                                                                                                                                                                       |
-| `addComment(Id workItemId, String body)`        | Inserts a new Comment\_\_c record                                                                                                                                                                                                                                                                                                                   |
-| `editComment(Id commentId, String body)`        | Updates an existing comment body                                                                                                                                                                                                                                                                                                                    |
-| `deleteComment(Id commentId)`                   | Permanently deletes a comment                                                                                                                                                                                                                                                                                                                       |
+| Method                                          | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getChildren(Id parentId)`                      | Direct child work items of a given parent                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `getEpics(Id projectId)`                        | All Epics — called fresh (not cached) so newly created epics appear immediately                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `getParentContext(Id recordId)`                 | Returns `recordTypeName`, `parentId`, `parentName` — used by the parent selector applet                                                                                                                                                                                                                                                                                                                                                                                             |
+| `getCandidateParents(String recordTypeName)`    | Eligible parent records for a given child type (e.g. Epics for a Story)                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `ensureBacklogSprint()`                         | Ensures a Backlog-RT sprint exists. On first deploy, migrates any existing Status='Backlog' sprint to the Backlog record type; otherwise creates fresh with the Backlog RT                                                                                                                                                                                                                                                                                                          |
+| `generateSprints()`                             | Creates 6 two-week Planning sprints (Sprint RT) starting the next Monday; exits early if sprints exist                                                                                                                                                                                                                                                                                                                                                                              |
+| `closeSprint(Id sprintId)`                      | Guards against closing the Backlog sprint (checked via `RecordType.DeveloperName`). Marks a sprint Completed; activates the next sprint in sequence; flips any `Selected` items already in that newly-activated sprint to `Not Started` (see [Selection status](#selection-status)); rolls non-terminal items (any status except Completed, Cancelled, Done, Fixed, Closed) forward to it; creates a new Planning sprint (Sprint RT) at the end of the chain with a date-range name |
+| `updateStatus(Id workItemId, String newStatus)` | Sets `Status__c` on one item (called on kanban drop)                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `updateSprint(Id workItemId, Id sprintId)`      | Sets `Sprint__c`, derives `Status__c` from the destination sprint via `deriveSelectionStatus` (see [Selection status](#selection-status)), and cascades both to Chapter children                                                                                                                                                                                                                                                                                                    |
+| `updateSequences(List<Id> workItemIds)`         | Writes 1-based `Sequence__c` values to persist card order after drag-and-drop                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `addComment(Id workItemId, String body)`        | Inserts a new Comment\_\_c record                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `editComment(Id commentId, String body)`        | Updates an existing comment body                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `deleteComment(Id commentId)`                   | Permanently deletes a comment                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 #### Project hierarchy scoping in `getBoardItems`
 
@@ -184,14 +186,64 @@ loadItems() → getBoardItems({ projectId }) → this.workItems  // imperative, 
 
 #### Sprint sections (`sprintSections` getter)
 
-For each sprint, builds a section with columns:
+Only **one** sprint at a time shows the full kanban grid — the Active sprint. Every other
+sprint (Planning sprints **and** Backlog) renders as a flat, single-column list, exactly
+like the Backlog always has:
 
-- **Regular sprints**: 10 columns, one per kanban stage in `STAGES`. Items bucketed by `STATUS_TO_STAGE[item.Status__c]`.
-- **Backlog sprint** (`isBacklog = sprint.RecordType?.DeveloperName === 'Backlog'`): single "Not Started" column. Absorbs items where `Sprint__c` is null, equals the backlog sprint ID, or references a sprint not in the active set.
+- **Active sprint** (`isActive = sprint.Status__c === 'Active'`): 10 columns, one per kanban
+  stage in `STAGES`. Items bucketed by `STATUS_TO_STAGE[item.Status__c]`. Gets a green accent
+  border/header (`.sprint-section--active`) and an "Active" badge for visual prominence.
+- **Everything else** (`isListView = !isActive`): a flat, priority-sorted list (`listItems`),
+  rendered with `compact` cards — same layout the Backlog has always used. The drop zone
+  carries no `data-stage` attribute, which is what tells `handleDrop` to skip `updateStatus`
+  and let `updateSprint`'s server-side `deriveSelectionStatus` own the status change instead.
+- **Backlog sprint** (`isBacklog = sprint.RecordType?.DeveloperName === 'Backlog'`): absorbs
+  items where `Sprint__c` is null, equals the backlog sprint ID, or references a sprint not
+  in the active set.
 
-Sprint sections are sorted client-side so the Backlog section always appears at the bottom regardless of `Sequence__c`.
+Sort order: Active sprint first, Backlog always last, everything else in `Sequence__c` order.
+`emptyMessage` differs by section type ("Backlog is empty." vs "Nothing selected for this
+sprint yet.").
 
-`STATUS_TO_STAGE` maps legacy status values to the nearest current stage, so items created under old picklist values still appear on the board.
+`STATUS_TO_STAGE` maps legacy status values — plus the new `Not Selected`/`Selected` selection
+statuses — to the nearest current stage, so any item rendered in a kanban context (mid-drag,
+stale cache) still buckets into a sane column instead of vanishing.
+
+#### Selection status
+
+Two `Work_Item__c.Status__c` values exist purely to track a Story/Task/Bug's position
+_relative to the Active sprint_, independent of the kanban stage values:
+
+| Value          | Meaning                                                |
+| -------------- | ------------------------------------------------------ |
+| `Not Selected` | Sitting in the Backlog — not yet queued for any sprint |
+| `Selected`     | Queued in a future (Planning) sprint, not yet active   |
+
+**The status is always derived from the destination, never the origin.** Apex's
+`deriveSelectionStatus(Sprint__c destSprint)` (in `WorkItemController.cls`) is the single
+source of truth:
+
+```apex
+Backlog sprint        → 'Not Selected'
+Planning-status sprint → 'Selected'
+Active (or anything else) → null  // leave Status__c alone — the kanban drop owns it
+```
+
+It's invoked from three places, covering every way an item's sprint can change:
+
+- **`updateSprint`** — every drag-and-drop sprint move (Backlog ↔ Planning, either direction
+  into/out of Active). Returning `null` for an Active destination is what stops it clobbering
+  the kanban stage that `updateStatus` just set on the same drop.
+- **`WorkItemTrigger`** (before insert) — re-derives `Status__c` from the item's final
+  `Sprint__c` so manually-picked sprints (not just the Backlog default) get the correct
+  selection status from creation. `workItemCreate.js` always sends `Status__c = 'Not Started'`
+  regardless of the chosen sprint — Apex corrects it.
+- **`closeSprint`** — see [Sprint Lifecycle](#sprint-lifecycle): items already `Selected` in
+  the sprint being activated flip to `Not Started` so they enter the kanban at its first stage.
+
+Because the rule looks only at where an item _lands_, pulling a card out of the Active sprint
+back into the Backlog or a future sprint resets it to `Not Selected`/`Selected` even if it was
+`In Progress`/`Blocked`/etc. — it's no longer being actively worked.
 
 #### Drag and drop
 
@@ -385,6 +437,7 @@ generateSprints() → creates Backlog sprint + 6 × 2-week Planning sprints
         ↓
 closeSprint(id) → marks Completed
                → activates the next sprint in sequence
+               → flips 'Selected' items already in that sprint to 'Not Started'
                → rolls non-terminal items forward to that sprint
                → creates new Planning sprint at end of chain
         ↓
@@ -437,3 +490,7 @@ To seed sprints for a new org: open the **Sprints** tab in Project Management an
 **Backlog hidden from Sprints view:** The Backlog sprint never appears in `allSprintsForDisplay` (filtered in the LWC getter). It is a system-internal record — users cannot close it and seeing it in the sprint panel adds noise.
 
 **Backlog pinned last on the board:** The `sprintSections` getter sorts sprint sections client-side so the Backlog always renders at the bottom, regardless of `Sequence__c`. This prevents any future sprint with a sequence number above 9999 from appearing after the Backlog.
+
+**Active-sprint-only kanban:** Showing the full 10-column kanban for every sprint produced a wall of mostly-empty columns — only the Active sprint is ever actively worked. Now every sprint except the Active one renders as a flat list (the same layout the Backlog always used), and the Active sprint sorts to the top with a green accent border and "Active" badge so it stands out. `isBacklog` and `isActive` are independent flags — Backlog is also list-view, but the two are detected differently (`RecordType.DeveloperName` vs `Status__c`) and serve different purposes (Backlog absorption vs kanban-vs-list rendering).
+
+**Selection status is destination-derived, never origin-derived:** `deriveSelectionStatus` looks only at where an item _lands_. This is the only design that handles every drag combination correctly without special-casing: a card pulled out of the Active sprint back into the Backlog or a future sprint resets to `Not Selected`/`Selected` even if it was `In Progress`/`Blocked`, because it's no longer being actively worked — and a card landing in the Active sprint is left alone (`null`) so `updateStatus` (which fires first in the same drop) keeps ownership of the kanban stage.

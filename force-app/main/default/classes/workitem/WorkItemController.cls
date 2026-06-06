@@ -268,6 +268,19 @@ public with sharing class WorkItemController {
     if (!nextList.isEmpty()) {
       Id nextSprintId = nextList[0].Id;
       update new Sprint__c(Id = nextSprintId, Status__c = 'Active');
+
+      // Items already 'Selected' in the newly-activated sprint enter the kanban
+      // at its first stage, same as any other freshly-active item
+      List<Work_Item__c> queued = [
+        SELECT Id
+        FROM Work_Item__c
+        WHERE Sprint__c = :nextSprintId AND Status__c = 'Selected'
+      ];
+      for (Work_Item__c wi : queued)
+        wi.Status__c = 'Not Started';
+      if (!queued.isEmpty())
+        update queued;
+
       List<String> terminal = new List<String>{
         'Completed',
         'Cancelled',
@@ -387,18 +400,40 @@ public with sharing class WorkItemController {
   // ── updateSprint ──────────────────────────────────────────────────────────
   // Moves a work item to a new sprint. Also moves any Chapter children of the
   // item so they stay in the same sprint as their parent Story.
+  // Also corrects Status__c to match the destination sprint via deriveSelectionStatus —
+  // landing in Backlog/Planning resets the selection status regardless of where the
+  // item came from; landing in the Active sprint leaves Status__c untouched (the
+  // kanban column drop sets it via updateStatus).
   @AuraEnabled
   public static void updateSprint(Id workItemId, Id sprintId) {
-    List<Work_Item__c> toUpdate = new List<Work_Item__c>{
-      new Work_Item__c(Id = workItemId, Sprint__c = sprintId)
-    };
+    Sprint__c dest = [
+      SELECT Status__c, RecordType.DeveloperName
+      FROM Sprint__c
+      WHERE Id = :sprintId
+    ];
+    String derivedStatus = deriveSelectionStatus(dest);
+
+    Work_Item__c parent = new Work_Item__c(
+      Id = workItemId,
+      Sprint__c = sprintId
+    );
+    if (derivedStatus != null)
+      parent.Status__c = derivedStatus;
+    List<Work_Item__c> toUpdate = new List<Work_Item__c>{ parent };
+
     Id chapterRtId = rtId('Chapter');
     for (Work_Item__c child : [
       SELECT Id
       FROM Work_Item__c
       WHERE Parent_Work_Item__c = :workItemId AND RecordTypeId = :chapterRtId
     ]) {
-      toUpdate.add(new Work_Item__c(Id = child.Id, Sprint__c = sprintId)); // cascade sprint to Chapter children
+      Work_Item__c childUpdate = new Work_Item__c(
+        Id = child.Id,
+        Sprint__c = sprintId
+      ); // cascade sprint to Chapter children
+      if (derivedStatus != null)
+        childUpdate.Status__c = derivedStatus;
+      toUpdate.add(childUpdate);
     }
     update toUpdate;
   }
@@ -529,6 +564,19 @@ public with sharing class WorkItemController {
       .getRecordTypeInfosByDeveloperName()
       .get('Sprint')
       .getRecordTypeId();
+  }
+
+  // Derives the selection status a work item should carry based on where it lands:
+  // Backlog → 'Not Selected'; a Planning (future) sprint → 'Selected';
+  // Active sprint (or anything else) → null, meaning "leave Status__c alone"
+  // (the kanban column drop owns status once an item is in the Active sprint).
+  // Looks only at the destination — it doesn't matter where the item came from.
+  private static String deriveSelectionStatus(Sprint__c destSprint) {
+    if (destSprint.RecordType.DeveloperName == 'Backlog')
+      return 'Not Selected';
+    if (destSprint.Status__c == 'Planning')
+      return 'Selected';
+    return null;
   }
 
   // Formats a sprint name from its date range: "Sprint - 1 Jun 2026 to 14 Jun 2026"

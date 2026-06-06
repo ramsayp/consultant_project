@@ -40,6 +40,11 @@ const STATUS_TO_STAGE = {
   Released: "Released",
   Documented: "Documented",
   Done: "Done",
+  // Selection statuses — only meaningful in list-view (non-Active) sprints, but
+  // mapped here so a stray Selected/Not Selected item still buckets sanely if it
+  // ever appears in a kanban context (e.g. mid-drag, stale cache)
+  "Not Selected": "Not Started",
+  Selected: "To Do",
   // Legacy values — mapped to the nearest current stage
   Backlog: "Not Started",
   Draft: "Not Started",
@@ -204,20 +209,27 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
   }
 
   // Builds the full data structure the template iterates over:
-  // one section per sprint, each containing columns keyed by stage.
+  // one section per sprint. Only the Active sprint renders as a kanban (columns
+  // keyed by stage); every other sprint — Planning sprints and Backlog alike —
+  // renders as a flat list, like the Backlog view always has.
   // The Backlog sprint absorbs items with no sprint or with a deleted sprint Id.
-  // Backlog is always sorted to the end regardless of Sequence__c.
+  // Sort order: Active sprint first (for prominence), then the rest in their
+  // incoming Sequence__c order, with Backlog always pinned last.
   get sprintSections() {
     const sprintIds = new Set(this.sprints.map((s) => s.Id));
     const sorted = [...this.sprints].sort((a, b) => {
       const aIsBacklog = a.RecordType?.DeveloperName === "Backlog";
       const bIsBacklog = b.RecordType?.DeveloperName === "Backlog";
-      if (aIsBacklog && !bIsBacklog) return 1;
-      if (!aIsBacklog && bIsBacklog) return -1;
+      if (aIsBacklog !== bIsBacklog) return aIsBacklog ? 1 : -1;
+      const aIsActive = a.Status__c === "Active";
+      const bIsActive = b.Status__c === "Active";
+      if (aIsActive !== bIsActive) return aIsActive ? -1 : 1;
       return 0;
     });
     return sorted.map((sprint) => {
       const isBacklog = sprint.RecordType?.DeveloperName === "Backlog";
+      const isActive = sprint.Status__c === "Active";
+      const isListView = !isActive;
       const items = this.workItems.filter((i) => {
         if (i.RecordType?.Name === "Epic") return false; // epics appear on the epics tab only
         // Backlog absorbs items with no sprint or an unknown sprint Id
@@ -229,31 +241,40 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
           );
         return i.Sprint__c === sprint.Id;
       });
-      const stageList = isBacklog ? ["Not Started"] : STAGES; // Backlog shows a single column
-      const columns = stageList.map((stage) => {
-        const colItems = this._prioritySort(
-          items.filter(
-            (i) => (STATUS_TO_STAGE[i.Status__c] || "Not Started") === stage
-          )
-        );
-        return {
-          stage,
-          items: colItems.map((i) => this._slotted(i)),
-          count: colItems.length,
-          empty: colItems.length === 0
-        };
-      });
+      const columns = isActive
+        ? STAGES.map((stage) => {
+            const colItems = this._prioritySort(
+              items.filter(
+                (i) => (STATUS_TO_STAGE[i.Status__c] || "Not Started") === stage
+              )
+            );
+            return {
+              stage,
+              items: colItems.map((i) => this._slotted(i)),
+              count: colItems.length,
+              empty: colItems.length === 0
+            };
+          })
+        : [];
       return {
         sprintId: sprint.Id,
         name: sprint.Name,
         startDate: sprint.Start_Date__c,
         endDate: sprint.End_Date__c,
         isBacklog,
+        isActive,
+        isListView,
+        sectionClass: isActive
+          ? "sprint-section sprint-section--active slds-m-bottom_medium"
+          : "sprint-section slds-m-bottom_medium",
+        emptyMessage: isBacklog
+          ? "Backlog is empty."
+          : "Nothing selected for this sprint yet.",
         count: items.length,
         columns,
-        listItems: isBacklog
+        listItems: isListView
           ? this._prioritySort(items).map((i) => this._slotted(i))
-          : [] // flat list for backlog view
+          : [] // flat list for non-Active sprints
       };
     });
   }
@@ -339,21 +360,35 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     } // malformed drag data — abort
 
     const { itemId, sprintId: fromSprintId } = payload;
+    // List-view drop zones (Planning sprints + Backlog) carry no data-stage —
+    // newStage is undefined there, signalling "let updateSprint derive the status"
     const newStage = event.currentTarget.dataset.stage;
     const toSprintId = event.currentTarget.dataset.sprintId || null;
 
     // Capture source column before any updates so re-sequence uses the pre-move state
     const sourceItem = this.workItems.find((i) => i.Id === itemId);
     const fromStage = STATUS_TO_STAGE[sourceItem?.Status__c] || "Not Started";
+    const sourceSprint = this.sprints.find((s) => s.Id === fromSprintId);
+    const sourceIsActive = sourceSprint?.Status__c === "Active";
 
     try {
-      await updateStatus({ workItemId: itemId, newStatus: newStage });
+      if (newStage) {
+        // Kanban column drop (Active sprint only) — set the card's stage explicitly
+        await updateStatus({ workItemId: itemId, newStatus: newStage });
+      }
       if (toSprintId !== fromSprintId) {
+        // updateSprint derives Status__c from the destination sprint for
+        // Backlog/Planning targets; it leaves Status__c alone for the Active
+        // sprint so it doesn't clobber what updateStatus just set above
         await updateSprint({ workItemId: itemId, sprintId: toSprintId });
       }
 
-      // Re-sequence source column when card moves out of it
-      if (fromStage !== newStage || fromSprintId !== toSprintId) {
+      // Re-sequence source column when the card leaves it. A kanban column is
+      // keyed by (stage, sprint); a list view is keyed by sprint alone.
+      const leftSourceColumn = sourceIsActive
+        ? fromStage !== newStage || fromSprintId !== toSprintId
+        : fromSprintId !== toSprintId;
+      if (leftSourceColumn) {
         const srcItems = this._prioritySort(
           this._colItems(fromStage, fromSprintId).filter((i) => i.Id !== itemId)
         );
@@ -410,16 +445,18 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     });
   }
 
-  // Returns the current items belonging to a specific stage/sprint column
+  // Returns the current items belonging to a specific column — a (stage, sprint)
+  // kanban column for the Active sprint, or the whole sprint as one group for
+  // list-view sprints (Planning + Backlog), where there's no per-stage grouping.
   // (mirrors the sprintSections filter so drag-drop sequencing stays consistent)
   _colItems(stage, sprintId) {
     const sprintIds = new Set(this.sprints.map((s) => s.Id));
-    const isBacklog =
-      this.sprints.find((s) => s.Id === sprintId)?.RecordType?.DeveloperName ===
-      "Backlog";
+    const sprint = this.sprints.find((s) => s.Id === sprintId);
+    const isBacklog = sprint?.RecordType?.DeveloperName === "Backlog";
+    const isActive = sprint?.Status__c === "Active";
     return this.workItems.filter((i) => {
       if (i.RecordType?.Name === "Epic") return false;
-      if ((STATUS_TO_STAGE[i.Status__c] || "Not Started") !== stage)
+      if (isActive && (STATUS_TO_STAGE[i.Status__c] || "Not Started") !== stage)
         return false;
       if (isBacklog)
         return (

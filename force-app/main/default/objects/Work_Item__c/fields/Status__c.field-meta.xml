@@ -80,6 +80,16 @@
                 <default>false</default>
                 <label>On Hold</label>
             </value>
+            <value>
+                <fullName>Not Selected</fullName>
+                <default>false</default>
+                <label>Not Selected</label>
+            </value>
+            <value>
+                <fullName>Selected</fullName>
+                <default>false</default>
+                <label>Selected</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

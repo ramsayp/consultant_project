@@ -28,9 +28,11 @@ Most teams work with Projects, Epics, and Stories/Tasks/Bugs day to day. Chapter
 
 ## The Board
 
-Click any project name to open its board. The board shows all work items organised into **sprint sections**, with columns representing stages of progress.
+Click any project name to open its board. The board shows all work items organised into **sprint sections**.
 
-### Board Columns
+Only the **Active** sprint — the one currently being worked — shows the full set of progress columns described below. It sorts to the top of the board with a green accent and an "Active" badge so it stands out. Every other sprint section, including upcoming **Planning** sprints and the **Backlog**, shows its items as a simple list — there's nothing to track stage-by-stage until the work is actually underway.
+
+### Board Columns (Active Sprint)
 
 Work moves left to right as it progresses:
 
@@ -47,11 +49,19 @@ Work moves left to right as it progresses:
 
 ### Moving Cards
 
-Drag a card from one column to another to update its status. You can also drag cards **up and down within a column** to change their order — drop above or below another card to position it precisely.
+In the Active sprint, drag a card from one column to another to update its status. You can also drag cards **up and down within a column** (or within a list, for non-Active sections) to change their order — drop above or below another card to position it precisely.
 
 ### Moving Between Sprints
 
 Drag a card from one sprint section to another to reassign it to a different sprint. If a Story is moved, its Chapters move with it automatically.
+
+Moving a card also keeps its status in step with where it lands:
+
+- Dropped into the **Backlog** → status becomes **Not Selected**
+- Dropped into a **Planning** sprint → status becomes **Selected**
+- Dropped into the **Active** sprint → status follows whichever column you drop it in
+
+This happens automatically — pulling a card back out of the Active sprint resets it to Not Selected/Selected even if it was mid-progress, since it's no longer being actively worked.
 
 ### Priority Indicators
 
@@ -132,7 +142,9 @@ If no sprints exist yet, click **Generate Sprints** on the Sprints tab. This cre
 
 ### Closing a Sprint
 
-When a sprint is complete, click the **Close** button next to it. This marks it Completed and automatically creates the next sprint in the sequence. Only one sprint can be closed at a time.
+When a sprint is complete, click the **Close** button next to it. This marks it Completed, activates the next sprint in the sequence, and automatically creates a new one at the end of the chain. Only one sprint can be closed at a time.
+
+Anything already queued (Selected) in the newly-activated sprint switches to **Not Started** so it appears at the first column of its kanban — ready to be picked up alongside any work rolled forward from the closed sprint.
 
 ---
 
