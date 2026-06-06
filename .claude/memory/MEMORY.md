@@ -14,6 +14,7 @@
 - [Trust your own edits](feedback/trust_your_own_edits.md) — don't re-read files you just wrote, don't stage files to pre-check length limits, don't run anonymous Apex/temp scripts to answer simple questions — just attempt the operation
 - [Prefer MCP over anonymous Apex](feedback/prefer_mcp_over_anon_apex.md) — one-time data migrations: use soqlQuery+updateSobjectRecord, not .apex script files via sf apex run; avoids temp files in the repo entirely
 - [Backtick **c/**r/\_\_mdt API names in Markdown](feedback/markdown_double_underscore_api_names.md) — CommonMark parses double-underscore as bold; bare Field\_\_c mentions get mangled by Prettier/GitHub — always wrap in backticks (not a Prettier bug, spec behavior)
+- [Narrate before permission prompts](feedback/narrate_before_permission_prompts.md) — say what a Bash/SOQL/MCP call does and why, immediately before it fires — the Yes/No dialog shows raw mechanics only, user can't judge intent from a query string
 
 ## project/
 
