@@ -8,6 +8,7 @@
     <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
     <label>Project Management</label>
     <navType>Standard</navType>
+    <utilityBar>ProjectManagement_Utility_Bar</utilityBar>
     <tabs>Kanbans</tabs>
     <tabs>Work_Item__c</tabs>
     <tabs>Sprint__c</tabs>

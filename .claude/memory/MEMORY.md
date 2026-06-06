@@ -36,6 +36,7 @@
 ## project/
 
 - [Salesforce is source of truth for docs](project/sf_source_of_truth.md) — pull from SF before editing docs/; update repo+SF+Change_Log after; only `Title__c` required on `Change_Log__c`, don't hunt for a `Work_Item__c` to link; Rich Text Area cap is a fixed 32,768 (don't pre-check)
+- [BA agent triage design](project/ba_agent_triage_design.md) — scaffolding being actively built (new "Ticket" record type, Triage view in workManager, custom Apex+LWC approval); plan in adaptive-tinkering-hammock.md
 
 ## reference/
 

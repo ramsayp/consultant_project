@@ -15,7 +15,8 @@ const PARENT_LABEL = {
   Task: "Epic",
   Bug: "Epic",
   Chapter: "Story",
-  Step: "Chapter"
+  Step: "Chapter",
+  Ticket: "Epic"
 };
 
 // Record-page applet — shows the current parent of a work item and lets the user

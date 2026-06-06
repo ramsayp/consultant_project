@@ -549,6 +549,12 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
+                <componentName>ticketReview</componentName>
+                <identifier>c_ticketReview</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
                 <componentName>workItemParentSelector</componentName>
                 <identifier>c_workItemParentSelector</identifier>
             </componentInstance>

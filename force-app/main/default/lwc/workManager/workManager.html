@@ -1,142 +1,176 @@
 <template>
-    <div class="wm-shell">
+  <div class="wm-shell">
+    <!-- ── Top nav (hidden in board sub-view) ── -->
+    <template if:false={isBoardView}>
+      <nav class="wm-nav">
+        <button class={projectsTabClass} onclick={showProjects}>
+          Projects
+        </button>
+        <button class={sprintsTabClass} onclick={showSprints}>Sprints</button>
+        <button class={triageTabClass} onclick={showTriage}>Triage</button>
+      </nav>
+    </template>
 
-        <!-- ── Top nav (hidden in board sub-view) ── -->
-        <template if:false={isBoardView}>
-            <nav class="wm-nav">
-                <button class={projectsTabClass} onclick={showProjects}>Projects</button>
-                <button class={sprintsTabClass} onclick={showSprints}>Sprints</button>
-            </nav>
+    <!-- ── Projects list ── -->
+    <template if:true={isProjectsView}>
+      <div class="wm-projects slds-p-around_medium">
+        <div
+          class="slds-grid slds-grid_vertical-align-center slds-m-bottom_medium"
+        >
+          <h2 class="slds-col slds-text-heading_small wm-section-title">
+            Projects
+          </h2>
+          <div class="slds-col slds-shrink">
+            <lightning-button
+              variant="brand"
+              label="+ New Project"
+              onclick={handleNewProject}
+            >
+            </lightning-button>
+          </div>
+        </div>
+
+        <template if:false={hasProjects}>
+          <div class="wm-empty">
+            <p>No projects yet — create one to get started.</p>
+          </div>
         </template>
 
-        <!-- ── Projects list ── -->
-        <template if:true={isProjectsView}>
-            <div class="wm-projects slds-p-around_medium">
-                <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_medium">
-                    <h2 class="slds-col slds-text-heading_small wm-section-title">Projects</h2>
-                    <div class="slds-col slds-shrink">
-                        <lightning-button
-                            variant="brand"
-                            label="+ New Project"
-                            onclick={handleNewProject}>
-                        </lightning-button>
-                    </div>
-                </div>
-
-                <template if:false={hasProjects}>
-                    <div class="wm-empty">
-                        <p>No projects yet — create one to get started.</p>
-                    </div>
-                </template>
-
-                <div class="wm-grid">
-                    <template for:each={projects} for:item="proj">
-                        <div key={proj.Id}
-                             class="init-card"
-                             onclick={handleProjectSelect}
-                             data-id={proj.Id}
-                             data-name={proj.Name}>
-                            <div class="init-card__bar"></div>
-                            <div class="init-card__body">
-                                <div class="init-card__name">{proj.Name}</div>
-                                <div class="init-card__status">{proj.Status__c}</div>
-                            </div>
-                            <lightning-icon
-                                icon-name="utility:chevronright"
-                                size="x-small"
-                                class="init-card__arrow">
-                            </lightning-icon>
-                        </div>
-                    </template>
-                </div>
+        <div class="wm-grid">
+          <template for:each={projects} for:item="proj">
+            <div
+              key={proj.Id}
+              class="init-card"
+              onclick={handleProjectSelect}
+              data-id={proj.Id}
+              data-name={proj.Name}
+            >
+              <div class="init-card__bar"></div>
+              <div class="init-card__body">
+                <div class="init-card__name">{proj.Name}</div>
+                <div class="init-card__status">{proj.Status__c}</div>
+              </div>
+              <lightning-icon
+                icon-name="utility:chevronright"
+                size="x-small"
+                class="init-card__arrow"
+              >
+              </lightning-icon>
             </div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <!-- ── Sprints list ── -->
+    <template if:true={isSprintsView}>
+      <div class="wm-sprints slds-p-around_medium">
+        <div
+          class="slds-grid slds-grid_vertical-align-center slds-m-bottom_medium"
+        >
+          <h2 class="slds-col slds-text-heading_small wm-section-title">
+            Sprints
+          </h2>
+        </div>
+
+        <template if:false={hasSprints}>
+          <div class="wm-empty">
+            <p>No sprints yet.</p>
+            <lightning-button
+              variant="brand"
+              label="Generate 6 Sprints (3 months)"
+              onclick={handleGenerateSprints}
+              disabled={isGenerating}
+            >
+            </lightning-button>
+          </div>
         </template>
 
-        <!-- ── Sprints list ── -->
-        <template if:true={isSprintsView}>
-            <div class="wm-sprints slds-p-around_medium">
-                <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_medium">
-                    <h2 class="slds-col slds-text-heading_small wm-section-title">Sprints</h2>
+        <div class="wm-grid">
+          <template for:each={allSprintsForDisplay} for:item="sp">
+            <div key={sp.Id} class="sprint-card">
+              <div class={sp.barClass}></div>
+              <div class="sprint-card__body">
+                <div class="sprint-card__name">{sp.Name}</div>
+                <div class="sprint-card__meta">
+                  <span class="sprint-card__status">{sp.Status__c}</span>
+                  <template if:true={sp.Start_Date__c}>
+                    <span class="sprint-card__dates"
+                      >{sp.Start_Date__c} – {sp.End_Date__c}</span
+                    >
+                  </template>
                 </div>
-
-                <template if:false={hasSprints}>
-                    <div class="wm-empty">
-                        <p>No sprints yet.</p>
-                        <lightning-button
-                            variant="brand"
-                            label="Generate 6 Sprints (3 months)"
-                            onclick={handleGenerateSprints}
-                            disabled={isGenerating}>
-                        </lightning-button>
-                    </div>
-                </template>
-
-                <div class="wm-grid">
-                    <template for:each={allSprintsForDisplay} for:item="sp">
-                        <div key={sp.Id} class="sprint-card">
-                            <div class={sp.barClass}></div>
-                            <div class="sprint-card__body">
-                                <div class="sprint-card__name">{sp.Name}</div>
-                                <div class="sprint-card__meta">
-                                    <span class="sprint-card__status">{sp.Status__c}</span>
-                                    <template if:true={sp.Start_Date__c}>
-                                        <span class="sprint-card__dates">{sp.Start_Date__c} – {sp.End_Date__c}</span>
-                                    </template>
-                                </div>
-                            </div>
-                            <template if:true={sp.canClose}>
-                                <div class="sprint-card__actions">
-                                    <lightning-button
-                                        label="Close"
-                                        data-id={sp.Id}
-                                        onclick={handleCloseSprint}>
-                                    </lightning-button>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
+              </div>
+              <template if:true={sp.canClose}>
+                <div class="sprint-card__actions">
+                  <lightning-button
+                    label="Close"
+                    data-id={sp.Id}
+                    onclick={handleCloseSprint}
+                  >
+                  </lightning-button>
                 </div>
+              </template>
             </div>
-        </template>
+          </template>
+        </div>
+      </div>
+    </template>
 
-        <!-- ── Board view ── -->
-        <template if:true={isBoardView}>
-            <div class="wm-breadcrumb slds-p-horizontal_medium slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center">
-                <button class="crumb-back-btn" onclick={handleBack}>
-                    <lightning-icon
-                        icon-name="utility:chevronleft"
-                        size="x-small"
-                        alternative-text="Back to Projects">
-                    </lightning-icon>
-                    <span class="slds-m-left_x-small crumb-parent">Projects</span>
-                </button>
-                <span class="crumb-sep">/</span>
-                <span class="crumb-current">{selectedProject.Name}</span>
-            </div>
-            <c-work-item-board project-id={selectedProjectId}></c-work-item-board>
-        </template>
+    <!-- ── Triage view ── -->
+    <template if:true={isTriageView}>
+      <c-ticket-triage></c-ticket-triage>
+    </template>
 
-        <!-- ── New Project modal ── -->
-        <template if:true={showCreate}>
-            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
-                <div class="slds-modal__container">
-                    <button
-                        class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
-                        onclick={handleCreateCancel}>
-                        <lightning-icon icon-name="utility:close" size="small" alternative-text="Close"></lightning-icon>
-                    </button>
-                    <div class="slds-modal__content slds-p-around_none">
-                        <c-work-item-create
-                            type="Project"
-                            oncreated={handleProjectCreated}
-                            oncancel={handleCreateCancel}>
-                        </c-work-item-create>
-                    </div>
-                </div>
-            </section>
-            <div class="slds-backdrop slds-backdrop_open"></div>
-        </template>
+    <!-- ── Board view ── -->
+    <template if:true={isBoardView}>
+      <div
+        class="wm-breadcrumb slds-p-horizontal_medium slds-p-vertical_x-small slds-grid slds-grid_vertical-align-center"
+      >
+        <button class="crumb-back-btn" onclick={handleBack}>
+          <lightning-icon
+            icon-name="utility:chevronleft"
+            size="x-small"
+            alternative-text="Back to Projects"
+          >
+          </lightning-icon>
+          <span class="slds-m-left_x-small crumb-parent">Projects</span>
+        </button>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">{selectedProject.Name}</span>
+      </div>
+      <c-work-item-board project-id={selectedProjectId}></c-work-item-board>
+    </template>
 
-
-    </div>
+    <!-- ── New Project modal ── -->
+    <template if:true={showCreate}>
+      <section
+        class="slds-modal slds-fade-in-open"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="slds-modal__container">
+          <button
+            class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+            onclick={handleCreateCancel}
+          >
+            <lightning-icon
+              icon-name="utility:close"
+              size="small"
+              alternative-text="Close"
+            ></lightning-icon>
+          </button>
+          <div class="slds-modal__content slds-p-around_none">
+            <c-work-item-create
+              type="Project"
+              oncreated={handleProjectCreated}
+              oncancel={handleCreateCancel}
+            >
+            </c-work-item-create>
+          </div>
+        </div>
+      </section>
+      <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+  </div>
 </template>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Plan__c</fullName>
+    <description>The BA agent's drafted delivery plan for this ticket — more detailed for Stories, lighter for Bugs and simple Tasks.</description>
+    <inlineHelpText>How the BA agent proposes to deliver this item. Reviewed alongside the acceptance criteria before approval.</inlineHelpText>
+    <label>Plan</label>
+    <length>32768</length>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

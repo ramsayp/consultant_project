@@ -568,4 +568,194 @@ private class WorkItemController_Test {
       [SELECT Sprint__c FROM Work_Item__c WHERE Id = :story.Id].Sprint__c
     );
   }
+
+  // ── Triage pipeline ───────────────────────────────────────────────────────
+
+  @isTest
+  static void testCreateTicket() {
+    Test.startTest();
+    Id ticketId = WorkItemController.createTicket(
+      'New idea',
+      'Some description',
+      'High'
+    );
+    Test.stopTest();
+
+    Work_Item__c ticket = [
+      SELECT
+        Name,
+        Description__c,
+        Priority__c,
+        Triage_Status__c,
+        RecordType.Name
+      FROM Work_Item__c
+      WHERE Id = :ticketId
+    ];
+    System.assertEquals('New idea', ticket.Name);
+    System.assertEquals('Some description', ticket.Description__c);
+    System.assertEquals('High', ticket.Priority__c);
+    System.assertEquals('Not Started', ticket.Triage_Status__c);
+    System.assertEquals('Ticket', ticket.RecordType.Name);
+  }
+
+  @isTest
+  static void testCreateTicket_requiresTitle() {
+    Test.startTest();
+    try {
+      WorkItemController.createTicket('', 'desc', 'Medium');
+      System.assert(false, 'Expected AuraHandledException');
+    } catch (AuraHandledException e) {
+      System.assertNotEquals(null, e.getMessage());
+    }
+    Test.stopTest();
+  }
+
+  @isTest
+  static void testGetTriageQueue() {
+    Id ticketId = WorkItemController.createTicket('Triage me', null, 'Medium');
+
+    Test.startTest();
+    List<Work_Item__c> queue = WorkItemController.getTriageQueue();
+    Test.stopTest();
+
+    Set<Id> ids = new Set<Id>();
+    for (Work_Item__c w : queue) {
+      ids.add(w.Id);
+    }
+    System.assert(
+      ids.contains(ticketId),
+      'New ticket should appear in the triage queue'
+    );
+  }
+
+  @isTest
+  static void testGetTriageQueue_excludesApproved() {
+    Id ticketId = WorkItemController.createTicket(
+      'Already approved',
+      null,
+      'Medium'
+    );
+    update new Work_Item__c(Id = ticketId, Triage_Status__c = 'Approved');
+
+    Test.startTest();
+    List<Work_Item__c> queue = WorkItemController.getTriageQueue();
+    Test.stopTest();
+
+    for (Work_Item__c w : queue) {
+      System.assertNotEquals(
+        ticketId,
+        w.Id,
+        'Approved tickets should not appear in the queue'
+      );
+    }
+  }
+
+  @isTest
+  static void testApproveTicket() {
+    Id ticketId = WorkItemController.createTicket('Approve me', null, 'Medium');
+    update new Work_Item__c(
+      Id = ticketId,
+      Triage_Status__c = 'Reviewed',
+      Target_Type__c = 'Story'
+    );
+
+    Test.startTest();
+    WorkItemController.approveTicket(ticketId);
+    Test.stopTest();
+
+    Work_Item__c ticket = [
+      SELECT
+        Triage_Status__c,
+        Status__c,
+        RecordType.DeveloperName,
+        Sprint__r.RecordType.DeveloperName
+      FROM Work_Item__c
+      WHERE Id = :ticketId
+    ];
+    System.assertEquals('Approved', ticket.Triage_Status__c);
+    System.assertEquals('Not Selected', ticket.Status__c);
+    System.assertEquals('Story', ticket.RecordType.DeveloperName);
+    System.assertEquals('Backlog', ticket.Sprint__r.RecordType.DeveloperName);
+  }
+
+  @isTest
+  static void testApproveTicket_requiresTargetType() {
+    Id ticketId = WorkItemController.createTicket(
+      'Approve me too',
+      null,
+      'Medium'
+    );
+    update new Work_Item__c(Id = ticketId, Triage_Status__c = 'Reviewed');
+
+    Test.startTest();
+    try {
+      WorkItemController.approveTicket(ticketId);
+      System.assert(false, 'Expected AuraHandledException');
+    } catch (AuraHandledException e) {
+      System.assertNotEquals(null, e.getMessage());
+    }
+    Test.stopTest();
+  }
+
+  @isTest
+  static void testDeclineTicket() {
+    Id ticketId = WorkItemController.createTicket('Decline me', null, 'Medium');
+    update new Work_Item__c(Id = ticketId, Triage_Status__c = 'Reviewed');
+
+    Test.startTest();
+    WorkItemController.declineTicket(ticketId, 'Needs more detail on the AC');
+    Test.stopTest();
+
+    Work_Item__c ticket = [
+      SELECT Triage_Status__c, Triage_Notes__c
+      FROM Work_Item__c
+      WHERE Id = :ticketId
+    ];
+    System.assertEquals('Declined', ticket.Triage_Status__c);
+    System.assertEquals('Needs more detail on the AC', ticket.Triage_Notes__c);
+  }
+
+  @isTest
+  static void testDeclineTicket_requiresNotes() {
+    Id ticketId = WorkItemController.createTicket(
+      'Decline me too',
+      null,
+      'Medium'
+    );
+
+    Test.startTest();
+    try {
+      WorkItemController.declineTicket(ticketId, '');
+      System.assert(false, 'Expected AuraHandledException');
+    } catch (AuraHandledException e) {
+      System.assertNotEquals(null, e.getMessage());
+    }
+    Test.stopTest();
+  }
+
+  @isTest
+  static void testGetTicketReviewContext() {
+    Id ticketId = WorkItemController.createTicket(
+      'Review me',
+      'Raw ticket description',
+      'High'
+    );
+    update new Work_Item__c(
+      Id = ticketId,
+      Triage_Status__c = 'Declined',
+      Triage_Notes__c = 'Needs more detail',
+      Target_Type__c = 'Bug'
+    );
+
+    Test.startTest();
+    Map<String, Object> ctx = WorkItemController.getTicketReviewContext(
+      ticketId
+    );
+    Test.stopTest();
+
+    System.assertEquals('Ticket', ctx.get('recordTypeName'));
+    System.assertEquals('Declined', ctx.get('triageStatus'));
+    System.assertEquals('Needs more detail', ctx.get('triageNotes'));
+    System.assertEquals('Bug', ctx.get('targetType'));
+  }
 }

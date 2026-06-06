@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Triage_Notes__c</fullName>
+    <description>Reviewer notes captured when a ticket is declined, for the BA agent to address on re-triage.</description>
+    <inlineHelpText>Explain why this ticket was declined — the BA agent uses these notes to revise its classification, user story, acceptance criteria, or plan before resubmitting for review.</inlineHelpText>
+    <label>Triage Notes</label>
+    <length>32768</length>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

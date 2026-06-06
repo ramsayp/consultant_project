@@ -498,6 +498,113 @@ public with sharing class WorkItemController {
     delete new Comment__c(Id = commentId);
   }
 
+  // ── Triage pipeline ───────────────────────────────────────────────────────
+  // Scaffolding for the BA agent triage workflow: raw Ticket intake → BA agent
+  // classifies it as Story/Task/Bug and drafts a user story, acceptance criteria,
+  // and plan → human review → approve (lands in the Backlog sprint) or decline
+  // (returns to the BA agent with reviewer notes for re-triage).
+
+  // ── createTicket ──────────────────────────────────────────────────────────
+  // Creates a raw Ticket for BA agent triage. Used by the utility bar submission
+  // panel (any user) and admin creation in the Project Management app.
+  @AuraEnabled
+  public static Id createTicket(
+    String title,
+    String description,
+    String priority
+  ) {
+    if (String.isBlank(title)) {
+      throw new AuraHandledException('Title is required.');
+    }
+    Work_Item__c ticket = new Work_Item__c(
+      Name = title.trim(),
+      RecordTypeId = rtId('Ticket'),
+      Triage_Status__c = 'Not Started',
+      Priority__c = String.isBlank(priority) ? 'Medium' : priority
+    );
+    if (String.isNotBlank(description)) {
+      ticket.Description__c = description;
+    }
+    insert ticket;
+    return ticket.Id;
+  }
+
+  // ── getTriageQueue ────────────────────────────────────────────────────────
+  // Returns every ticket not yet approved — the BA agent's working set
+  // (Not Started/Reviewing/Reviewed) plus Declined tickets awaiting BA
+  // re-triage — for the human reviewer's Triage queue.
+  @AuraEnabled(cacheable=true)
+  public static List<Work_Item__c> getTriageQueue() {
+    return [
+      SELECT
+        Id,
+        Name,
+        Description__c,
+        Priority__c,
+        Triage_Status__c,
+        Triage_Notes__c,
+        User_Story__c,
+        Acceptance_Criteria__c,
+        Plan__c,
+        RecordType.Name,
+        RecordTypeId,
+        CreatedDate
+      FROM Work_Item__c
+      WHERE
+        Triage_Status__c IN ('Not Started', 'Reviewing', 'Reviewed', 'Declined')
+      ORDER BY CreatedDate ASC
+    ];
+  }
+
+  // ── approveTicket ─────────────────────────────────────────────────────────
+  // Approves a triaged ticket: reclassifies it to its Target_Type__c
+  // (Story/Task/Bug), marks it Approved, and lands it in the Backlog sprint.
+  @AuraEnabled
+  public static void approveTicket(Id ticketId) {
+    Work_Item__c ticket = [
+      SELECT Target_Type__c
+      FROM Work_Item__c
+      WHERE Id = :ticketId
+    ];
+    if (String.isBlank(ticket.Target_Type__c)) {
+      throw new AuraHandledException(
+        'Set what this ticket will become (Story, Task, or Bug) before approving.'
+      );
+    }
+    ensureBacklogSprint();
+    Sprint__c backlog = [
+      SELECT Status__c, RecordType.DeveloperName
+      FROM Sprint__c
+      WHERE RecordTypeId = :sprintBacklogRtId()
+      LIMIT 1
+    ];
+    update new Work_Item__c(
+      Id = ticketId,
+      RecordTypeId = rtId(ticket.Target_Type__c),
+      Triage_Status__c = 'Approved',
+      Status__c = deriveSelectionStatus(backlog),
+      Sprint__c = backlog.Id
+    );
+  }
+
+  // ── declineTicket ─────────────────────────────────────────────────────────
+  // Declines a triaged ticket, recording the reviewer's notes. The BA agent
+  // picks up Declined tickets, revises its classification/user story/AC/plan
+  // based on the notes, and resubmits them for review.
+  @AuraEnabled
+  public static void declineTicket(Id ticketId, String notes) {
+    if (String.isBlank(notes)) {
+      throw new AuraHandledException(
+        'Notes are required when declining a ticket.'
+      );
+    }
+    update new Work_Item__c(
+      Id = ticketId,
+      Triage_Status__c = 'Declined',
+      Triage_Notes__c = notes
+    );
+  }
+
   // ── getParentContext ──────────────────────────────────────────────────────
   // Returns the record type name, parent Id, and parent name of a work item.
   // Used by the workItemParentSelector component to display the current parent
@@ -516,6 +623,25 @@ public with sharing class WorkItemController {
     };
   }
 
+  // ── getTicketReviewContext ────────────────────────────────────────────────
+  // Returns the record type, triage status/notes, and target type of a ticket.
+  // Used by the ticketReview applet to render its review controls only on
+  // Ticket records and to reflect their current triage state.
+  @AuraEnabled
+  public static Map<String, Object> getTicketReviewContext(Id ticketId) {
+    Work_Item__c w = [
+      SELECT RecordType.Name, Triage_Status__c, Triage_Notes__c, Target_Type__c
+      FROM Work_Item__c
+      WHERE Id = :ticketId
+    ];
+    return new Map<String, Object>{
+      'recordTypeName' => w.RecordType.Name,
+      'triageStatus' => w.Triage_Status__c,
+      'triageNotes' => w.Triage_Notes__c,
+      'targetType' => w.Target_Type__c
+    };
+  }
+
   // ── getCandidateParents ───────────────────────────────────────────────────
   // Returns eligible parent records for a given child record type.
   // For example, a Story can only be parented to an Epic, so this returns
@@ -528,7 +654,8 @@ public with sharing class WorkItemController {
       'Task' => 'Epic',
       'Bug' => 'Epic',
       'Chapter' => 'Story',
-      'Step' => 'Chapter'
+      'Step' => 'Chapter',
+      'Ticket' => 'Epic'
     };
     String parentType = parentTypeMap.get(recordTypeName);
     if (parentType == null)

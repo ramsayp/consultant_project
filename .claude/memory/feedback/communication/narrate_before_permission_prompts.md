@@ -16,6 +16,7 @@ metadata:
 **How to apply:**
 
 - Before _every_ Bash call and every MCP data-operation call (`soqlQuery`, `find`, `getRelatedRecords`, `createSobjectRecord`, `updateSobjectRecord`, `deploy_metadata`, `run_apex_test`, etc.), write one plain sentence: what this does, why it's needed right now.
+- This also covers `WebFetch`/`WebSearch` — a bare URL in the permission prompt is just as opaque as a bare query string. State which page/repo it is, what you're looking for on it, and why (e.g. "fetching a GitHub example of a UtilityBar FlexiPage XML to see the correct nesting of `utilityBarOptions`, since the deploy failed on that exact element"). Confirmed 2026-06-06: the user rejected a WebFetch on a raw GitHub URL with "there is no context on what I am approving here," then approved the same fetch once I supplied that one-sentence framing.
 - This is _in addition to_ — not instead of — the existing system requirement to narrate before tool calls generally. The gap this closes is specifically: prompts that show raw command/query text need the explanation to land in the same breath, not three tool-calls later in a batched recap.
 - If a query like the `FieldDefinition` one above is about to fire and it's re-deriving a fact already in memory (e.g. the `32768` Rich Text Area limit, see [[project_sf_source_of_truth]]), that's the moment to catch it — stop, don't run it, use the memorized fact instead. See [[trust_your_own_edits]].
 

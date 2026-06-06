@@ -2,7 +2,7 @@
 
 ## Overview
 
-A Salesforce-native project management tool built on Lightning Web Components (LWC) and Apex. It provides a kanban board with drag-and-drop, a backlog list view, sprint management, epic tracking, and record-level applets — all scoped to a selected Project.
+A Salesforce-native project management tool built on Lightning Web Components (LWC) and Apex. It provides a kanban board with drag-and-drop, a backlog list view, sprint management, epic tracking, record-level applets, and a BA agent ticket triage pipeline — all scoped to a selected Project (triage spans projects).
 
 ---
 
@@ -12,21 +12,25 @@ A Salesforce-native project management tool built on Lightning Web Components (L
 
 The central object. All item types share one object, differentiated by Record Type. A self-referential lookup field (`Parent_Work_Item__c`) connects the hierarchy.
 
-| Field                    | Type                           | Purpose                                        |
-| ------------------------ | ------------------------------ | ---------------------------------------------- |
-| `Name`                   | Text                           | Title of the work item                         |
-| `RecordTypeId`           | Record Type                    | Determines item type (see below)               |
-| `Status__c`              | Picklist                       | Workflow stage (values vary by record type)    |
-| `Priority__c`            | Picklist                       | Critical / High / Medium / Low                 |
-| `Estimate__c`            | Number                         | Story-point estimate                           |
-| `Sequence__c`            | Number                         | Drag-and-drop position within a column         |
-| `Sprint__c`              | Lookup → Sprint\_\_c           | Sprint assignment (null = absorbed by backlog) |
-| `Parent_Work_Item__c`    | Lookup → Work_Item\_\_c (self) | Parent in the hierarchy                        |
-| `Assignee__c`            | Lookup → User                  | Assigned team member                           |
-| `Work_Mode__c`           | Picklist                       | Auto-stamped on creation (see below)           |
-| `Description__c`         | Long Text                      | Free-form description                          |
-| `User_Story__c`          | Long Text                      | Story-type only; pre-filled with template      |
-| `Acceptance_Criteria__c` | Long Text                      | Story / Task / Bug                             |
+| Field                    | Type                           | Purpose                                                                                                         |
+| ------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `Name`                   | Text                           | Title of the work item                                                                                          |
+| `RecordTypeId`           | Record Type                    | Determines item type (see below)                                                                                |
+| `Status__c`              | Picklist                       | Workflow stage (values vary by record type)                                                                     |
+| `Priority__c`            | Picklist                       | Critical / High / Medium / Low                                                                                  |
+| `Estimate__c`            | Number                         | Story-point estimate                                                                                            |
+| `Sequence__c`            | Number                         | Drag-and-drop position within a column                                                                          |
+| `Sprint__c`              | Lookup → Sprint\_\_c           | Sprint assignment (null = absorbed by backlog)                                                                  |
+| `Parent_Work_Item__c`    | Lookup → Work_Item\_\_c (self) | Parent in the hierarchy                                                                                         |
+| `Assignee__c`            | Lookup → User                  | Assigned team member                                                                                            |
+| `Work_Mode__c`           | Picklist                       | Auto-stamped on creation (see below)                                                                            |
+| `Description__c`         | Long Text                      | Free-form description                                                                                           |
+| `User_Story__c`          | Long Text                      | Story-type only; pre-filled with template                                                                       |
+| `Acceptance_Criteria__c` | Long Text                      | Story / Task / Bug                                                                                              |
+| `Triage_Status__c`       | Picklist                       | Ticket-type only; BA agent triage pipeline stage (see [Triage pipeline](#triage-pipeline-ba-agent-scaffolding)) |
+| `Triage_Notes__c`        | Long Text                      | Ticket-type only; reviewer notes captured on decline, for BA agent re-triage                                    |
+| `Target_Type__c`         | Picklist                       | Ticket-type only; what the ticket becomes (Story/Task/Bug) on approval                                          |
+| `Plan__c`                | Long Text                      | Ticket-type only; BA agent's drafted delivery plan                                                              |
 
 #### Record type hierarchy
 
@@ -46,6 +50,9 @@ Project
 | Bug         | Open, Triaged, In Progress, Fixed, Closed        | Reactive             |
 | Chapter     | To Do, In Progress, Done                         | Iterative            |
 | Step        | To Do, In Progress, Done                         | —                    |
+| Ticket      | (uses `Triage_Status__c`, not `Status__c`)       | —                    |
+
+`Ticket` sits outside the Project → Epic → Story/Task/Bug hierarchy — it's raw, unclassified intake awaiting BA agent triage (see [Triage pipeline](#triage-pipeline-ba-agent-scaffolding)). It tracks its pipeline stage via `Triage_Status__c` rather than the standard kanban `Status__c`, and is reclassified to Story, Task, or Bug on approval.
 
 Default status on creation: **Project → Active**, all others → **Not Started**.
 
@@ -91,32 +98,37 @@ All methods use `with sharing`. Methods marked cacheable are safe for `@wire`; a
 
 ### Wire-safe methods (`cacheable=true`)
 
-| Method                                                           | Purpose                                                                               |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `getActiveSprints()`                                             | Planning, Active, and Backlog sprints ordered by sequence                             |
-| `getAllSprints()`                                                | All non-completed sprints plus those completed within the last 30 days                |
-| `getWorkItems(String recordTypeName, Id sprintId, Id projectId)` | Items filtered by type; optional sprint and project scope                             |
-| `getStatusColumns()`                                             | Returns the per-record-type status picklist map (used by the board to render columns) |
-| `getWorkItemMeta(Id recordId)`                                   | Returns `typeName` and `sprintId` for a record — used by record-page applets          |
-| `getComments(Id workItemId)`                                     | All comments for a work item, newest first                                            |
+| Method                                                           | Purpose                                                                                                                             |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `getActiveSprints()`                                             | Planning, Active, and Backlog sprints ordered by sequence                                                                           |
+| `getAllSprints()`                                                | All non-completed sprints plus those completed within the last 30 days                                                              |
+| `getWorkItems(String recordTypeName, Id sprintId, Id projectId)` | Items filtered by type; optional sprint and project scope                                                                           |
+| `getStatusColumns()`                                             | Returns the per-record-type status picklist map (used by the board to render columns)                                               |
+| `getWorkItemMeta(Id recordId)`                                   | Returns `typeName` and `sprintId` for a record — used by record-page applets                                                        |
+| `getComments(Id workItemId)`                                     | All comments for a work item, newest first                                                                                          |
+| `getTriageQueue()`                                               | Tickets not yet approved — `Not Started`/`Reviewing`/`Reviewed`/`Declined` — ordered oldest first; the human reviewer's working set |
 
 ### Imperative-only methods
 
-| Method                                          | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getChildren(Id parentId)`                      | Direct child work items of a given parent                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `getEpics(Id projectId)`                        | All Epics — called fresh (not cached) so newly created epics appear immediately                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `getParentContext(Id recordId)`                 | Returns `recordTypeName`, `parentId`, `parentName` — used by the parent selector applet                                                                                                                                                                                                                                                                                                                                                                                             |
-| `getCandidateParents(String recordTypeName)`    | Eligible parent records for a given child type (e.g. Epics for a Story)                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `ensureBacklogSprint()`                         | Ensures a Backlog-RT sprint exists. On first deploy, migrates any existing Status='Backlog' sprint to the Backlog record type; otherwise creates fresh with the Backlog RT                                                                                                                                                                                                                                                                                                          |
-| `generateSprints()`                             | Creates 6 two-week Planning sprints (Sprint RT) starting the next Monday; exits early if sprints exist                                                                                                                                                                                                                                                                                                                                                                              |
-| `closeSprint(Id sprintId)`                      | Guards against closing the Backlog sprint (checked via `RecordType.DeveloperName`). Marks a sprint Completed; activates the next sprint in sequence; flips any `Selected` items already in that newly-activated sprint to `Not Started` (see [Selection status](#selection-status)); rolls non-terminal items (any status except Completed, Cancelled, Done, Fixed, Closed) forward to it; creates a new Planning sprint (Sprint RT) at the end of the chain with a date-range name |
-| `updateStatus(Id workItemId, String newStatus)` | Sets `Status__c` on one item (called on kanban drop)                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `updateSprint(Id workItemId, Id sprintId)`      | Sets `Sprint__c`, derives `Status__c` from the destination sprint via `deriveSelectionStatus` (see [Selection status](#selection-status)), and cascades both to Chapter children                                                                                                                                                                                                                                                                                                    |
-| `updateSequences(List<Id> workItemIds)`         | Writes 1-based `Sequence__c` values to persist card order after drag-and-drop                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `addComment(Id workItemId, String body)`        | Inserts a new Comment\_\_c record                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `editComment(Id commentId, String body)`        | Updates an existing comment body                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `deleteComment(Id commentId)`                   | Permanently deletes a comment                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Method                                                            | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getChildren(Id parentId)`                                        | Direct child work items of a given parent                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `getEpics(Id projectId)`                                          | All Epics — called fresh (not cached) so newly created epics appear immediately                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `getParentContext(Id recordId)`                                   | Returns `recordTypeName`, `parentId`, `parentName` — used by the parent selector applet                                                                                                                                                                                                                                                                                                                                                                                             |
+| `getCandidateParents(String recordTypeName)`                      | Eligible parent records for a given child type (e.g. Epics for a Story, Epics for a Ticket)                                                                                                                                                                                                                                                                                                                                                                                         |
+| `createTicket(String title, String description, String priority)` | Creates a raw `Ticket` (`Triage_Status__c = 'Not Started'`, default `Priority__c = 'Medium'`) — used by the utility bar submission panel and admin "+ New Ticket"                                                                                                                                                                                                                                                                                                                   |
+| `approveTicket(Id ticketId)`                                      | Approves a triaged ticket: requires `Target_Type__c` set (throws `AuraHandledException` otherwise), reclassifies `RecordTypeId` to that type, sets `Triage_Status__c = 'Approved'`, and lands it in the Backlog sprint via `deriveSelectionStatus`                                                                                                                                                                                                                                  |
+| `declineTicket(Id ticketId, String notes)`                        | Declines a triaged ticket: requires non-blank `notes` (throws `AuraHandledException` otherwise), sets `Triage_Status__c = 'Declined'` and stores `Triage_Notes__c` for BA agent re-triage                                                                                                                                                                                                                                                                                           |
+| `getTicketReviewContext(Id ticketId)`                             | Returns `recordTypeName`, `triageStatus`, `triageNotes`, `targetType` — used by the `ticketReview` applet to gate its rendering and reflect current triage state                                                                                                                                                                                                                                                                                                                    |
+| `ensureBacklogSprint()`                                           | Ensures a Backlog-RT sprint exists. On first deploy, migrates any existing Status='Backlog' sprint to the Backlog record type; otherwise creates fresh with the Backlog RT                                                                                                                                                                                                                                                                                                          |
+| `generateSprints()`                                               | Creates 6 two-week Planning sprints (Sprint RT) starting the next Monday; exits early if sprints exist                                                                                                                                                                                                                                                                                                                                                                              |
+| `closeSprint(Id sprintId)`                                        | Guards against closing the Backlog sprint (checked via `RecordType.DeveloperName`). Marks a sprint Completed; activates the next sprint in sequence; flips any `Selected` items already in that newly-activated sprint to `Not Started` (see [Selection status](#selection-status)); rolls non-terminal items (any status except Completed, Cancelled, Done, Fixed, Closed) forward to it; creates a new Planning sprint (Sprint RT) at the end of the chain with a date-range name |
+| `updateStatus(Id workItemId, String newStatus)`                   | Sets `Status__c` on one item (called on kanban drop)                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `updateSprint(Id workItemId, Id sprintId)`                        | Sets `Sprint__c`, derives `Status__c` from the destination sprint via `deriveSelectionStatus` (see [Selection status](#selection-status)), and cascades both to Chapter children                                                                                                                                                                                                                                                                                                    |
+| `updateSequences(List<Id> workItemIds)`                           | Writes 1-based `Sequence__c` values to persist card order after drag-and-drop                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `addComment(Id workItemId, String body)`                          | Inserts a new Comment\_\_c record                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `editComment(Id commentId, String body)`                          | Updates an existing comment body                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `deleteComment(Id commentId)`                                     | Permanently deletes a comment                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 #### Project hierarchy scoping in `getBoardItems`
 
@@ -140,7 +152,7 @@ This prevents items from other projects appearing on the board.
 **File:** `force-app/main/default/triggers/WorkItemTrigger.trigger`
 **Fires:** before insert on `Work_Item__c`
 
-Assigns the Backlog sprint to any Story, Task, or Bug inserted with a null `Sprint__c`. Queries the Backlog sprint by `RecordTypeId` (Backlog record type) once per transaction. Exits silently if no Backlog sprint exists — no error thrown. Bulkified and safe for data load and API creation.
+Two passes. **Pass 1 — Backlog default:** assigns the Backlog sprint to any Story, Task, or Bug inserted with a null `Sprint__c`. Queries the Backlog sprint by `RecordTypeId` once per transaction; exits silently if none exists. **Pass 2 — selection status correction:** re-derives `Status__c` from each item's final `Sprint__c` (the Backlog default from Pass 1, or whatever the user picked) — Backlog → `Not Selected`, a Planning sprint → `Selected`, anything else left at the `Not Started` default sent by `workItemCreate.js`. This exists because the create form always sends `Status__c = 'Not Started'` regardless of the chosen sprint; Apex corrects it on the way in. Bulkified and safe for data load and API creation.
 
 ---
 
@@ -151,10 +163,11 @@ Assigns the Backlog sprint to any Story, Task, or Bug inserted with a null `Spri
 **Location:** `force-app/main/default/lwc/workManager/`
 **Exposed as:** App Page component (entry point)
 
-The top-level shell. Manages a three-view state machine: `projects`, `sprints`, `board`.
+The top-level shell. Manages a four-view state machine: `projects`, `sprints`, `triage`, `board`.
 
 - **Projects view:** Lists all Project records. "+ New Project" opens `c-work-item-create` inline. Clicking a row sets `selectedProject` and switches to `board` view.
 - **Sprints view:** Lists all non-Backlog sprints with colour-coded status bars. The earliest non-completed sprint gets a "Close" button. Closing a sprint activates the next sprint and rolls forward any non-terminal items. "Generate Sprints" creates 6 future sprints if none exist.
+- **Triage view:** Renders `c-ticket-triage` — the BA agent triage queue (see [Triage pipeline](#triage-pipeline-ba-agent-scaffolding)).
 - **Board view:** Renders `c-work-item-board` with `project-id={selectedProjectId}`. Back arrow returns to Projects.
 
 Sprint display logic: `allSprintsForDisplay` getter enriches each sprint with `barClass` (CSS colour by status) and `canClose` (only one sprint at a time is closeable).
@@ -251,7 +264,7 @@ Cards encode a JSON payload on `dragstart`: `{ itemId, sprintId }`.
 
 On drop:
 
-1. `updateStatus` is called with the target column's stage.
+1. `updateStatus` is called with the target column's stage — only when the drop zone has one (kanban columns; list-view drop zones carry no `data-stage`).
 2. If the sprint changed, `updateSprint` is called (cascades to Chapter children).
 3. Source column is re-sequenced (`updateSequences`) after the card leaves.
 4. Destination column order is built at the drop position, then stable-sorted by priority, then persisted with `updateSequences`.
@@ -321,6 +334,8 @@ Fields shown adapt to the record type:
 
 **Parent resolution order:** `selectedParentId` (user pick) → `parentId` prop → `projectId` (for Epics only) → null.
 
+If no sprint is selected, `Sprint__c` is omitted from the payload — `WorkItemTrigger` assigns the Backlog sprint server-side.
+
 **`recordTypeId`** is resolved from the `getObjectInfo` wire result — the Create button is disabled until this resolves.
 
 **Events fired:** `created` (with `{ id }`) on success; `cancel` on dismiss.
@@ -372,7 +387,7 @@ Displays the comment thread for the current work item. Supports add, inline edit
 Applet for reassigning the parent of a work item. Shows the current parent as a clickable navigation link, with an Edit button to open a combobox of eligible candidates.
 
 - **Data load:** `getParentContext` (imperative, on `connectedCallback`) → sets `recordTypeName`, `parentId`, `parentName`. Then `getCandidateParents` fetches the eligible parents for the type.
-- **Parent type map:** Epic → Project, Story/Task/Bug → Epic, Chapter → Story, Step → Chapter. Project has no parent type — the component hides itself (`hasParentType = false`).
+- **Parent type map:** Epic → Project, Story/Task/Bug → Epic, Chapter → Story, Step → Chapter, Ticket → Epic. Project has no parent type — the component hides itself (`hasParentType = false`).
 - **Save:** calls LDS `updateRecord` with `{ Id, Parent_Work_Item__c }`, then refreshes via `loadContext()`.
 
 ---
@@ -390,7 +405,56 @@ Uses LDS `createRecord` directly. **Events fired:** `created` (with `{ id }`) on
 
 ---
 
-## Record Page Layout (`Work_Item_Record_Page`)
+## Triage Pipeline (BA agent scaffolding)
+
+Scaffolding for an upcoming BA (Business Analyst) agent that triages raw ticket intake before it reaches the team backlog. The agent itself is a separate, later effort — this is the data model, intake, queue, and human review/approval mechanism it will plug into.
+
+### Workflow
+
+```
+Intake (ticketSubmit)              → raw Ticket, Triage_Status__c = 'Not Started'
+        ↓
+BA agent triage (future)           → classifies Story/Task/Bug, drafts User_Story__c,
+                                      Acceptance_Criteria__c, Plan__c; Triage_Status__c
+                                      moves through Reviewing → Reviewed
+        ↓
+Human review (ticketTriage queue → ticketReview applet on the record page)
+        ↓
+   ┌─ Approve → reclassified to Target_Type__c, Triage_Status__c = 'Approved',
+   │            lands in the Backlog sprint
+   └─ Decline → Triage_Status__c = 'Declined', Triage_Notes__c captured,
+                back to the BA agent for re-triage (loops until approved)
+```
+
+### `ticketSubmit`
+
+**Location:** `force-app/main/default/lwc/ticketSubmit/`
+**Exposed as:** Utility bar panel (`lightning__UtilityBar`) and App Page component
+
+Lightweight ticket submission form — the entry point for the pipeline. Fields: Title (required), Description, Priority (defaults to Medium). Calls `createTicket` imperatively; unlike `workItemCreate`, it has no record-type-aware fields since a Ticket is intentionally unclassified at intake. **Events fired:** `created` (with `{ id }`), `cancel`.
+
+### `ticketTriage`
+
+**Location:** `force-app/main/default/lwc/ticketTriage/`
+**Exposed as:** Child of `workManager` (fourth view, `view = 'triage'`, alongside Projects/Sprints/Board)
+
+Queue of tickets awaiting triage or re-review. `@wire(getTriageQueue)` drives a card list (`ticketsForDisplay` getter enriches each with a status-coloured CSS class). Cards show name, triage status, type, and priority.
+
+Clicking a card does **not** open a modal — it extends `NavigationMixin(LightningElement)` and navigates straight to the ticket's record page (`standard__recordPage`, `actionName: 'view'`), where the `ticketReview` applet handles classification and approve/decline. This keeps review actions co-located with the record itself rather than duplicated in a separate UI.
+
+### `ticketReview`
+
+**Location:** `force-app/main/default/lwc/ticketReview/`
+**Exposed as:** Record page sidebar applet (`Work_Item__c`, all record types — self-hides for non-Tickets)
+
+Approve/decline review controls, visible **only on Ticket records**. Like `workItemParentSelector`, it gates its own rendering via a `recordTypeName` getter (`isTicket`) rather than relying on App Builder visibility filters.
+
+- **Data load:** `getTicketReviewContext` (imperative, on `connectedCallback`) → sets `recordTypeName`, `triageStatus`, `triageNotes`, `targetType`.
+- **"This will become" picker:** a `lightning-combobox` bound to `Target_Type__c` (Story/Task/Bug). Saves immediately via LDS `updateRecord` on change — the choice persists for the reviewer/BA agent even if Approve isn't clicked right away, matching the auto-save feel of `workItemParentSelector`.
+- **Approve:** calls `approveTicket`, then `loadContext()` refreshes — the applet self-hides once `recordTypeName` changes away from `'Ticket'` post-reclassification.
+- **Decline:** reveals a notes textarea (`showDeclineForm`); calls `declineTicket`, then refreshes. The applet remains visible (still a Ticket) so the reviewer can see the captured notes and re-review later.
+
+---
 
 The Work Item record page uses a two-region desktop layout.
 
@@ -401,11 +465,15 @@ The Work Item record page uses a two-region desktop layout.
 | Request  | Synopsis section (Name, Description), Details section (Estimate, Record Type, Assignee, Sprint, Status), User Story section (User Story, Acceptance Criteria), `workItemComments` applet |
 | Settings | Configuration section (Sequence, Work Mode), Audit section (Created By, Last Modified By)                                                                                                |
 
-**Sidebar region:**
+**Sidebar region** (stacked applets, top to bottom):
 
-| Tab              | Contents                  |
-| ---------------- | ------------------------- |
-| Child Work Items | `workItemChildren` applet |
+| Applet                   | Visibility                                 | Purpose                                 |
+| ------------------------ | ------------------------------------------ | --------------------------------------- |
+| `ticketReview`           | Ticket records only (self-hides otherwise) | Classification + approve/decline review |
+| `workItemParentSelector` | All record types with a parent type        | Reassign parent                         |
+| `workItemChildren`       | Record types with children                 | Manage child work items                 |
+
+`ticketReview` is placed first so the triage decision (what this becomes, approve/decline) is the first thing a reviewer sees on a Ticket record.
 
 ---
 
@@ -485,12 +553,18 @@ To seed sprints for a new org: open the **Sprints** tab in Project Management an
 
 **Compact card layout for backlog:** The backlog can grow large. Single-line rows (`compact = true`) allow more items to be visible without scrolling. Sprint columns use taller cards with more detail.
 
-**Sprint close is a cascade operation:** `closeSprint` does four things atomically — marks Completed, activates the next sprint in sequence, rolls non-terminal work items forward to it, then appends a new Planning sprint at the end of the chain. Sprint names use a date-range format (`Sprint - 1 Jun 2026 to 14 Jun 2026`) generated from `Start_Date__c` and `End_Date__c`, so sprints are self-describing without a manual naming step.
+**Sprint close is a cascade operation:** `closeSprint` does five things atomically — marks Completed, activates the next sprint in sequence, flips `Selected` items already in that sprint to `Not Started`, rolls non-terminal work items forward to it, then appends a new Planning sprint at the end of the chain. Sprint names use a date-range format (`Sprint - 1 Jun 2026 to 14 Jun 2026`) generated from `Start_Date__c` and `End_Date__c`, so sprints are self-describing without a manual naming step.
 
 **Backlog hidden from Sprints view:** The Backlog sprint never appears in `allSprintsForDisplay` (filtered in the LWC getter). It is a system-internal record — users cannot close it and seeing it in the sprint panel adds noise.
 
 **Backlog pinned last on the board:** The `sprintSections` getter sorts sprint sections client-side so the Backlog always renders at the bottom, regardless of `Sequence__c`. This prevents any future sprint with a sequence number above 9999 from appearing after the Backlog.
 
 **Active-sprint-only kanban:** Showing the full 10-column kanban for every sprint produced a wall of mostly-empty columns — only the Active sprint is ever actively worked. Now every sprint except the Active one renders as a flat list (the same layout the Backlog always used), and the Active sprint sorts to the top with a green accent border and "Active" badge so it stands out. `isBacklog` and `isActive` are independent flags — Backlog is also list-view, but the two are detected differently (`RecordType.DeveloperName` vs `Status__c`) and serve different purposes (Backlog absorption vs kanban-vs-list rendering).
+
+**Ticket is a record type, not a separate object:** Raw, unclassified intake reuses `Work_Item__c` (Ticket record type) rather than a standalone object — it's reclassified to Story/Task/Bug on approval, so keeping it on the same object means approval is a single `RecordTypeId` update rather than a cross-object data migration. Ticket tracks pipeline stage with its own `Triage_Status__c` (kept separate from `Status__c`, whose values are record-type-specific kanban stages that don't fit a pre-classification item).
+
+**Review lives on the record, not in the queue:** The triage queue (`ticketTriage`) only lists and links — it deliberately does not host approve/decline UI. Review controls live exclusively in `ticketReview`, a record-page applet gated to Ticket records. This keeps the action co-located with the data being acted on (matching how `workItemParentSelector` and `workItemChildren` work) and avoids maintaining the same review logic in two places.
+
+**`Target_Type__c` decouples classification from reclassification:** Rather than approving directly into a chosen type, the reviewer (or BA agent) sets "what this will become" as a field on the Ticket first — saved immediately via `updateRecord` so the choice persists independent of the approve action. `approveTicket` then reads that field and refuses to proceed (`AuraHandledException`) if it's blank, making the classification step an explicit, auditable precondition rather than an implicit side effect of clicking Approve.
 
 **Selection status is destination-derived, never origin-derived:** `deriveSelectionStatus` looks only at where an item _lands_. This is the only design that handles every drag combination correctly without special-casing: a card pulled out of the Active sprint back into the Backlog or a future sprint resets to `Not Selected`/`Selected` even if it was `In Progress`/`Blocked`, because it's no longer being actively worked — and a card landing in the Active sprint is left alone (`null`) so `updateStatus` (which fires first in the same drop) keeps ownership of the kanban stage.

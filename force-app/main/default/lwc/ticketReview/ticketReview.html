@@ -1,0 +1,71 @@
+<template>
+  <template if:true={isTicket}>
+    <div class="tr-root">
+      <div class="tr-header">
+        <span class="tr-label">Ticket Review</span>
+      </div>
+
+      <template if:true={hasTriageNotes}>
+        <div class="tr-notes">
+          <span class="tr-notes__label">Reviewer notes</span>
+          <p class="tr-notes__body">{triageNotes}</p>
+        </div>
+      </template>
+
+      <div class="tr-field">
+        <lightning-combobox
+          label="This will become"
+          value={targetType}
+          options={targetTypeOptions}
+          placeholder="Select..."
+          onchange={handleTargetTypeChange}
+        >
+        </lightning-combobox>
+      </div>
+
+      <template if:false={showDeclineForm}>
+        <div class="tr-actions">
+          <lightning-button
+            label="Decline"
+            onclick={showDecline}
+            disabled={isSaving}
+          >
+          </lightning-button>
+          <lightning-button
+            variant="brand"
+            label="Approve"
+            onclick={handleApprove}
+            disabled={isApproveDisabled}
+          >
+          </lightning-button>
+        </div>
+      </template>
+
+      <template if:true={showDeclineForm}>
+        <div class="tr-decline">
+          <lightning-textarea
+            label="Notes for the BA agent"
+            value={declineNotes}
+            onchange={handleDeclineNotesChange}
+          >
+          </lightning-textarea>
+          <div class="tr-actions">
+            <lightning-button
+              label="Cancel"
+              onclick={hideDecline}
+              disabled={isSaving}
+            >
+            </lightning-button>
+            <lightning-button
+              variant="destructive"
+              label="Confirm Decline"
+              onclick={handleDecline}
+              disabled={isDeclineDisabled}
+            >
+            </lightning-button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </template>
+</template>

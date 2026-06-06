@@ -11,7 +11,7 @@ import closeSprint from "@salesforce/apex/WorkItemController.closeSprint";
 // and the Kanban board view for a selected project.
 export default class WorkManager extends LightningElement {
   // ── State ─────────────────────────────────────────────────────────────────
-  @track view = "projects"; // active panel: 'projects' | 'sprints' | 'board'
+  @track view = "projects"; // active panel: 'projects' | 'sprints' | 'triage' | 'board'
   @track selectedProject = null; // { Id, Name } of the project currently open on the board
   @track showCreate = false; // controls the new-project creation form
   @track isGenerating = false; // true while the generate-sprints call is in flight
@@ -47,6 +47,9 @@ export default class WorkManager extends LightningElement {
   get isSprintsView() {
     return this.view === "sprints";
   }
+  get isTriageView() {
+    return this.view === "triage";
+  }
   get isBoardView() {
     return this.view === "board";
   }
@@ -69,6 +72,11 @@ export default class WorkManager extends LightningElement {
   get sprintsTabClass() {
     return (
       "wm-nav__tab" + (this.view === "sprints" ? " wm-nav__tab--active" : "")
+    );
+  }
+  get triageTabClass() {
+    return (
+      "wm-nav__tab" + (this.view === "triage" ? " wm-nav__tab--active" : "")
     );
   }
 
@@ -101,6 +109,9 @@ export default class WorkManager extends LightningElement {
   }
   showSprints() {
     this.view = "sprints";
+  }
+  showTriage() {
+    this.view = "triage";
   }
 
   handleNewProject() {

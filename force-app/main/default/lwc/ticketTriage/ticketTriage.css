@@ -1,0 +1,86 @@
+.triage-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.triage-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    box-shadow 0.15s,
+    transform 0.1s;
+}
+
+.triage-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+  transform: translateY(-1px);
+}
+
+.triage-card__body {
+  flex: 1;
+  padding: 1rem 0.875rem;
+  min-width: 0;
+}
+
+.triage-card__arrow {
+  margin-right: 0.875rem;
+  color: #a8b0bf;
+}
+
+.triage-card__name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #16325c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.triage-card__meta {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.triage-card__type,
+.triage-card__priority {
+  font-size: 0.75rem;
+  color: #5e6c84;
+}
+
+.triage-card__status {
+  font-size: 0.75rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 10px;
+  font-weight: 500;
+  background: #f0f4ff;
+  color: #0070d2;
+}
+
+.triage-card__status--not-started {
+  background: #f0f4ff;
+  color: #0070d2;
+}
+.triage-card__status--reviewing {
+  background: #fff4e0;
+  color: #b9770e;
+}
+.triage-card__status--reviewed {
+  background: #eef2f7;
+  color: #5e6c84;
+}
+.triage-card__status--approved {
+  background: #e6f5ec;
+  color: #2e8540;
+}
+.triage-card__status--declined {
+  background: #fde8e8;
+  color: #c23934;
+}

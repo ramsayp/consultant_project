@@ -1,0 +1,45 @@
+<template>
+  <div class="triage-shell slds-p-around_medium">
+    <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_medium">
+      <h2 class="slds-col slds-text-heading_small wm-section-title">
+        Triage Queue
+      </h2>
+    </div>
+
+    <template if:false={hasTickets}>
+      <div class="wm-empty">
+        <p>No tickets awaiting triage.</p>
+      </div>
+    </template>
+
+    <div class="wm-grid">
+      <template for:each={ticketsForDisplay} for:item="ticket">
+        <div
+          key={ticket.Id}
+          class="triage-card"
+          onclick={handleSelect}
+          data-id={ticket.Id}
+        >
+          <div class="triage-card__body">
+            <div class="triage-card__name">{ticket.Name}</div>
+            <div class="triage-card__meta">
+              <span class={ticket.statusClass}>{ticket.Triage_Status__c}</span>
+              <template if:true={ticket.typeName}>
+                <span class="triage-card__type">{ticket.typeName}</span>
+              </template>
+              <template if:true={ticket.Priority__c}>
+                <span class="triage-card__priority">{ticket.Priority__c}</span>
+              </template>
+            </div>
+          </div>
+          <lightning-icon
+            icon-name="utility:chevronright"
+            size="x-small"
+            class="triage-card__arrow"
+          >
+          </lightning-icon>
+        </div>
+      </template>
+    </div>
+  </div>
+</template>
