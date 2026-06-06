@@ -16,7 +16,7 @@
 
 ## project/
 
-- [Salesforce is source of truth for docs](project/sf_source_of_truth.md) — pull from SF before editing docs/; update repo+SF+Change_Log after; only Title**c required on Change_Log**c, don't hunt for a Work_Item\_\_c to link; Rich Text Area cap is a fixed 32,768 (don't pre-check)
+- [Salesforce is source of truth for docs](project/sf_source_of_truth.md) — pull from SF before editing docs/; update repo+SF+Change_Log after; only `Title__c` required on `Change_Log__c`, don't hunt for a `Work_Item__c` to link; Rich Text Area cap is a fixed 32,768 (don't pre-check)
 
 ## reference/
 
