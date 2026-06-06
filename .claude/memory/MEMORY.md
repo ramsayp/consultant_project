@@ -13,6 +13,7 @@
 - [Memory dual-save rule](feedback/memory_dual_save.md) — always write memory files to both machine path and .claude/memory/ in repo; repo copy survives machine reformat; restore by copying back on new machine
 - [Trust your own edits](feedback/trust_your_own_edits.md) — don't re-read files you just wrote, don't stage files to pre-check length limits, don't run anonymous Apex/temp scripts to answer simple questions — just attempt the operation
 - [Prefer MCP over anonymous Apex](feedback/prefer_mcp_over_anon_apex.md) — one-time data migrations: use soqlQuery+updateSobjectRecord, not .apex script files via sf apex run; avoids temp files in the repo entirely
+- [Backtick **c/**r/\_\_mdt API names in Markdown](feedback/markdown_double_underscore_api_names.md) — CommonMark parses double-underscore as bold; bare Field\_\_c mentions get mangled by Prettier/GitHub — always wrap in backticks (not a Prettier bug, spec behavior)
 
 ## project/
 
