@@ -23,12 +23,12 @@ const WORK_MODE = {
 // Default Status__c for each record type on creation
 const DEFAULT_STATUS = {
   Project: "Active",
-  Epic: "Not Started",
-  Story: "Not Started",
-  Task: "Not Started",
-  Bug: "Not Started",
-  Chapter: "Not Started",
-  Step: "Not Started"
+  Epic: "To Do",
+  Story: "To Do",
+  Task: "To Do",
+  Bug: "To Do",
+  Chapter: "To Do",
+  Step: "To Do"
 };
 
 // Sets of record types that show each optional field section

@@ -160,7 +160,7 @@ describe("handleCreate", () => {
         fields: expect.objectContaining({
           Name: "My Story",
           RecordTypeId: MOCK_RT_ID,
-          Status__c: "Not Started",
+          Status__c: "To Do",
           Priority__c: "Medium"
         })
       })

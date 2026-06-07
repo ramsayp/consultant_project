@@ -60,7 +60,7 @@ private class WorkItemController_Test {
     Work_Item__c epic = new Work_Item__c(
       Name = 'Test Epic',
       RecordTypeId = wiRtId('Epic'),
-      Status__c = 'Not Started',
+      Status__c = 'To Do',
       Parent_Work_Item__c = project.Id
     );
     insert epic;
@@ -68,7 +68,7 @@ private class WorkItemController_Test {
     Work_Item__c story = new Work_Item__c(
       Name = 'Test Story',
       RecordTypeId = wiRtId('Story'),
-      Status__c = 'Not Started',
+      Status__c = 'To Do',
       Parent_Work_Item__c = epic.Id,
       Sprint__c = sprint1.Id,
       Priority__c = 'High'
@@ -76,7 +76,7 @@ private class WorkItemController_Test {
     Work_Item__c task = new Work_Item__c(
       Name = 'Test Task',
       RecordTypeId = wiRtId('Task'),
-      Status__c = 'Not Started',
+      Status__c = 'To Do',
       Parent_Work_Item__c = epic.Id,
       Sprint__c = sprint1.Id,
       Priority__c = 'Medium'
@@ -84,7 +84,7 @@ private class WorkItemController_Test {
     Work_Item__c bug = new Work_Item__c(
       Name = 'Test Bug',
       RecordTypeId = wiRtId('Bug'),
-      Status__c = 'Not Started',
+      Status__c = 'To Do',
       Parent_Work_Item__c = epic.Id,
       Sprint__c = sprint1.Id,
       Priority__c = 'Critical'

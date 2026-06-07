@@ -14,39 +14,42 @@ import updateSequences from "@salesforce/apex/WorkItemController.updateSequences
 
 // Ordered list of kanban columns shown on the board
 const STAGES = [
-  "Not Started",
   "To Do",
+  "On Hold",
   "In Progress",
-  "Blocked",
-  "Code Review",
-  "UAT",
-  "Pipeline",
-  "Released",
-  "Documented",
+  "In Code Review",
+  "Testing",
+  "Documenting",
+  "Releasing",
   "Done"
 ];
 
 // Maps a stored Status__c value to a kanban column name.
 const STATUS_TO_STAGE = {
-  "Not Started": "Not Started",
   "To Do": "To Do",
+  "On Hold": "On Hold",
   "In Progress": "In Progress",
-  Blocked: "Blocked",
-  "Code Review": "Code Review",
-  UAT: "UAT",
-  Pipeline: "Pipeline",
-  Released: "Released",
-  Documented: "Documented",
+  "In Code Review": "In Code Review",
+  Testing: "Testing",
+  Documenting: "Documenting",
+  Releasing: "Releasing",
   Done: "Done",
   // Selection statuses (Planning/Backlog sprint items) — bucket sanely if they
   // appear in a kanban context (e.g. mid-drag, stale cache)
-  "Not Selected": "Not Started",
+  "Not Selected": "To Do",
   Selected: "To Do",
   // Project/Epic terminal statuses — bucket onto the kanban if those items appear
   Active: "In Progress",
   Completed: "Done",
   Cancelled: "Done",
-  "On Hold": "Blocked"
+  // Old values — remap to nearest current stage
+  "Not Started": "To Do",
+  Blocked: "On Hold",
+  "Code Review": "In Code Review",
+  UAT: "Testing",
+  Pipeline: "Releasing",
+  Released: "Releasing",
+  Documented: "Documenting"
 };
 
 // Pre-built options array for the stage filter dropdown
@@ -232,7 +235,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
         ? STAGES.map((stage) => {
             const colItems = this._prioritySort(
               items.filter(
-                (i) => (STATUS_TO_STAGE[i.Status__c] || "Not Started") === stage
+                (i) => (STATUS_TO_STAGE[i.Status__c] || "To Do") === stage
               )
             );
             return {
@@ -354,7 +357,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
 
     // Capture source column before any updates so re-sequence uses the pre-move state
     const sourceItem = this.workItems.find((i) => i.Id === itemId);
-    const fromStage = STATUS_TO_STAGE[sourceItem?.Status__c] || "Not Started";
+    const fromStage = STATUS_TO_STAGE[sourceItem?.Status__c] || "To Do";
     const sourceSprint = this.sprints.find((s) => s.Id === fromSprintId);
     const sourceIsActive = sourceSprint?.Status__c === "Active";
 
@@ -443,7 +446,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
     const isActive = sprint?.Status__c === "Active";
     return this.workItems.filter((i) => {
       if (i.RecordType?.Name === "Epic") return false;
-      if (isActive && (STATUS_TO_STAGE[i.Status__c] || "Not Started") !== stage)
+      if (isActive && (STATUS_TO_STAGE[i.Status__c] || "To Do") !== stage)
         return false;
       if (isBacklog)
         return (

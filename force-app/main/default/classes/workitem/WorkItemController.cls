@@ -233,7 +233,7 @@ public with sharing class WorkItemController {
         WHERE Sprint__c = :nextSprintId AND Status__c = 'Selected'
       ];
       for (Work_Item__c wi : queued)
-        wi.Status__c = 'Not Started';
+        wi.Status__c = 'To Do';
       if (!queued.isEmpty())
         update queued;
 

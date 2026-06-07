@@ -11,14 +11,14 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
-                <fullName>Not Started</fullName>
+                <fullName>To Do</fullName>
                 <default>true</default>
-                <label>Not Started</label>
+                <label>To Do</label>
             </value>
             <value>
-                <fullName>To Do</fullName>
+                <fullName>On Hold</fullName>
                 <default>false</default>
-                <label>To Do</label>
+                <label>On Hold</label>
             </value>
             <value>
                 <fullName>In Progress</fullName>
@@ -26,34 +26,24 @@
                 <label>In Progress</label>
             </value>
             <value>
-                <fullName>Blocked</fullName>
+                <fullName>In Code Review</fullName>
                 <default>false</default>
-                <label>Blocked</label>
+                <label>In Code Review</label>
             </value>
             <value>
-                <fullName>Code Review</fullName>
+                <fullName>Testing</fullName>
                 <default>false</default>
-                <label>Code Review</label>
+                <label>Testing</label>
             </value>
             <value>
-                <fullName>UAT</fullName>
+                <fullName>Documenting</fullName>
                 <default>false</default>
-                <label>UAT</label>
+                <label>Documenting</label>
             </value>
             <value>
-                <fullName>Pipeline</fullName>
+                <fullName>Releasing</fullName>
                 <default>false</default>
-                <label>Pipeline</label>
-            </value>
-            <value>
-                <fullName>Released</fullName>
-                <default>false</default>
-                <label>Released</label>
-            </value>
-            <value>
-                <fullName>Documented</fullName>
-                <default>false</default>
-                <label>Documented</label>
+                <label>Releasing</label>
             </value>
             <value>
                 <fullName>Done</fullName>
@@ -74,11 +64,6 @@
                 <fullName>Active</fullName>
                 <default>false</default>
                 <label>Active</label>
-            </value>
-            <value>
-                <fullName>On Hold</fullName>
-                <default>false</default>
-                <label>On Hold</label>
             </value>
             <value>
                 <fullName>Not Selected</fullName>
