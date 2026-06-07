@@ -52,6 +52,16 @@ const STATUS_TO_STAGE = {
   Documented: "Documenting"
 };
 
+// Groups columns under an agent/role owner for visual bucketing on the board
+const STAGE_GROUPS = [
+  { label: "Dev Agent", stages: ["To Do", "On Hold", "In Progress"] },
+  { label: "Code Review", stages: ["In Code Review"] },
+  { label: "Human Testing", stages: ["Testing"] },
+  { label: "Doc Agent", stages: ["Documenting"] },
+  { label: "Release Agent", stages: ["Releasing"] },
+  { label: "End Bucket", stages: ["Done"] }
+];
+
 // Pre-built options array for the stage filter dropdown
 const STAGE_OPTS = STAGES.map((s) => ({ label: s, value: s }));
 
@@ -246,6 +256,16 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
             };
           })
         : [];
+      const columnGroups = isActive
+        ? STAGE_GROUPS.map((group) => ({
+            label: group.label,
+            key: group.label,
+            colFlexStyle: `flex: ${group.stages.length} 1 0; min-width: 0`,
+            columns: group.stages
+              .map((stage) => columns.find((c) => c.stage === stage))
+              .filter(Boolean)
+          }))
+        : [];
       return {
         sprintId: sprint.Id,
         name: sprint.Name,
@@ -262,6 +282,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
           : "Nothing selected for this sprint yet.",
         count: items.length,
         columns,
+        columnGroups,
         listItems: isListView
           ? this._prioritySort(items).map((i) => this._slotted(i))
           : [] // flat list for non-Active sprints

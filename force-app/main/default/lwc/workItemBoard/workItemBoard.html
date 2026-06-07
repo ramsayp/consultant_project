@@ -96,37 +96,48 @@
             <!-- Kanban layout: Active sprint only -->
             <template if:true={section.isActive}>
               <div class="kanban">
-                <template for:each={section.columns} for:item="col">
+                <template for:each={section.columnGroups} for:item="group">
                   <div
-                    key={col.stage}
-                    class="kanban__col"
-                    data-stage={col.stage}
-                    data-sprint-id={section.sprintId}
-                    ondragover={handleDragOver}
-                    ondragenter={handleDragEnter}
-                    ondragleave={handleDragLeave}
-                    ondrop={handleDrop}
+                    key={group.key}
+                    class="kanban__group"
+                    style={group.colFlexStyle}
                   >
-                    <div class="kanban__col-header">
-                      <span class="col-name">{col.stage}</span>
-                      <span class="col-count">{col.count}</span>
-                    </div>
-                    <div class="kanban__col-body">
-                      <template for:each={col.items} for:item="item">
-                        <div key={item.Id} class="card-slot">
-                          <div class={item.aboveClass}></div>
-                          <c-work-item-card
-                            data-id={item.Id}
-                            work-item={item}
-                            ondragover={handleCardDragOver}
-                            onopen={handleOpenItem}
-                          >
-                          </c-work-item-card>
-                          <div class={item.belowClass}></div>
+                    <div class="kanban__group-header">{group.label}</div>
+                    <div class="kanban__group-cols">
+                      <template for:each={group.columns} for:item="col">
+                        <div
+                          key={col.stage}
+                          class="kanban__col"
+                          data-stage={col.stage}
+                          data-sprint-id={section.sprintId}
+                          ondragover={handleDragOver}
+                          ondragenter={handleDragEnter}
+                          ondragleave={handleDragLeave}
+                          ondrop={handleDrop}
+                        >
+                          <div class="kanban__col-header">
+                            <span class="col-name">{col.stage}</span>
+                            <span class="col-count">{col.count}</span>
+                          </div>
+                          <div class="kanban__col-body">
+                            <template for:each={col.items} for:item="item">
+                              <div key={item.Id} class="card-slot">
+                                <div class={item.aboveClass}></div>
+                                <c-work-item-card
+                                  data-id={item.Id}
+                                  work-item={item}
+                                  ondragover={handleCardDragOver}
+                                  onopen={handleOpenItem}
+                                >
+                                </c-work-item-card>
+                                <div class={item.belowClass}></div>
+                              </div>
+                            </template>
+                            <template if:true={col.empty}>
+                              <p class="empty-col">—</p>
+                            </template>
+                          </div>
                         </div>
-                      </template>
-                      <template if:true={col.empty}>
-                        <p class="empty-col">—</p>
                       </template>
                     </div>
                   </div>
