@@ -55,8 +55,8 @@ const STATUS_TO_STAGE = {
 // Groups columns under an agent/role owner for visual bucketing on the board
 const STAGE_GROUPS = [
   { label: "Dev Agent", stages: ["To Do", "On Hold", "In Progress"] },
-  { label: "Code Review", stages: ["In Code Review"] },
-  { label: "Human Testing", stages: ["Testing"] },
+  { label: "Code Review Agent", stages: ["In Code Review"] },
+  { label: "Human Tester", stages: ["Testing"] },
   { label: "Doc Agent", stages: ["Documenting"] },
   { label: "Release Agent", stages: ["Releasing"] },
   { label: "End Bucket", stages: ["Done"] }
