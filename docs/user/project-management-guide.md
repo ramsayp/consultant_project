@@ -34,18 +34,23 @@ Only the **Active** sprint — the one currently being worked — shows the full
 
 ### Board Columns (Active Sprint)
 
-Work moves left to right as it progresses:
+Work moves left to right through 8 columns, grouped under the role responsible for that stage:
 
-1. **Not Started** — in the sprint but not yet picked up
-2. **To Do** — ready to be worked on
+**Dev Agent** — items being built
+
+1. **To Do** — ready to be picked up
+2. **On Hold** — paused, waiting on something
 3. **In Progress** — actively being worked on
-4. **Blocked** — something is preventing progress
-5. **Code Review** — awaiting review
-6. **UAT** — in user acceptance testing
-7. **Pipeline** — in the deployment pipeline
-8. **Released** — deployed to production
-9. **Documented** — release notes written
-10. **Done** — fully complete
+
+**Code Review Agent** — items under review 4. **In Code Review** — code complete, awaiting review
+
+**Human Tester** — items being verified 5. **Testing** — in user acceptance testing
+
+**Doc Agent** — items being documented 6. **Documenting** — release notes and documentation being written
+
+**Release Agent** — items being shipped 7. **Releasing** — in the deployment pipeline
+
+**End Bucket** 8. **Done** — fully complete
 
 ### Moving Cards
 
@@ -144,7 +149,7 @@ If no sprints exist yet, click **Generate Sprints** on the Sprints tab. This cre
 
 When a sprint is complete, click the **Close** button next to it. This marks it Completed, activates the next sprint in the sequence, and automatically creates a new one at the end of the chain. Only one sprint can be closed at a time.
 
-Anything already queued (Selected) in the newly-activated sprint switches to **Not Started** so it appears at the first column of its kanban — ready to be picked up alongside any work rolled forward from the closed sprint.
+Anything already queued (Selected) in the newly-activated sprint switches to **To Do** so it appears at the first column of its kanban — ready to be picked up alongside any work rolled forward from the closed sprint.
 
 ---
 

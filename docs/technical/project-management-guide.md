@@ -54,7 +54,7 @@ Project
 
 `Ticket` sits outside the Project → Epic → Story/Task/Bug hierarchy — it's raw, unclassified intake awaiting BA agent triage (see [Triage pipeline](#triage-pipeline-ba-agent-scaffolding)). It tracks its pipeline stage via `Triage_Status__c` rather than the standard kanban `Status__c`, and is reclassified to Story, Task, or Bug on approval.
 
-Default status on creation: **Project → Active**, all others → **Not Started**.
+Default status on creation: **Project → Active**, all others → **To Do**.
 
 Two additional values exist outside the per-record-type kanban lists above — **`Not Selected`** and **`Selected`** — used exclusively to track where a Story/Task/Bug sits relative to the Active sprint (see [Selection status](#selection-status) below). They never appear as kanban columns.
 
@@ -202,9 +202,7 @@ Only **one** sprint at a time shows the full kanban grid — the Active sprint. 
 sprint (Planning sprints **and** Backlog) renders as a flat, single-column list, exactly
 like the Backlog always has:
 
-- **Active sprint** (`isActive = sprint.Status__c === 'Active'`): 10 columns, one per kanban
-  stage in `STAGES`. Items bucketed by `STATUS_TO_STAGE[item.Status__c]`. Gets a green accent
-  border/header (`.sprint-section--active`) and an "Active" badge for visual prominence.
+- **Active sprint** (`isActive = sprint.Status__c === 'Active'`): 8 columns grouped under 6 agent-stage header bands (`STAGE_GROUPS`). Items bucketed by `STATUS_TO_STAGE[item.Status__c]`. Gets a green accent border/header (`.sprint-section--active`) and an "Active" badge for visual prominence.
 - **Everything else** (`isListView = !isActive`): a flat, priority-sorted list (`listItems`),
   rendered with `compact` cards — same layout the Backlog has always used. The drop zone
   carries no `data-stage` attribute, which is what tells `handleDrop` to skip `updateStatus`
@@ -217,7 +215,7 @@ Sort order: Active sprint first, Backlog always last, everything else in `Sequen
 `emptyMessage` differs by section type ("Backlog is empty." vs "Nothing selected for this
 sprint yet.").
 
-`STATUS_TO_STAGE` maps every `Status__c` picklist value to one of the 10 kanban stages. Selection statuses (`Not Selected`/`Selected`) and Project/Epic terminal statuses (`Active`, `Completed`, `Cancelled`, `On Hold`) are bucketed to the nearest stage so items always land in a column rather than vanishing.
+`STATUS_TO_STAGE` maps every `Status__c` picklist value to one of the 8 kanban stages. Selection statuses (`Not Selected`/`Selected`) and Project/Epic terminal statuses (`Active`, `Completed`, `Cancelled`, `On Hold`) are bucketed to the nearest stage so items always land in a column rather than vanishing.
 
 #### Selection status
 
@@ -246,10 +244,10 @@ It's invoked from three places, covering every way an item's sprint can change:
   the kanban stage that `updateStatus` just set on the same drop.
 - **`WorkItemTrigger`** (before insert) — re-derives `Status__c` from the item's final
   `Sprint__c` so manually-picked sprints (not just the Backlog default) get the correct
-  selection status from creation. `workItemCreate.js` always sends `Status__c = 'Not Started'`
+  selection status from creation. `workItemCreate.js` always sends `Status__c = 'To Do'`
   regardless of the chosen sprint — Apex corrects it.
 - **`closeSprint`** — see [Sprint Lifecycle](#sprint-lifecycle): items already `Selected` in
-  the sprint being activated flip to `Not Started` so they enter the kanban at its first stage.
+  the sprint being activated flip to `To Do` so they enter the kanban at its first stage.
 
 Because the rule looks only at where an item _lands_, pulling a card out of the Active sprint
 back into the Backlog or a future sprint resets it to `Not Selected`/`Selected` even if it was
@@ -476,22 +474,20 @@ The Work Item record page uses a two-region desktop layout.
 
 ## Kanban Stages
 
-The 10 canonical stages map to left-to-right columns on sprint boards:
+8 stages, grouped under 6 agent-stage header bands rendered above the columns on the active sprint board:
 
-| #   | Stage       | Typical meaning              |
-| --- | ----------- | ---------------------------- |
-| 1   | Not Started | In sprint, not yet begun     |
-| 2   | To Do       | Ready to pick up             |
-| 3   | In Progress | Active development           |
-| 4   | Blocked     | Impediment present           |
-| 5   | Code Review | PR open / awaiting review    |
-| 6   | UAT         | User acceptance testing      |
-| 7   | Pipeline    | In CI/CD pipeline            |
-| 8   | Released    | Deployed to production       |
-| 9   | Documented  | Release notes / docs written |
-| 10  | Done        | Fully complete               |
+| Agent stage       | Columns        | Meaning                            |
+| ----------------- | -------------- | ---------------------------------- |
+| Dev Agent         | To Do          | Ready to pick up                   |
+| Dev Agent         | On Hold        | Paused or blocked                  |
+| Dev Agent         | In Progress    | Active development                 |
+| Code Review Agent | In Code Review | PR open / awaiting review          |
+| Human Tester      | Testing        | User acceptance testing            |
+| Doc Agent         | Documenting    | Release notes / docs being written |
+| Release Agent     | Releasing      | In CI/CD pipeline / deploying      |
+| End Bucket        | Done           | Fully complete                     |
 
-Every `Status__c` picklist value maps to one of these stages via `STATUS_TO_STAGE` in `workItemBoard.js`.
+Every `Status__c` picklist value maps to one of these stages via `STATUS_TO_STAGE` in `workItemBoard.js`. The `STAGE_GROUPS` constant in the same file defines the groupings; the Dev Agent group spans 3 columns so all columns remain equal width.
 
 ---
 
@@ -502,7 +498,7 @@ generateSprints() → creates Backlog sprint + 6 × 2-week Planning sprints
         ↓
 closeSprint(id) → marks Completed
                → activates the next sprint in sequence
-               → flips 'Selected' items already in that sprint to 'Not Started'
+               → flips 'Selected' items already in that sprint to 'To Do'
                → rolls non-terminal items forward to that sprint
                → creates new Planning sprint at end of chain
         ↓
@@ -550,13 +546,13 @@ To seed sprints for a new org: open the **Sprints** tab in Project Management an
 
 **Compact card layout for backlog:** The backlog can grow large. Single-line rows (`compact = true`) allow more items to be visible without scrolling. Sprint columns use taller cards with more detail.
 
-**Sprint close is a cascade operation:** `closeSprint` does five things atomically — marks Completed, activates the next sprint in sequence, flips `Selected` items already in that sprint to `Not Started`, rolls non-terminal work items forward to it, then appends a new Planning sprint at the end of the chain. Sprint names use a date-range format (`Sprint - 1 Jun 2026 to 14 Jun 2026`) generated from `Start_Date__c` and `End_Date__c`, so sprints are self-describing without a manual naming step.
+**Sprint close is a cascade operation:** `closeSprint` does five things atomically — marks Completed, activates the next sprint in sequence, flips `Selected` items already in that sprint to `To Do`, rolls non-terminal work items forward to it, then appends a new Planning sprint at the end of the chain. Sprint names use a date-range format (`Sprint - 1 Jun 2026 to 14 Jun 2026`) generated from `Start_Date__c` and `End_Date__c`, so sprints are self-describing without a manual naming step.
 
 **Backlog hidden from Sprints view:** The Backlog sprint never appears in `allSprintsForDisplay` (filtered in the LWC getter). It is a system-internal record — users cannot close it and seeing it in the sprint panel adds noise.
 
 **Backlog pinned last on the board:** The `sprintSections` getter sorts sprint sections client-side so the Backlog always renders at the bottom, regardless of `Sequence__c`. This prevents any future sprint with a sequence number above 9999 from appearing after the Backlog.
 
-**Active-sprint-only kanban:** Showing the full 10-column kanban for every sprint produced a wall of mostly-empty columns — only the Active sprint is ever actively worked. Now every sprint except the Active one renders as a flat list (the same layout the Backlog always used), and the Active sprint sorts to the top with a green accent border and "Active" badge so it stands out. `isBacklog` and `isActive` are independent flags — Backlog is also list-view, but the two are detected differently (`RecordType.DeveloperName` vs `Status__c`) and serve different purposes (Backlog absorption vs kanban-vs-list rendering).
+**Active-sprint-only kanban:** Showing the full 8-column kanban for every sprint produced a wall of mostly-empty columns — only the Active sprint is ever actively worked. Now every sprint except the Active one renders as a flat list (the same layout the Backlog always used), and the Active sprint sorts to the top with a green accent border and "Active" badge so it stands out. `isBacklog` and `isActive` are independent flags — Backlog is also list-view, but the two are detected differently (`RecordType.DeveloperName` vs `Status__c`) and serve different purposes (Backlog absorption vs kanban-vs-list rendering).
 
 **Ticket is a record type, not a separate object:** Raw, unclassified intake reuses `Work_Item__c` (Ticket record type) rather than a standalone object — it's reclassified to Story/Task/Bug on approval, so keeping it on the same object means approval is a single `RecordTypeId` update rather than a cross-object data migration. Ticket tracks pipeline stage with its own `Triage_Status__c` (kept separate from `Status__c`, whose values are record-type-specific kanban stages that don't fit a pre-classification item).
 
