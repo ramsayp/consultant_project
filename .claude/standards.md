@@ -8,6 +8,28 @@
 - Use `AuraHandledException` for user-facing error messages
 - Test class conventions: see `.claude/skills/apex-test.md`
 
+### Layered architecture
+
+All new Apex must follow this layer structure:
+
+```
+Trigger → TriggerHandler → Service → Domain → Selector
+```
+
+- **Trigger** — one trigger per object; calls handler only; no logic
+- **TriggerHandler** — routes to service methods based on context; no business logic
+- **Service** — orchestrates operations; calls domain and selector; one responsibility per method
+- **Domain** — entity logic and validation; operates on `List<SObject>`; no SOQL
+- **Selector** — all SOQL; always enforces `with sharing`; returns typed lists
+
+SOLID rules:
+
+1. Single responsibility per class
+2. Interfaces for behaviour contracts where multiple implementations are possible
+3. Dependencies injected or abstracted at interface boundaries — mock at the Selector or Service interface in tests
+4. All classes unit-testable with mocked data access
+5. No business logic in triggers
+
 ## LWC JavaScript
 
 ### ESLint rules that commonly trip up
