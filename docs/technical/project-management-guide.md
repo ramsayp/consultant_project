@@ -103,7 +103,6 @@ All methods use `with sharing`. Methods marked cacheable are safe for `@wire`; a
 | `getActiveSprints()`                                             | Planning, Active, and Backlog sprints ordered by sequence                                                                           |
 | `getAllSprints()`                                                | All non-completed sprints plus those completed within the last 30 days                                                              |
 | `getWorkItems(String recordTypeName, Id sprintId, Id projectId)` | Items filtered by type; optional sprint and project scope                                                                           |
-| `getStatusColumns()`                                             | Returns the per-record-type status picklist map (used by the board to render columns)                                               |
 | `getWorkItemMeta(Id recordId)`                                   | Returns `typeName` and `sprintId` for a record — used by record-page applets                                                        |
 | `getComments(Id workItemId)`                                     | All comments for a work item, newest first                                                                                          |
 | `getTriageQueue()`                                               | Tickets not yet approved — `Not Started`/`Reviewing`/`Reviewed`/`Declined` — ordered oldest first; the human reviewer's working set |
@@ -218,9 +217,7 @@ Sort order: Active sprint first, Backlog always last, everything else in `Sequen
 `emptyMessage` differs by section type ("Backlog is empty." vs "Nothing selected for this
 sprint yet.").
 
-`STATUS_TO_STAGE` maps legacy status values — plus the new `Not Selected`/`Selected` selection
-statuses — to the nearest current stage, so any item rendered in a kanban context (mid-drag,
-stale cache) still buckets into a sane column instead of vanishing.
+`STATUS_TO_STAGE` maps every `Status__c` picklist value to one of the 10 kanban stages. Selection statuses (`Not Selected`/`Selected`) and Project/Epic terminal statuses (`Active`, `Completed`, `Cancelled`, `On Hold`) are bucketed to the nearest stage so items always land in a column rather than vanishing.
 
 #### Selection status
 
@@ -494,7 +491,7 @@ The 10 canonical stages map to left-to-right columns on sprint boards:
 | 9   | Documented  | Release notes / docs written |
 | 10  | Done        | Fully complete               |
 
-Legacy status values are remapped to the nearest current stage in `STATUS_TO_STAGE` in `workItemBoard.js` to prevent cards disappearing from the board.
+Every `Status__c` picklist value maps to one of these stages via `STATUS_TO_STAGE` in `workItemBoard.js`.
 
 ---
 

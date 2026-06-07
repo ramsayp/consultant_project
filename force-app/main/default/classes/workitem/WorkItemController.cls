@@ -1,40 +1,4 @@
 public with sharing class WorkItemController {
-  // ── Status column definitions ─────────────────────────────────────────────
-  // Defines the ordered kanban columns for each record type.
-  // These are returned to the front end so the board can render columns dynamically.
-  static final Map<String, List<String>> STATUS_COLUMNS = new Map<String, List<String>>{
-    'Project' => new List<String>{
-      'Active',
-      'On Hold',
-      'Completed',
-      'Cancelled'
-    },
-    'Epic' => new List<String>{
-      'Draft',
-      'Active',
-      'In Progress',
-      'Completed',
-      'Cancelled'
-    },
-    'Story' => new List<String>{
-      'Backlog',
-      'Ready',
-      'In Progress',
-      'In Review',
-      'Done'
-    },
-    'Task' => new List<String>{ 'Backlog', 'In Progress', 'Blocked', 'Done' },
-    'Bug' => new List<String>{
-      'Open',
-      'Triaged',
-      'In Progress',
-      'Fixed',
-      'Closed'
-    },
-    'Chapter' => new List<String>{ 'To Do', 'In Progress', 'Done' },
-    'Step' => new List<String>{ 'To Do', 'In Progress', 'Done' }
-  };
-
   // ── getWorkItems ──────────────────────────────────────────────────────────
   // Returns work items filtered by record type plus optional sprint and project scope.
   // When projectId is supplied for Epics, only direct children of that project are returned.
@@ -195,14 +159,6 @@ public with sharing class WorkItemController {
         OR End_Date__c = NULL
       ORDER BY Sequence__c NULLS LAST, Start_Date__c ASC
     ];
-  }
-
-  // ── getStatusColumns ──────────────────────────────────────────────────────
-  // Returns the STATUS_COLUMNS map so the board front end can render
-  // the correct columns for each record type without hardcoding them in JS.
-  @AuraEnabled(cacheable=true)
-  public static Map<String, List<String>> getStatusColumns() {
-    return STATUS_COLUMNS;
   }
 
   // ── generateSprints ───────────────────────────────────────────────────────

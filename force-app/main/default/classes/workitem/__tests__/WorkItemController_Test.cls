@@ -242,19 +242,6 @@ private class WorkItemController_Test {
     );
   }
 
-  // ── getStatusColumns ──────────────────────────────────────────────────────
-
-  @isTest
-  static void testGetStatusColumns() {
-    Test.startTest();
-    Map<String, List<String>> cols = WorkItemController.getStatusColumns();
-    Test.stopTest();
-    System.assert(cols.containsKey('Project'));
-    System.assert(cols.containsKey('Story'));
-    System.assert(cols.get('Project').contains('Active'));
-    System.assert(cols.get('Story').contains('In Progress'));
-  }
-
   // ── getBoardItems ─────────────────────────────────────────────────────────
 
   @isTest

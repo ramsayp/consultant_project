@@ -26,10 +26,8 @@ const STAGES = [
   "Done"
 ];
 
-// Maps any status value (including legacy) to a kanban column.
-// Legacy values arise from earlier picklist options that have since been replaced.
+// Maps a stored Status__c value to a kanban column name.
 const STATUS_TO_STAGE = {
-  // Current values — direct pass-through
   "Not Started": "Not Started",
   "To Do": "To Do",
   "In Progress": "In Progress",
@@ -40,26 +38,15 @@ const STATUS_TO_STAGE = {
   Released: "Released",
   Documented: "Documented",
   Done: "Done",
-  // Selection statuses — only meaningful in list-view (non-Active) sprints, but
-  // mapped here so a stray Selected/Not Selected item still buckets sanely if it
-  // ever appears in a kanban context (e.g. mid-drag, stale cache)
+  // Selection statuses (Planning/Backlog sprint items) — bucket sanely if they
+  // appear in a kanban context (e.g. mid-drag, stale cache)
   "Not Selected": "Not Started",
   Selected: "To Do",
-  // Legacy values — mapped to the nearest current stage
-  Backlog: "Not Started",
-  Draft: "Not Started",
-  Open: "Not Started",
-  Ready: "To Do",
-  Triaged: "To Do",
-  "In Sprint": "In Progress",
+  // Project/Epic terminal statuses — bucket onto the kanban if those items appear
   Active: "In Progress",
-  "In Review": "Code Review",
-  Fixed: "Code Review",
-  Closed: "Done",
   Completed: "Done",
   Cancelled: "Done",
-  "Rolled Forward": "Done",
-  "Wont Fix": "Done"
+  "On Hold": "Blocked"
 };
 
 // Pre-built options array for the stage filter dropdown
