@@ -34,23 +34,16 @@ Only the **Active** sprint — the one currently being worked — shows the full
 
 ### Board Columns (Active Sprint)
 
-Work moves left to right through 8 columns, grouped under the role responsible for that stage:
+Work moves left to right through 8 columns. Each column sits under a group header showing which role owns that stage:
 
-**Dev Agent** — items being built
-
-1. **To Do** — ready to be picked up
-2. **On Hold** — paused, waiting on something
-3. **In Progress** — actively being worked on
-
-**Code Review Agent** — items under review 4. **In Code Review** — code complete, awaiting review
-
-**Human Tester** — items being verified 5. **Testing** — in user acceptance testing
-
-**Doc Agent** — items being documented 6. **Documenting** — release notes and documentation being written
-
-**Release Agent** — items being shipped 7. **Releasing** — in the deployment pipeline
-
-**End Bucket** 8. **Done** — fully complete
+1. **To Do** _(Dev Agent)_ — ready to be picked up
+2. **On Hold** _(Dev Agent)_ — paused, waiting on something
+3. **In Progress** _(Dev Agent)_ — actively being worked on
+4. **In Code Review** _(Code Review Agent)_ — code complete, awaiting review
+5. **Testing** _(Human Tester)_ — in user acceptance testing
+6. **Documenting** _(Doc Agent)_ — release notes and documentation being written
+7. **Releasing** _(Release Agent)_ — in the deployment pipeline
+8. **Done** _(End Bucket)_ — fully complete
 
 ### Moving Cards
 
