@@ -309,7 +309,7 @@ public with sharing class WorkItemController {
       'Sprint__r.Start_Date__c, Sprint__r.End_Date__c, ' +
       'Parent_Work_Item__c, Parent_Work_Item__r.Name, ' +
       'Parent_Work_Item__r.Parent_Work_Item__c, Parent_Work_Item__r.Parent_Work_Item__r.Name, ' +
-      'RecordType.Name, RecordTypeId ' +
+      'RecordType.Name, RecordTypeId, Is_General__c ' +
       'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
 
     if (projectId == null) {

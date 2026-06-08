@@ -170,9 +170,21 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
   }
 
   // ── Epic panel ────────────────────────────────────────────────────────────
-  // Groups epics into Active / Completed / Cancelled buckets for the epics tab
+  // Returns the auto-created General Epic for this project (Is_General__c = true),
+  // displayed in its own pinned section separate from regular Epics.
+  get generalEpic() {
+    return (
+      this.workItems.find(
+        (i) => i.RecordType?.Name === "Epic" && i.Is_General__c
+      ) ?? null
+    );
+  }
+
+  // Groups regular (non-General) epics into Active / Completed / Cancelled buckets
   get epicGroups() {
-    const epics = this.workItems.filter((i) => i.RecordType?.Name === "Epic");
+    const epics = this.workItems.filter(
+      (i) => i.RecordType?.Name === "Epic" && !i.Is_General__c
+    );
     const groups = [
       { key: "active", label: "Active", statuses: null }, // null = everything not Completed or Cancelled
       { key: "completed", label: "Completed", statuses: ["Completed"] },
