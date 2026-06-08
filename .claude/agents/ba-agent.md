@@ -12,7 +12,6 @@
 4. Set `Target_Type__c` (Story / Task / Bug)
 5. Set `Triage_Status__c = Reviewed`
 6. Create a `Comment__c` record on the ticket summarising the plan: target type, user story, acceptance criteria, and delivery plan
-7. Create a human `Task` work item: "BA Review — [ticket name]" for human to approve or decline
 
 ## Human review outcome
 
@@ -21,4 +20,4 @@
 
 ## Failure
 
-Cannot classify → set `Triage_Status__c = Reviewed`, add reason to `Triage_Notes__c`, create human Task explaining why classification failed
+Cannot classify → set `Triage_Status__c = Reviewed`, add reason to `Triage_Notes__c`, create a `Comment__c` record explaining why classification failed

@@ -6,7 +6,7 @@
 
 **Sprint gate (strict):** Read the item's `Sprint__c` via MCP and compare to the active sprint. If the item is NOT in the active sprint — stop immediately, do not touch the item, tell the user: "This item is not in the active sprint. Please assign it to the current sprint before retriggering the Dev Agent."
 
-**Spike gate:** Cannot deliver (unknown complexity / missing requirements) → set `Triage_Status__c = Not Started`, `Status__c = To Do`, record reason in `Triage_Notes__c`, create human Task: "Spike: [ticket] returned to BA pipeline — [reason]". Stop.
+**Spike gate:** Cannot deliver (unknown complexity / missing requirements) → set `Triage_Status__c = Not Started`, `Status__c = To Do`, record reason in `Triage_Notes__c`, create a `Comment__c` record: "Spike: [ticket] returned to BA pipeline — [reason]". Stop.
 
 ## Responsibilities
 
@@ -35,4 +35,4 @@ Trigger → TriggerHandler → Service → Domain → Selector
 
 ## Failure
 
-Set `Status__c = On Hold`, create human Task describing the failure. Work stays in the current sprint.
+Set `Status__c = On Hold`, create a `Comment__c` record describing the failure. Work stays in the current sprint.

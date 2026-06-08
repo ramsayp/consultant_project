@@ -30,4 +30,4 @@ Ticket (Idea / Bug)
   To Do → Dev Agent → Code Review Agent → Human Tester → Docs Agent → Release Agent → Done
 ```
 
-All pipeline failures: agent sets status + creates a human `Task` work item describing the failure. Work stays in the current sprint — does not return to Backlog.
+All pipeline failures: agent sets status + creates a `Comment__c` record describing the failure. Work stays in the current sprint — does not return to Backlog.

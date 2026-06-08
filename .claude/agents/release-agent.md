@@ -27,4 +27,4 @@
 
 ## Failure
 
-Set `Status__c = On Hold`, create human Task describing the merge or publish failure.
+Set `Status__c = On Hold`, create a `Comment__c` record describing the merge or publish failure.

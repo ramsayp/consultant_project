@@ -37,4 +37,4 @@
 
 ## Failure
 
-Set `Status__c = On Hold`, create human Task describing the failure.
+Set `Status__c = On Hold`, create a `Comment__c` record describing the failure.
