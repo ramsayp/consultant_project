@@ -8,6 +8,7 @@
 - [Prefer MCP over anonymous Apex](feedback/tooling/prefer_mcp_over_anon_apex.md) — one-time data migrations: use soqlQuery+updateSobjectRecord, not .apex script files via sf apex run; avoids temp files in the repo entirely
 - [MCP minimal access principle](feedback/tooling/mcp_minimal_access.md) — only activate MCP servers actively needed; deactivate everything else; bare minimal access
 - [Search all name variants on rename](feedback/tooling/search_variations.md) — grep hyphenated, spaced, title-cased, and camelCased forms; one pattern misses others
+- [MCP read tools need no confirmation](feedback/tooling/mcp_read_no_confirm.md) — soqlQuery, getObjectSchema, getRelatedRecords etc. always fire without asking; only write/mutate ops need narration
 
 ### Communication & transparency
 
