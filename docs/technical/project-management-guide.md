@@ -31,6 +31,7 @@ The central object. All item types share one object, differentiated by Record Ty
 | `Triage_Notes__c`        | Long Text                      | Ticket-type only; reviewer notes captured on decline, for BA agent re-triage                                    |
 | `Target_Type__c`         | Picklist                       | Ticket-type only; what the ticket becomes (Story/Task/Bug) on approval                                          |
 | `Plan__c`                | Long Text                      | Ticket-type only; BA agent's drafted delivery plan                                                              |
+| `Is_General__c`          | Checkbox                       | `true` on the auto-created "General" Epic for each Project; see [General Epic](#general-epic)                   |
 
 #### Record type hierarchy
 
@@ -65,6 +66,14 @@ Two additional values exist outside the per-record-type kanban lists above — *
 - Chapter's parent is a Story; Step's parent is a Chapter.
 - To display the Epic name on a kanban card for a Chapter, two hops are required:
   `Parent_Work_Item__r.Parent_Work_Item__r.Name`.
+
+#### General Epic
+
+When a Project is inserted, `WorkItemTrigger` automatically creates a child Epic named **General** (`Is_General__c = true`). It is a catch-all for work that belongs to the project but does not fit any explicitly-defined Epic.
+
+- **Status mirrors the parent Project.** When the Project's `Status__c` changes, the General Epic's `Status__c` is updated to match via an `after update` cascade in `WorkItemTriggerHandler`.
+- **Terminal statuses are system-only.** Users cannot manually set the General Epic's `Status__c` to `Cancelled`, `Done`, or `Completed`. Attempting to do so raises a field-level error. The cascade bypasses this restriction via a `systemCascade` static boolean.
+- **Always exactly one per Project.** Identified by `Is_General__c = true`; `getBoardItems` returns it alongside regular Epics.
 
 ---
 
@@ -149,9 +158,21 @@ This prevents items from other projects appearing on the board.
 ### `WorkItemTrigger`
 
 **File:** `force-app/main/default/triggers/WorkItemTrigger.trigger`
-**Fires:** before insert on `Work_Item__c`
+**Fires:** before insert, after insert, before update, after update on `Work_Item__c`
 
-Two passes. **Pass 1 — Backlog default:** assigns the Backlog sprint to any Story, Task, or Bug inserted with a null `Sprint__c`. Queries the Backlog sprint by `RecordTypeId` once per transaction; exits silently if none exists. **Pass 2 — selection status correction:** re-derives `Status__c` from each item's final `Sprint__c` (the Backlog default from Pass 1, or whatever the user picked) — Backlog → `Not Selected`, a Planning sprint → `Selected`, anything else left at the `Not Started` default sent by `workItemCreate.js`. This exists because the create form always sends `Status__c = 'Not Started'` regardless of the chosen sprint; Apex corrects it on the way in. Bulkified and safe for data load and API creation.
+**Before insert — two passes.** Pass 1 (Backlog default): assigns the Backlog sprint to any Story, Task, or Bug inserted with a null `Sprint__c`. Pass 2 (selection status correction): re-derives `Status__c` from each item's final `Sprint__c` — Backlog → `Not Selected`, Planning sprint → `Selected`, Active sprint left at `Not Started`. Bulkified and safe for data load and API creation.
+
+**After insert, before update, after update** — delegated to `WorkItemTriggerHandler`.
+
+### `WorkItemTriggerHandler`
+
+**File:** `force-app/main/default/classes/workitem/WorkItemTriggerHandler.cls`
+
+Handles General Epic creation and status mirroring. Three entry points:
+
+- **`afterInsert`** — for every newly inserted Project, inserts one child Epic (`Name = 'General'`, `Is_General__c = true`) with the same initial `Status__c`.
+- **`beforeUpdate`** — blocks users from manually setting a General Epic's `Status__c` to a terminal value (`Cancelled`, `Done`, `Completed`). Skipped when `systemCascade = true`.
+- **`afterUpdate`** — when a Project's `Status__c` changes, updates all linked General Epics to match. Sets `systemCascade = true` before the nested DML and resets it in a `finally` block to bypass the `beforeUpdate` restriction during the cascade.
 
 ---
 
@@ -194,7 +215,7 @@ loadItems() → getBoardItems({ projectId }) → this.workItems  // imperative, 
 #### Two tabs
 
 - **Boards tab** (`activeTab = 'boards'`): renders the sprint kanban sections.
-- **Epics tab** (`activeTab = 'epics'`): renders `epicGroups` — Epics bucketed into Active, Completed, and Cancelled groups with counts.
+- **Epics tab** (`activeTab = 'epics'`): renders a pinned **General** section (the project's `Is_General__c` Epic, if it exists) followed by `epicGroups` — regular Epics bucketed into Active, Completed, and Cancelled groups with counts. The General Epic is excluded from `epicGroups` via a filter on `Is_General__c`.
 
 #### Sprint sections (`sprintSections` getter)
 
@@ -545,6 +566,8 @@ To seed sprints for a new org: open the **Sprints** tab in Project Management an
 **Card-level drag ordering:** `hoverCardId` and `hoverPosition` track which half of a target card the dragged item hovers over. On drop, the card is spliced into the destination column array at the correct position, then the whole column is stable-sorted by priority before `updateSequences` persists the result.
 
 **Compact card layout for backlog:** The backlog can grow large. Single-line rows (`compact = true`) allow more items to be visible without scrolling. Sprint columns use taller cards with more detail.
+
+**General Epic as a checkbox discriminator:** Each Project auto-creates one child Epic (`Is_General__c = true`) as a catch-all. Using a dedicated checkbox field (rather than a reserved name or a status convention) keeps detection unambiguous and allows querying with `AND Is_General__c = TRUE` in SOQL. The same pattern as `Sequence__c = 9999` for the Backlog sprint — one record per parent, identified by a stable field rather than derived metadata.
 
 **Sprint close is a cascade operation:** `closeSprint` does five things atomically — marks Completed, activates the next sprint in sequence, flips `Selected` items already in that sprint to `To Do`, rolls non-terminal work items forward to it, then appends a new Planning sprint at the end of the chain. Sprint names use a date-range format (`Sprint - 1 Jun 2026 to 14 Jun 2026`) generated from `Start_Date__c` and `End_Date__c`, so sprints are self-describing without a manual naming step.
 

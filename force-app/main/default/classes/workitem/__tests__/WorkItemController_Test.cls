@@ -147,8 +147,14 @@ private class WorkItemController_Test {
       project.Id
     );
     Test.stopTest();
-    System.assertEquals(1, result.size());
-    System.assertEquals('Test Epic', result[0].Name);
+    // makeData inserts a Project which triggers creation of a General Epic,
+    // plus the explicit 'Test Epic' — so 2 epics belong to the project
+    System.assertEquals(2, result.size());
+    Set<String> names = new Set<String>();
+    for (Work_Item__c w : result)
+      names.add(w.Name);
+    System.assert(names.contains('Test Epic'), 'Test Epic should be present');
+    System.assert(names.contains('General'), 'General Epic should be present');
   }
 
   // ── getWorkItemMeta ───────────────────────────────────────────────────────
@@ -191,8 +197,13 @@ private class WorkItemController_Test {
     Test.startTest();
     List<Work_Item__c> epics = WorkItemController.getEpics(null);
     Test.stopTest();
-    System.assertEquals(1, epics.size());
-    System.assertEquals('Test Epic', epics[0].Name);
+    // makeData inserts a Project which triggers creation of a General Epic
+    System.assertEquals(2, epics.size());
+    Set<String> names = new Set<String>();
+    for (Work_Item__c e : epics)
+      names.add(e.Name);
+    System.assert(names.contains('Test Epic'), 'Test Epic should be present');
+    System.assert(names.contains('General'), 'General Epic should be present');
   }
 
   // ── getSprints ────────────────────────────────────────────────────────────
@@ -255,7 +266,8 @@ private class WorkItemController_Test {
     Test.startTest();
     List<Work_Item__c> items = WorkItemController.getBoardItems(project.Id);
     Test.stopTest();
-    System.assertEquals(4, items.size());
+    // General Epic (auto-created) + Test Epic + Story + Task + Bug = 5
+    System.assertEquals(5, items.size());
     for (Work_Item__c w : items) {
       System.assertNotEquals(
         'Project',
@@ -270,7 +282,8 @@ private class WorkItemController_Test {
     Test.startTest();
     List<Work_Item__c> items = WorkItemController.getBoardItems(null);
     Test.stopTest();
-    System.assertEquals(4, items.size());
+    // General Epic (auto-created) + Test Epic + Story + Task + Bug = 5
+    System.assertEquals(5, items.size());
   }
 
   // ── updateStatus ──────────────────────────────────────────────────────────
@@ -432,8 +445,19 @@ private class WorkItemController_Test {
       'Story'
     );
     Test.stopTest();
-    System.assertEquals(1, parents.size());
-    System.assertEquals('Test Epic', parents[0].Name);
+    // makeData auto-creates a General Epic alongside Test Epic
+    System.assertEquals(2, parents.size());
+    Set<String> names = new Set<String>();
+    for (Work_Item__c p : parents)
+      names.add(p.Name);
+    System.assert(
+      names.contains('Test Epic'),
+      'Test Epic should be a candidate parent'
+    );
+    System.assert(
+      names.contains('General'),
+      'General Epic should be a candidate parent'
+    );
   }
 
   @isTest
@@ -744,5 +768,102 @@ private class WorkItemController_Test {
     System.assertEquals('Declined', ctx.get('triageStatus'));
     System.assertEquals('Needs more detail', ctx.get('triageNotes'));
     System.assertEquals('Bug', ctx.get('targetType'));
+  }
+
+  // ── General Epic trigger ──────────────────────────────────────────────────
+
+  @isTest
+  static void testProjectInsert_createsGeneralEpic() {
+    Test.startTest();
+    Work_Item__c project = new Work_Item__c(
+      Name = 'New Project',
+      RecordTypeId = wiRtId('Project'),
+      Status__c = 'Active'
+    );
+    insert project;
+    Test.stopTest();
+
+    List<Work_Item__c> generals = [
+      SELECT Id, Name, Status__c, Is_General__c, Parent_Work_Item__c
+      FROM Work_Item__c
+      WHERE
+        RecordTypeId = :wiRtId('Epic')
+        AND Is_General__c = TRUE
+        AND Parent_Work_Item__c = :project.Id
+    ];
+    System.assertEquals(
+      1,
+      generals.size(),
+      'Exactly one General Epic should be created'
+    );
+    System.assertEquals('General', generals[0].Name);
+    System.assertEquals(
+      'Active',
+      generals[0].Status__c,
+      'General Epic inherits Project status'
+    );
+  }
+
+  @isTest
+  static void testProjectStatusChange_cascadesToGeneralEpic() {
+    Work_Item__c project = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Project'
+      LIMIT 1
+    ];
+    Work_Item__c generalEpic = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE
+        RecordTypeId = :wiRtId('Epic')
+        AND Is_General__c = TRUE
+        AND Parent_Work_Item__c = :project.Id
+      LIMIT 1
+    ];
+
+    Test.startTest();
+    update new Work_Item__c(Id = project.Id, Status__c = 'Completed');
+    Test.stopTest();
+
+    System.assertEquals(
+      'Completed',
+      [SELECT Status__c FROM Work_Item__c WHERE Id = :generalEpic.Id].Status__c,
+      'General Epic status should mirror its parent Project'
+    );
+  }
+
+  @isTest
+  static void testGeneralEpic_blocksManualTerminalStatus() {
+    Work_Item__c project = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Project'
+      LIMIT 1
+    ];
+    Work_Item__c generalEpic = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE
+        RecordTypeId = :wiRtId('Epic')
+        AND Is_General__c = TRUE
+        AND Parent_Work_Item__c = :project.Id
+      LIMIT 1
+    ];
+
+    Test.startTest();
+    try {
+      update new Work_Item__c(Id = generalEpic.Id, Status__c = 'Cancelled');
+      System.assert(
+        false,
+        'Expected DmlException for terminal status on General Epic'
+      );
+    } catch (DmlException e) {
+      System.assert(
+        e.getMessage().contains('controlled by its parent Project'),
+        'Error message should explain why the status cannot be set manually'
+      );
+    }
+    Test.stopTest();
   }
 }

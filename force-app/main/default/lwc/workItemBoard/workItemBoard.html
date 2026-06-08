@@ -52,6 +52,24 @@
               </lightning-button>
             </div>
           </div>
+          <!-- ── General Epic (pinned) ── -->
+          <template if:true={generalEpic}>
+            <div class="epic-group epic-group--general">
+              <div class="epic-group__header">
+                <span class="epic-group__label">General</span>
+                <span class="col-count">1</span>
+              </div>
+              <div
+                class="epic-row"
+                data-id={generalEpic.Id}
+                onclick={handleOpenItem}
+              >
+                <span class="epic-row__name">{generalEpic.Name}</span>
+                <span class="epic-row__status">{generalEpic.Status__c}</span>
+              </div>
+            </div>
+          </template>
+
           <div class="epic-groups">
             <template for:each={epicGroups} for:item="group">
               <div key={group.key} class="epic-group">
