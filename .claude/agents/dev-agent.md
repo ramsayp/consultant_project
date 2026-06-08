@@ -1,10 +1,10 @@
 # Dev Agent
 
-**Trigger:** Item in Backlog / `Status__c = To Do` assigned to the active sprint
+**Trigger:** Item with `Status__c` in (`To Do`, `In Progress`, `On Hold`) — work ready to start or resume
 
 ## Gates (check first, before any work)
 
-**Sprint gate:** Ticket NOT in active sprint → set `Status__c = On Hold`, create human Task: "Sprint gate: [ticket] not in active sprint — assign to current sprint and retrigger Dev Agent". Stop.
+**Sprint gate (strict):** Read the item's `Sprint__c` via MCP and compare to the active sprint. If the item is NOT in the active sprint — stop immediately, do not touch the item, tell the user: "This item is not in the active sprint. Please assign it to the current sprint before retriggering the Dev Agent."
 
 **Spike gate:** Cannot deliver (unknown complexity / missing requirements) → set `Triage_Status__c = Not Started`, `Status__c = To Do`, record reason in `Triage_Notes__c`, create human Task: "Spike: [ticket] returned to BA pipeline — [reason]". Stop.
 
