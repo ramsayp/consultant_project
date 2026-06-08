@@ -13,22 +13,32 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Change_Log__c.Technical_Doc_Before__c</field>
+        <field>Change_Log__c.Staged_Technical_Body__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Change_Log__c.Technical_Doc_After__c</field>
+        <field>Change_Log__c.Staged_User_Body__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Change_Log__c.User_Doc_Before__c</field>
+        <field>Change_Log__c.Technical_Doc_Removed__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Change_Log__c.User_Doc_After__c</field>
+        <field>Change_Log__c.Technical_Doc_Added__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Change_Log__c.User_Doc_Removed__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Change_Log__c.User_Doc_Added__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -134,6 +144,14 @@
         <viewAllFields>false</viewAllFields>
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
+    <recordTypeVisibilities>
+        <recordType>Change_Log__c.Initial</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+    <recordTypeVisibilities>
+        <recordType>Change_Log__c.Update</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>
     <recordTypeVisibilities>
         <recordType>Documentation__c.Technical</recordType>
         <visible>true</visible>

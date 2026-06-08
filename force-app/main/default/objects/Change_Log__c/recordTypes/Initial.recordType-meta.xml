@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Initial</fullName>
+    <active>true</active>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <description>First-time creation of a documentation page. Use this record type when the Change Log entry represents the initial version of a doc, not a subsequent update.</description>
+    <label>Initial</label>
+    <picklistValues>
+        <picklist>Environment__c</picklist>
+        <values>
+            <fullName>Scratch Org</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>Sandbox</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Production</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Draft</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>Reviewed</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Published</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

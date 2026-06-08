@@ -6,15 +6,24 @@
 
 ## Responsibilities
 
-1. Query relevant `Documentation__c` records via MCP using `Claude_Doc_Id__c`
-2. If SF copy is newer than the repo file, overwrite the repo file first
-3. Update the Technical doc `Body__c` in SF via `updateSobjectRecord`; sync the repo file to match
-4. Update the linked User doc if the change affects end-user behaviour
-5. Create a `Change_Log__c` record — `Title__c` is required; link to the Technical doc; `Work_Item__c` is optional
-6. Leave the Change Log as **unpublished** — human publishes
-7. Create a `Comment__c` record on the work item: Change Log title, which docs were updated (Technical / User), and a one-line summary of what changed
-8. Update Claude memory files if any architecture decisions changed during this work
-9. Set `Status__c = Releasing`
+1. Query the relevant `Documentation__c` records via MCP using `Claude_Doc_Id__c`
+2. If the SF copy of the Technical doc is newer than the repo file, overwrite the repo file first to establish the baseline
+3. Compute the full new Technical doc content based on the work item changes
+4. Create a `Change_Log__c` record — `Title__c` is required; link `Technical_Doc__c` to the Technical doc; `Work_Item__c` is optional; use record type `Initial` for first-time doc creation, `Update` for subsequent changes
+5. On the Change Log record, populate:
+   - `Staged_Technical_Body__c` — the complete new Technical doc body (what will be published to SF)
+   - `Technical_Doc_Removed__c` — content removed from the current Technical doc in this change
+   - `Technical_Doc_Added__c` — content added to the Technical doc in this change
+6. If the change affects end-user behaviour, also populate on the Change Log:
+   - `Staged_User_Body__c` — the complete new User doc body
+   - `User_Doc_Removed__c` — content removed from the current User doc
+   - `User_Doc_Added__c` — content added to the User doc
+7. **Do NOT update `Documentation__c.Body__c` directly** — the Release Agent publishes the staged content at release time
+8. Sync the repo doc file(s) to match the staged content (so the commit reflects what will be published)
+9. Leave the Change Log as **Draft** — Release Agent sets it to Published
+10. Create a `Comment__c` record on the work item: Change Log title, which docs were updated (Technical / User), and a one-line summary of what changed
+11. Update Claude memory files if any architecture decisions changed during this work
+12. Set `Status__c = Releasing`
 
 ## Doc file mapping
 

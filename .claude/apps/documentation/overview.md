@@ -31,15 +31,26 @@ Work_Item__c ──── Change_Log__c ──── Documentation__c (Technical
 
 **Documentation connects to Work Items only through Change Log** — `Change_Log__c` is the bridge. One Work Item can produce multiple Change Log entries, each linked to a Technical doc. Documentation records have no direct `Work_Item__c` field.
 
-## Agent integration (future)
+## Agent integration
 
-The schema is built to support an agent-driven documentation workflow:
+The schema supports a two-phase agent-driven documentation workflow:
 
-1. Agent reads `Work_Item__c` via MCP
-2. Agent does the work (deploy, configure, etc.)
-3. Agent CREATEs a `Change_Log__c` — links to `Work_Item__c` and `Technical_Doc__c`
-4. Agent UPDATEs `Documentation__c` (Technical) — updates `Body__c`
-5. Agent updates `Work_Item__c` status (e.g. → "Documented")
-6. Agent optionally updates `Documentation__c` (User)
+**Docs Agent (Documenting phase):**
 
-No awkward joins or self-referential lookups — each object has one job in this flow.
+1. Reads `Work_Item__c` and current `Documentation__c` records via MCP
+2. Creates a `Change_Log__c` (record type `Initial` or `Update`) linked to `Technical_Doc__c` and `Work_Item__c`
+3. Writes staged content to the Change Log — `Staged_Technical_Body__c` (full new tech doc body), `Staged_User_Body__c` (full new user doc body if applicable)
+4. Writes diff fields — `Technical_Doc_Removed__c` / `Technical_Doc_Added__c` / `User_Doc_Removed__c` / `User_Doc_Added__c`
+5. Does **not** update `Documentation__c.Body__c` directly — that happens at release
+6. Sets `Work_Item__c.Status__c = Releasing`
+
+**Release Agent (Releasing phase):**
+
+1. Merges feature branch and deploys
+2. Reads staged content from the Change Log
+3. Publishes `Staged_Technical_Body__c` → `Technical_Doc__c.Body__c` via MCP
+4. Publishes `Staged_User_Body__c` → linked User doc's `Body__c` via MCP (if present)
+5. Sets `Change_Log__c.Status__c = Published`
+6. Sets `Work_Item__c.Status__c = Done`
+
+No awkward joins or self-referential lookups — each object has one job in this flow. Documentation is only visible to users after the Release Agent has published it.
