@@ -127,7 +127,7 @@ Header actions: Edit, Delete, Clone, Change Owner.
 
 ## Permission Set — Documentation
 
-Full CRUD on `Documentation__c`, `Change_Log__c`, and `Folder__c`. Field-level access to all custom fields on all three objects. Record Type visibility: Technical, User (Documentation**c); Documentation (Folder**c). Tab visibility: Documentation, Change Log, Folder. App visibility: Documentation.
+Full CRUD on `Documentation__c`, `Change_Log__c`, and `Folder__c`. Field-level access to all custom fields on all three objects. Record Type visibility: Technical, User (`Documentation__c`); Initial, Update (`Change_Log__c`); Documentation (`Folder__c`). Tab visibility: Documentation, Change Log, Folder. App visibility: Documentation.
 
 Assign this permission set to any user who needs to create or manage documentation records.
 
@@ -149,7 +149,7 @@ Current tracked docs:
 | Repo file                                    | SF Record ID         | Name                                     |
 | -------------------------------------------- | -------------------- | ---------------------------------------- |
 | `docs/technical/project-management-guide.md` | `a05g5000007RVGbAAO` | Project Management App — Technical Guide |
-| `docs/technical/documentation-guide.md`      | _(this record)_      | Documentation App — Technical Guide      |
+| `docs/technical/documentation-guide.md`      | `a05g5000007li9dAAA` | Documentation App — Technical Guide      |
 | `docs/user/documentation-guide.md`           | _(companion record)_ | Documentation App — User Guide           |
 
 ---
