@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>User_Doc_Removed__c</fullName>
+    <description>Content removed from the User documentation body in this change. Populated explicitly by the Docs Agent.</description>
+    <label>User Doc (Removed)</label>
+    <length>32768</length>
+    <type>Html</type>
+    <visibleLines>25</visibleLines>
+</CustomField>

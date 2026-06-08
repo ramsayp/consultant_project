@@ -28,23 +28,26 @@ Tracked fields (field history): Folder, Body, Title (Name), Owner.
 ### `Change_Log__c`
 
 Immutable event record. Auto-number name: `CL-{0000}`. No field history tracking.
+Two Record Types: **Initial** (first-time doc creation) and **Update** (subsequent changes).
 
-| Field                     | Type                        | Label                  | Notes                                                                      |
-| ------------------------- | --------------------------- | ---------------------- | -------------------------------------------------------------------------- |
-| `Name`                    | AutoNumber                  | Change Log Number      | Format: `CL-{0000}`                                                        |
-| `Title__c`                | Text(255)                   | Title                  | **Required.** One-line description of the change                           |
-| `Summary__c`              | Html (32,768)               | Summary                | Full detail: what changed, why, caveats, follow-ups                        |
-| `Technical_Doc__c`        | Lookup → Documentation\_\_c | Technical Doc          | Which Technical doc was created/updated. `deleteConstraint: SetNull`       |
-| `Work_Item__c`            | Lookup → Work_Item\_\_c     | Work Item              | What triggered this change. `deleteConstraint: SetNull`                    |
-| `Changed_By__c`           | Lookup → User               | Changed By             | Human responsible. Separate from record owner. `deleteConstraint: SetNull` |
-| `Change_Date__c`          | DateTime                    | Change Date            | When applied. Can be backdated                                             |
-| `Environment__c`          | Picklist                    | Environment            | Scratch Org (default) / Sandbox / Production                               |
-| `Status__c`               | Picklist                    | Status                 | Draft (default) / Reviewed / Published                                     |
-| `Version__c`              | Text(20)                    | Version                | e.g. "v1.2", "Sprint 4", "2026-05-21"                                      |
-| `Technical_Doc_Before__c` | Html (32,768)               | Technical Doc (Before) | **Auto-populated by trigger** at creation                                  |
-| `Technical_Doc_After__c`  | Html (32,768)               | Technical Doc (After)  | Populated by agent/user after edits                                        |
-| `User_Doc_Before__c`      | Html (32,768)               | User Doc (Before)      | **Auto-populated by trigger** at creation                                  |
-| `User_Doc_After__c`       | Html (32,768)               | User Doc (After)       | Populated by agent/user after edits                                        |
+| Field                      | Type                        | Label                   | Notes                                                                                                             |
+| -------------------------- | --------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `Name`                     | AutoNumber                  | Change Log Number       | Format: `CL-{0000}`                                                                                               |
+| `Title__c`                 | Text(255)                   | Title                   | **Required.** One-line description of the change                                                                  |
+| `Summary__c`               | Html (32,768)               | Summary                 | Full detail: what changed, why, caveats, follow-ups                                                               |
+| `Technical_Doc__c`         | Lookup → Documentation\_\_c | Technical Doc           | Which Technical doc was created/updated. `deleteConstraint: SetNull`                                              |
+| `Work_Item__c`             | Lookup → Work_Item\_\_c     | Work Item               | What triggered this change. `deleteConstraint: SetNull`                                                           |
+| `Changed_By__c`            | Lookup → User               | Changed By              | Human responsible. Separate from record owner. `deleteConstraint: SetNull`                                        |
+| `Change_Date__c`           | DateTime                    | Change Date             | When applied. Can be backdated                                                                                    |
+| `Environment__c`           | Picklist                    | Environment             | Scratch Org (default) / Sandbox / Production                                                                      |
+| `Status__c`                | Picklist                    | Status                  | Draft (default) / Reviewed / Published. Release Agent sets to Published                                           |
+| `Version__c`               | Text(20)                    | Version                 | e.g. "v1.2", "Sprint 4", "2026-05-21"                                                                             |
+| `Staged_Technical_Body__c` | Html (32,768)               | Staged Technical Body   | Complete new Technical doc body written by Docs Agent. Release Agent publishes this to `Technical_Doc__c.Body__c` |
+| `Staged_User_Body__c`      | Html (32,768)               | Staged User Body        | Complete new User doc body written by Docs Agent. Release Agent publishes this to the linked User doc `Body__c`   |
+| `Technical_Doc_Removed__c` | Html (32,768)               | Technical Doc (Removed) | Content removed from the Technical doc in this change. Populated by Docs Agent                                    |
+| `Technical_Doc_Added__c`   | Html (32,768)               | Technical Doc (Added)   | Content added to the Technical doc in this change. Populated by Docs Agent                                        |
+| `User_Doc_Removed__c`      | Html (32,768)               | User Doc (Removed)      | Content removed from the User doc in this change. Populated by Docs Agent                                         |
+| `User_Doc_Added__c`        | Html (32,768)               | User Doc (Added)        | Content added to the User doc in this change. Populated by Docs Agent                                             |
 
 ---
 
@@ -71,6 +74,13 @@ Generic container object. `Documentation` record type scopes it to the doc domai
 
 Both share the same Status picklist: Draft (default) / Published / Archived.
 
+### `Change_Log__c`
+
+| RT        | Label   | Purpose                                             |
+| --------- | ------- | --------------------------------------------------- |
+| `Initial` | Initial | First-time creation of a documentation page         |
+| `Update`  | Update  | Subsequent change to an existing documentation page |
+
 ### `Folder__c`
 
 | RT              | Label         | Purpose                                                                                |
@@ -85,13 +95,7 @@ Both share the same Status picklist: Draft (default) / Published / Archived.
 
 `force-app/main/default/triggers/ChangeLogTrigger.trigger`
 
-When a Change Log is inserted with `Technical_Doc__c` set:
-
-1. Collects all `Technical_Doc__c` IDs from the batch
-2. Queries `Body__c` and `Related_User_Doc__r.Body__c` in a single SOQL call
-3. Stamps `Technical_Doc_Before__c` and `User_Doc_Before__c` on the new records
-
-Exits early if no records have a `Technical_Doc__c` value. Bulkified — safe for data load and API creation. `_After` fields are left blank at creation and populated once doc edits are complete.
+No-op trigger. The before-snapshot logic (auto-populating `_Before__c` fields) was removed as part of the Change Log staging overhaul. Diff fields (`Technical_Doc_Removed__c`, `Technical_Doc_Added__c`, `User_Doc_Removed__c`, `User_Doc_Added__c`) are now populated explicitly by the Docs Agent, not auto-captured at insert time.
 
 ---
 
@@ -114,7 +118,7 @@ Related User Doc / Related Technical Doc shown in Detail via visibility rules (S
 | Tab              | Contents                                                                                                                              |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Detail (default) | Details section (Title, Change Date, CL Number, Version); Summary section (Summary\_\_c); sidebar: Related (Technical Doc, Work Item) |
-| Guides           | Accordion: Before Technical / After Technical / Before User / After User                                                              |
+| Guides           | Accordion: Staged Technical / Staged User / Technical Removed / Technical Added / User Removed / User Added                           |
 | Settings         | Ownership (Changed By, Last Modified By, Created By, Owner)                                                                           |
 
 Header actions: Edit, Delete, Clone, Change Owner.
@@ -158,21 +162,37 @@ Current tracked docs:
 
 **Bidirectional lookups between Technical and User** — `Related_User_Doc__c` on Technical and `Related_Technical_Doc__c` on User. Navigate directly between companion docs without going via a related list.
 
-**Change Log is immutable** — it's an append-only event record, not a document. Field history is intentionally off; the Before/After snapshot fields provide the audit trail instead.
+**Change Log is immutable** — it's an append-only event record, not a document. Field history is intentionally off.
 
-**Before snapshots are automatic, After snapshots are manual** — the `ChangeLogTrigger` captures the doc state at the moment a Change Log is created. After fields are populated once edits are applied (by an agent or manually).
+**Change Log as staging area** — the Docs Agent writes the complete new doc content to `Staged_Technical_Body__c` and `Staged_User_Body__c` on the Change Log. The Release Agent publishes these staged fields to `Documentation__c.Body__c` at release time. This ensures documentation is only visible to users after the release is approved.
+
+**Diff fields are explicit, not automatic** — `Technical_Doc_Removed__c` / `Technical_Doc_Added__c` / `User_Doc_Removed__c` / `User_Doc_Added__c` are populated by the Docs Agent to describe what changed. There is no trigger-based snapshot mechanism.
 
 ---
 
 ## Agent Integration
 
-Intended agentic workflow:
+Two-phase agentic workflow:
 
-1. Agent reads `Work_Item__c` via MCP
-2. Agent does the work (deploy, configure, etc.)
-3. Agent CREATEs `Change_Log__c` — links to `Work_Item__c` and `Technical_Doc__c`
-   - `ChangeLogTrigger` auto-populates Before snapshots
-4. Agent UPDATEs `Documentation__c` (Technical) — updates `Body__c`
-5. Agent sets `Technical_Doc_After__c` on the Change Log
-6. Agent optionally UPDATEs `Documentation__c` (User) and sets `User_Doc_After__c`
-7. Agent UPDATEs `Work_Item__c` status (e.g. → "Documented")
+**Docs Agent (Documenting phase):**
+
+1. Reads `Work_Item__c` and current `Documentation__c` records via MCP
+2. Creates a `Change_Log__c` (record type `Initial` or `Update`) — links to `Technical_Doc__c` and `Work_Item__c`
+3. Writes staged content to the Change Log:
+   - `Staged_Technical_Body__c` — full new Technical doc body
+   - `Staged_User_Body__c` — full new User doc body (if applicable)
+4. Writes diff fields to the Change Log:
+   - `Technical_Doc_Removed__c` / `Technical_Doc_Added__c`
+   - `User_Doc_Removed__c` / `User_Doc_Added__c` (if applicable)
+5. Syncs repo doc files to match staged content
+6. Does **not** update `Documentation__c.Body__c` directly
+7. Updates `Work_Item__c.Status__c = Releasing`
+
+**Release Agent (Releasing phase):**
+
+1. Merges feature branch and deploys
+2. Reads `Staged_Technical_Body__c` from the Change Log
+3. Updates `Technical_Doc__c.Body__c` with the staged content via MCP
+4. If `Staged_User_Body__c` is set, updates the linked User doc's `Body__c`
+5. Sets `Change_Log__c.Status__c = Published`
+6. Updates `Work_Item__c.Status__c = Done`

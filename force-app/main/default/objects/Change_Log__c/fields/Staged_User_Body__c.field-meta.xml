@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Staged_User_Body__c</fullName>
+    <description>Complete new User documentation body written by the Docs Agent. Published to the linked User Documentation__c.Body__c by the Release Agent at release time.</description>
+    <label>Staged User Body</label>
+    <length>32768</length>
+    <type>Html</type>
+    <visibleLines>25</visibleLines>
+</CustomField>
