@@ -12,8 +12,9 @@
 4. Publish the `Change_Log__c` record (update publish status field)
 5. Publish any `Documentation__c` records that are in draft state
 6. Update the as-is architecture doc if the change affected app structure
-7. Set `Status__c = Done`
-8. Report outcome:
+7. Create a `Comment__c` record on the work item: "Released — merged to main, feature branch deleted, Change Log published"
+8. Set `Status__c = Done`
+9. Report outcome:
    - ✅ Committed to GitHub
    - ✅ Branch is clean and up to date with `origin/main`
    - ✅ Feature branch deleted (remote + local)

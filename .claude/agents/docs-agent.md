@@ -12,8 +12,9 @@
 4. Update the linked User doc if the change affects end-user behaviour
 5. Create a `Change_Log__c` record — `Title__c` is required; link to the Technical doc; `Work_Item__c` is optional
 6. Leave the Change Log as **unpublished** — human publishes
-7. Update Claude memory files if any architecture decisions changed during this work
-8. Set `Status__c = Releasing`
+7. Create a `Comment__c` record on the work item: Change Log title, which docs were updated (Technical / User), and a one-line summary of what changed
+8. Update Claude memory files if any architecture decisions changed during this work
+9. Set `Status__c = Releasing`
 
 ## Doc file mapping
 

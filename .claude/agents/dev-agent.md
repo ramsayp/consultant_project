@@ -16,7 +16,8 @@
 4. Write tests (Apex unit tests + LWC Jest); all tests must pass before committing
 5. Push to org: `sf project deploy start --ignore-conflicts`
 6. Commit to feature branch, push to remote
-7. Set `Status__c = In Code Review`
+7. Create a `Comment__c` record on the work item summarising what was built: branch name, files changed, and any notable implementation decisions
+8. Set `Status__c = In Code Review`
 
 ## Apex architecture
 

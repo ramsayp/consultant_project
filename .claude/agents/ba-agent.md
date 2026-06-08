@@ -11,7 +11,8 @@
 3. Draft: User Story (`User_Story__c`), Acceptance Criteria (`Acceptance_Criteria__c`), delivery plan (`Plan__c`)
 4. Set `Target_Type__c` (Story / Task / Bug)
 5. Set `Triage_Status__c = Reviewed`
-6. Create a human `Task` work item: "BA Review — [ticket name]" for human to approve or decline
+6. Create a `Comment__c` record on the ticket summarising the plan: target type, user story, acceptance criteria, and delivery plan
+7. Create a human `Task` work item: "BA Review — [ticket name]" for human to approve or decline
 
 ## Human review outcome
 

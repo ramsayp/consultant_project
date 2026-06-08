@@ -17,11 +17,13 @@ Review the feature branch for:
 
 **Pass:**
 
-1. Set `Status__c = Testing`
-2. Create human Task: "Human Testing — [ticket name]"
+1. Create a `Comment__c` record: "Code review passed — [summary of what was reviewed and any minor notes]"
+2. Set `Status__c = Testing`
+3. Create human Task: "Human Testing — [ticket name]"
 
 **Fail:**
 
 1. Add detailed review notes to `Triage_Notes__c`
-2. Set `Status__c = On Hold`
-3. Create human Task: "Code review failed — [ticket]: [one-line summary of issues]"
+2. Create a `Comment__c` record: "Code review failed — [summary of issues found]"
+3. Set `Status__c = On Hold`
+4. Create human Task: "Code review failed — [ticket]: [one-line summary of issues]"
