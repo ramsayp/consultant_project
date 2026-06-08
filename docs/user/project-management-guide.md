@@ -15,7 +15,7 @@ Click **Project Management** from the app launcher (the grid icon at the top lef
 Work is structured in a hierarchy — each level breaks things down into smaller, more manageable pieces:
 
 - **Project** — the top level. Represents a complete area of work (e.g. a product, a client engagement, a system).
-- **Epic** — a major feature or theme within a project. Epics group related stories and tasks together.
+- **Epic** — a major feature or theme within a project. Epics group related stories and tasks together. Every project also has a **General** Epic created automatically — a catch-all for work that doesn't fit a specific Epic.
 - **Story** — a piece of functionality written from a user's perspective. Assigned to a sprint and delivered iteratively.
 - **Task** — a concrete piece of work that needs doing. More operational than a Story — configuration, documentation, meetings.
 - **Bug** — something that's broken and needs fixing. Has its own workflow from Open through to Closed.
@@ -74,7 +74,7 @@ Each card shows a coloured left border and an emoji:
 
 ### The Epics Tab
 
-Switch to the **Epics** tab on the board to see all epics grouped by status (Active, Completed, Cancelled) — a high-level view of which themes are in flight.
+Switch to the **Epics** tab on the board to see all epics for the current project. At the top is a pinned **General** section showing the auto-created General Epic — useful as a catch-all for work that doesn't belong to a specific theme. Below it, your other Epics are grouped by status: Active, Completed, and Cancelled — a high-level view of which themes are in flight.
 
 ---
 
@@ -94,7 +94,7 @@ If you don't select a sprint, the new item automatically lands in the **Backlog*
 
 ### New Project
 
-Click **+ New Project** on the Projects view to create a new project.
+Click **+ New Project** on the Projects view to create a new project. A **General** Epic is created automatically alongside it — no extra steps required.
 
 ### From a Record Page
 
