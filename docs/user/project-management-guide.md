@@ -6,7 +6,7 @@ The Project Management app is your central place to plan, track, and deliver wor
 
 ## Opening the App
 
-Click **Project Management** from the app launcher (the grid icon at the top left). You'll land on the **Projects** view, which lists all active projects.
+Click **Project Management** from the app launcher (the grid icon at the top left). You'll land on the **Triage** view, where you can review and process incoming tickets. Use the navigation tabs at the top to switch to **Projects** or **Sprints**.
 
 ---
 
