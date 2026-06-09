@@ -5,7 +5,7 @@
 ### Tooling & efficiency
 
 - [Trust your own edits](feedback/tooling/trust_your_own_edits.md) — don't re-read files you just wrote, don't stage files to pre-check length limits, don't run anonymous Apex/temp scripts to answer simple questions — just attempt the operation
-- [Prefer MCP over anonymous Apex](feedback/tooling/prefer_mcp_over_anon_apex.md) — one-time data migrations: use soqlQuery+updateSobjectRecord, not .apex script files via sf apex run; avoids temp files in the repo entirely
+- [Prefer MCP for all SF data ops](feedback/tooling/prefer_mcp_over_anon_apex.md) — MCP is the first and only choice for any SF read/write; not just over Apex scripts but also over PowerShell REST API and sf CLI data commands; createSobjectRecord handles large string payloads fine
 - [MCP minimal access principle](feedback/tooling/mcp_minimal_access.md) — only activate MCP servers actively needed; deactivate everything else; bare minimal access
 - [Search all name variants on rename](feedback/tooling/search_variations.md) — grep hyphenated, spaced, title-cased, and camelCased forms; one pattern misses others
 - [MCP read tools need no confirmation](feedback/tooling/mcp_read_no_confirm.md) — soqlQuery, getObjectSchema, getRelatedRecords etc. always fire without asking; only write/mutate ops need narration
@@ -15,6 +15,7 @@
 - [Always name the terminal](feedback/communication/be_specific_about_terminal.md) — never say "run in the terminal"; always specify PowerShell in VS Code, Bash tool, or Claude Code chat
 - [Narrate before permission prompts](feedback/communication/narrate_before_permission_prompts.md) — say what a Bash/SOQL/MCP call does and why, immediately before it fires — the Yes/No dialog shows raw mechanics only, user can't judge intent from a query string
 - [git status after every commit](feedback/communication/git_status_after_commit.md) — run git status after every commit; flag if ahead of origin (push needed) or behind (investigate); offer to commit after any approved file change
+- [Memory update confirmation in summaries](feedback/communication/memory_update_confirmation.md) — every agent task summary must end with a memory line: either what was saved, or explicit confirmation that no update was needed and why
 
 ### Salesforce metadata & deploy conventions
 
