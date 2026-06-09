@@ -183,11 +183,11 @@ Handles General Epic creation and status mirroring. Three entry points:
 **Location:** `force-app/main/default/lwc/workManager/`
 **Exposed as:** App Page component (entry point)
 
-The top-level shell. Manages a four-view state machine: `projects`, `sprints`, `triage`, `board`.
+The top-level shell. Manages a four-view state machine: `triage` (default), `projects`, `sprints`, `board`.
 
+- **Triage view:** Default landing view. Renders `c-ticket-triage` — the BA agent triage queue (see [Triage pipeline](#triage-pipeline-ba-agent-scaffolding)).
 - **Projects view:** Lists all Project records. "+ New Project" opens `c-work-item-create` inline. Clicking a row sets `selectedProject` and switches to `board` view.
 - **Sprints view:** Lists all non-Backlog sprints with colour-coded status bars. The earliest non-completed sprint gets a "Close" button. Closing a sprint activates the next sprint and rolls forward any non-terminal items. "Generate Sprints" creates 6 future sprints if none exist.
-- **Triage view:** Renders `c-ticket-triage` — the BA agent triage queue (see [Triage pipeline](#triage-pipeline-ba-agent-scaffolding)).
 - **Board view:** Renders `c-work-item-board` with `project-id={selectedProjectId}`. Back arrow returns to Projects.
 
 Sprint display logic: `allSprintsForDisplay` getter enriches each sprint with `barClass` (CSS colour by status) and `canClose` (only one sprint at a time is closeable).

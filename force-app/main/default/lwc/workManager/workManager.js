@@ -11,7 +11,7 @@ import closeSprint from "@salesforce/apex/WorkItemController.closeSprint";
 // and the Kanban board view for a selected project.
 export default class WorkManager extends LightningElement {
   // ── State ─────────────────────────────────────────────────────────────────
-  @track view = "projects"; // active panel: 'projects' | 'sprints' | 'triage' | 'board'
+  @track view = "triage"; // active panel: 'triage' | 'projects' | 'sprints' | 'board'
   @track selectedProject = null; // { Id, Name } of the project currently open on the board
   @track showCreate = false; // controls the new-project creation form
   @track isGenerating = false; // true while the generate-sprints call is in flight
