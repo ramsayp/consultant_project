@@ -3,11 +3,11 @@
     <!-- ── Top nav (hidden in board sub-view) ── -->
     <template if:false={isBoardView}>
       <nav class="wm-nav">
+        <button class={triageTabClass} onclick={showTriage}>Triage</button>
         <button class={projectsTabClass} onclick={showProjects}>
           Projects
         </button>
         <button class={sprintsTabClass} onclick={showSprints}>Sprints</button>
-        <button class={triageTabClass} onclick={showTriage}>Triage</button>
       </nav>
     </template>
 
