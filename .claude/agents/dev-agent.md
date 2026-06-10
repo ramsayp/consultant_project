@@ -10,6 +10,8 @@
 
 ## Responsibilities
 
+**First build:**
+
 1. Set `Status__c = In Progress`
 2. Create feature branch off `main`: `feature/<ticket-name-slug>`
 3. Build the feature — follow layered Apex architecture (see [standards.md](../standards.md)) and LWC conventions
@@ -18,6 +20,15 @@
 6. Commit to feature branch, push to remote
 7. Create a `Comment__c` record on the work item summarising what was built: branch name, files changed, and any notable implementation decisions
 8. Set `Status__c = In Code Review`
+
+**Rework (item returned from Testing or Code Review):**
+
+1. Set `Status__c = In Progress`
+2. Fix the reported issues on the existing feature branch
+3. Re-run all tests; all must pass before committing
+4. Push fix to org and to remote
+5. **Create a `Comment__c` record** summarising what was reworked: what failed, what changed, and the root cause
+6. Set `Status__c = In Code Review`
 
 ## Apex architecture
 
@@ -37,8 +48,7 @@ Trigger → TriggerHandler → Service → Domain → Selector
 
 This org controls field access via permission sets (not profiles). **Every new custom field must be added to the relevant permission set(s) before the feature is considered done.**
 
-- New fields on `Work_Item__c` or `Sprint__c` → add to `ProjectManagement.permissionset-meta.xml`
-- New fields on `Documentation__c` or `Change_Log__c` → add to `Documentation.permissionset-meta.xml`
+- Check project memory for the object → permission set file mapping
 - `editable: true` for fields users can edit; `editable: false` for system-assigned read-only fields
 - Required fields (`<required>true</required>`) must NOT appear in permission sets — Salesforce rejects the deploy
 - Deploy the permission set in the same deploy run as the fields, or as a follow-up before the PR is marked ready
