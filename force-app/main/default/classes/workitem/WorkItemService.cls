@@ -1,74 +1,98 @@
 public with sharing class WorkItemService {
+  private static final String TRIAGE_PREFIX = 'TRI';
+
   // ── assignTicketKeys ───────────────────────────────────────────────────────
-  // Called from beforeInsert. Assigns Item_Number__c and Ticket_Key__c to each
-  // incoming Story, Task, or Bug by resolving its root Project's Project_Code__c
-  // and incrementing a per-project counter.
-  // Items with no Epic parent, or whose Epic has no project with a code, are skipped.
+  // Called from beforeInsert. Assigns Item_Number__c and Ticket_Key__c to:
+  //   - Story / Task / Bug: resolves root Project_Code__c, per-project counter
+  //   - Ticket (triage intake): hardcoded TRI prefix, global counter
+  // Items that don't match any of these types, or that are missing a required
+  // parent chain, are skipped silently.
   public static void assignTicketKeys(List<Work_Item__c> newItems) {
-    Set<Id> numberedRtIds = new Set<Id>();
+    Map<Id, String> rtNameById = new Map<Id, String>();
     for (RecordType rt : [
-      SELECT Id
+      SELECT Id, DeveloperName
       FROM RecordType
       WHERE
         SObjectType = 'Work_Item__c'
-        AND DeveloperName IN ('Story', 'Task', 'Bug')
+        AND DeveloperName IN ('Story', 'Task', 'Bug', 'Ticket')
     ]) {
-      numberedRtIds.add(rt.Id);
+      rtNameById.put(rt.Id, rt.DeveloperName);
     }
 
     List<Work_Item__c> toNumber = new List<Work_Item__c>();
     Set<Id> epicIds = new Set<Id>();
+    List<Work_Item__c> tickets = new List<Work_Item__c>();
+    Id ticketRtId = null;
+
     for (Work_Item__c item : newItems) {
-      if (
-        numberedRtIds.contains(item.RecordTypeId) &&
-        item.Parent_Work_Item__c != null
-      ) {
+      String rtName = rtNameById.get(item.RecordTypeId);
+      if (rtName == null)
+        continue;
+      if (rtName == 'Ticket') {
+        tickets.add(item);
+        if (ticketRtId == null)
+          ticketRtId = item.RecordTypeId;
+      } else if (item.Parent_Work_Item__c != null) {
         toNumber.add(item);
         epicIds.add(item.Parent_Work_Item__c);
       }
     }
-    if (toNumber.isEmpty())
-      return;
 
-    // Resolve each Epic to its parent Project and read the Project_Code__c
-    Map<Id, Id> epicToProject = new Map<Id, Id>();
-    Map<Id, String> projectToCode = new Map<Id, String>();
-    for (
-      Work_Item__c epic : WorkItemSelector.getEpicsWithProjectCode(epicIds)
-    ) {
-      if (
-        epic.Parent_Work_Item__c != null &&
-        epic.Parent_Work_Item__r.Project_Code__c != null
+    // ── Project-based numbering (Story / Task / Bug) ───────────────────────
+    if (!toNumber.isEmpty()) {
+      Map<Id, Id> epicToProject = new Map<Id, Id>();
+      Map<Id, String> projectToCode = new Map<Id, String>();
+      for (
+        Work_Item__c epic : WorkItemSelector.getEpicsWithProjectCode(epicIds)
       ) {
-        epicToProject.put(epic.Id, epic.Parent_Work_Item__c);
-        projectToCode.put(
-          epic.Parent_Work_Item__c,
-          epic.Parent_Work_Item__r.Project_Code__c
+        if (
+          epic.Parent_Work_Item__c != null &&
+          epic.Parent_Work_Item__r.Project_Code__c != null
+        ) {
+          epicToProject.put(epic.Id, epic.Parent_Work_Item__c);
+          projectToCode.put(
+            epic.Parent_Work_Item__c,
+            epic.Parent_Work_Item__r.Project_Code__c
+          );
+        }
+      }
+
+      if (!projectToCode.isEmpty()) {
+        Map<Id, Integer> maxByProject = WorkItemSelector.getMaxItemNumberByProject(
+          projectToCode.keySet()
         );
+        for (Work_Item__c item : toNumber) {
+          Id projectId = epicToProject.get(item.Parent_Work_Item__c);
+          if (projectId == null)
+            continue;
+          String code = projectToCode.get(projectId);
+          if (code == null)
+            continue;
+          Integer next =
+            (maxByProject.containsKey(projectId)
+              ? maxByProject.get(projectId)
+              : 0) + 1;
+          maxByProject.put(projectId, next);
+          item.Item_Number__c = next;
+          item.Ticket_Key__c =
+            code +
+            '-' +
+            String.valueOf(next).leftPad(5, '0');
+        }
       }
     }
-    if (projectToCode.isEmpty())
-      return;
 
-    // Get the current highest item number per project so we can increment from it
-    Map<Id, Integer> maxByProject = WorkItemSelector.getMaxItemNumberByProject(
-      projectToCode.keySet()
-    );
-
-    for (Work_Item__c item : toNumber) {
-      Id projectId = epicToProject.get(item.Parent_Work_Item__c);
-      if (projectId == null)
-        continue;
-      String code = projectToCode.get(projectId);
-      if (code == null)
-        continue;
-      Integer next =
-        (maxByProject.containsKey(projectId)
-          ? maxByProject.get(projectId)
-          : 0) + 1;
-      maxByProject.put(projectId, next); // advance counter for subsequent items in same batch
-      item.Item_Number__c = next;
-      item.Ticket_Key__c = code + '-' + String.valueOf(next).leftPad(5, '0');
+    // ── Triage numbering (Ticket → TRI-NNNNN) ─────────────────────────────
+    if (!tickets.isEmpty()) {
+      Integer next = WorkItemSelector.getMaxTicketItemNumber(ticketRtId) + 1;
+      for (Work_Item__c t : tickets) {
+        t.Item_Number__c = next;
+        t.Ticket_Key__c =
+          TRIAGE_PREFIX +
+          '-' +
+          String.valueOf(next).leftPad(5, '0');
+        next++;
+      }
     }
   }
 }

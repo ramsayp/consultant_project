@@ -33,4 +33,17 @@ public with sharing class WorkItemSelector {
     }
     return result;
   }
+
+  // ── getMaxTicketItemNumber ─────────────────────────────────────────────────
+  // Returns the highest Item_Number__c currently assigned to any Ticket record.
+  // Returns 0 when no Ticket records have been numbered yet.
+  public static Integer getMaxTicketItemNumber(Id ticketRtId) {
+    AggregateResult ar = [
+      SELECT MAX(Item_Number__c) maxNum
+      FROM Work_Item__c
+      WHERE RecordTypeId = :ticketRtId
+    ][0];
+    Decimal maxD = (Decimal) ar.get('maxNum');
+    return maxD != null ? maxD.intValue() : 0;
+  }
 }

@@ -275,4 +275,92 @@ private class WorkItemService_Test {
       'Story without parent should not get a ticket key'
     );
   }
+
+  @IsTest
+  static void ticketGetsTriageKey() {
+    Work_Item__c ticket = new Work_Item__c(
+      Name = 'Login is broken',
+      RecordTypeId = rtId('Ticket')
+    );
+    insert ticket;
+
+    Work_Item__c result = [
+      SELECT Ticket_Key__c, Item_Number__c
+      FROM Work_Item__c
+      WHERE Id = :ticket.Id
+    ];
+    System.assertEquals(
+      'TRI-00001',
+      result.Ticket_Key__c,
+      'First ticket should get key TRI-00001'
+    );
+    System.assertEquals(
+      1,
+      result.Item_Number__c.intValue(),
+      'Item number should be 1'
+    );
+  }
+
+  @IsTest
+  static void ticketsNumberSequentially() {
+    insert new Work_Item__c(
+      Name = 'First Ticket',
+      RecordTypeId = rtId('Ticket')
+    );
+    Work_Item__c ticket2 = new Work_Item__c(
+      Name = 'Second Ticket',
+      RecordTypeId = rtId('Ticket')
+    );
+    insert ticket2;
+
+    Work_Item__c result = [
+      SELECT Ticket_Key__c
+      FROM Work_Item__c
+      WHERE Id = :ticket2.Id
+    ];
+    System.assertEquals(
+      'TRI-00002',
+      result.Ticket_Key__c,
+      'Second ticket should get key TRI-00002'
+    );
+  }
+
+  @IsTest
+  static void ticketSequenceIndependentFromProjectSequence() {
+    Work_Item__c epic = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Epic'
+      LIMIT 1
+    ];
+
+    Work_Item__c story = new Work_Item__c(
+      Name = 'Story A',
+      RecordTypeId = rtId('Story'),
+      Parent_Work_Item__c = epic.Id
+    );
+    Work_Item__c ticket = new Work_Item__c(
+      Name = 'Support request',
+      RecordTypeId = rtId('Ticket')
+    );
+    insert new List<Work_Item__c>{ story, ticket };
+
+    Map<Id, Work_Item__c> results = new Map<Id, Work_Item__c>(
+      [
+        SELECT Id, Ticket_Key__c
+        FROM Work_Item__c
+        WHERE Id IN :new List<Id>{ story.Id, ticket.Id }
+      ]
+    );
+    System.assertEquals(
+      'TST-00001',
+      results.get(story.Id).Ticket_Key__c,
+      'Story should get project-based key'
+    );
+    System.assertEquals(
+      'TRI-00001',
+      results.get(ticket.Id).Ticket_Key__c,
+      'Ticket should get independent triage key'
+    );
+  }
 }
