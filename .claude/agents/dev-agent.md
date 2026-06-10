@@ -33,6 +33,16 @@ Trigger → TriggerHandler → Service → Domain → Selector
 - **Domain** — entity logic and validation; operates on `List<SObject>`; no SOQL
 - **Selector** — all SOQL; always enforces `with sharing`; returns typed lists
 
+## Permission Sets
+
+This org controls field access via permission sets (not profiles). **Every new custom field must be added to the relevant permission set(s) before the feature is considered done.**
+
+- New fields on `Work_Item__c` or `Sprint__c` → add to `ProjectManagement.permissionset-meta.xml`
+- New fields on `Documentation__c` or `Change_Log__c` → add to `Documentation.permissionset-meta.xml`
+- `editable: true` for fields users can edit; `editable: false` for system-assigned read-only fields
+- Required fields (`<required>true</required>`) must NOT appear in permission sets — Salesforce rejects the deploy
+- Deploy the permission set in the same deploy run as the fields, or as a follow-up before the PR is marked ready
+
 ## Failure
 
 Set `Status__c = On Hold`, create a `Comment__c` record describing the failure. Work stays in the current sprint.

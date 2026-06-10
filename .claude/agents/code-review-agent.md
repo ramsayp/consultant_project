@@ -12,6 +12,7 @@ Review the feature branch for:
 - **Security** — SOQL injection, `with sharing` enforcement, XSS in LWC, no hardcoded IDs
 - **Test coverage** — Apex unit tests cover service/domain/selector layers; LWC Jest covers component behaviour
 - **Functionality** — implementation matches the acceptance criteria on the ticket
+- **Permission sets** — every new custom field must have a `fieldPermissions` entry in the relevant permission set(s) under `force-app/main/default/permissionsets/`. Check project memory for the object → permission set mapping. Missing entries = fail.
 
 ## Outcomes
 

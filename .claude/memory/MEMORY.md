@@ -41,6 +41,7 @@
 - [Agent pipeline architecture](project/agent_pipeline.md) — formalised multi-agent SDLC pipeline; BA→Dev→Code Review→Human Test→Docs→Release; routing rules, spike handling, Apex layer standards
 - [Salesforce is source of truth for docs](project/sf_source_of_truth.md) — pull from SF before editing docs/; update repo+SF+Change_Log after; only `Title__c` required on `Change_Log__c`, don't hunt for a `Work_Item__c` to link; Rich Text Area cap is a fixed 32,768 (don't pre-check)
 - [BA agent triage design](project/ba_agent_triage_design.md) — superseded by agent_pipeline.md for architecture; still has component-level scaffolding detail (Ticket record type, Triage view, Apex+LWC approval)
+- [Permission set mapping](project/permission_set_mapping.md) — which permission set file to update per object; editable vs readable rules; required field restriction; alphabetical ordering requirement
 
 ## reference/
 
