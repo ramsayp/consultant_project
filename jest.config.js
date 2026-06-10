@@ -11,6 +11,8 @@ module.exports = {
     "^@salesforce/apex$": "<rootDir>/__mocks__/@salesforce/apex.js",
     "^@salesforce/apex/(.+)$": "<rootDir>/__mocks__/@salesforce/apex/$1.js",
     "^@salesforce/schema/(.+)$": "<rootDir>/__mocks__/@salesforce/schema.js",
-    "^lightning/uiRecordApi$": "<rootDir>/__mocks__/lightning/uiRecordApi.js"
+    "^lightning/uiRecordApi$": "<rootDir>/__mocks__/lightning/uiRecordApi.js",
+    "^@salesforce/user/Id$": "<rootDir>/__mocks__/@salesforce/user/Id.js",
+    "^c/workItemBoard$": "<rootDir>/__stubs__/workItemBoard/workItemBoard.js"
   }
 };

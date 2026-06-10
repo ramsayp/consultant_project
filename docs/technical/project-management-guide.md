@@ -183,12 +183,12 @@ Handles General Epic creation and status mirroring. Three entry points:
 **Location:** `force-app/main/default/lwc/workManager/`
 **Exposed as:** App Page component (entry point)
 
-The top-level shell. Manages a four-view state machine: `triage` (default), `projects`, `sprints`, `board`.
+The top-level shell. Manages a four-view state machine: `triage`, `projects` (default), `sprints`, `board`. On every navigation the active view is persisted to `localStorage` under a user-scoped key (`wm_view_{userId}`); for board view, the selected project `{Id, Name}` is also stored (`wm_project_{userId}`). `connectedCallback` restores saved state on load — users return to wherever they left off. Keys are scoped by `@salesforce/user/Id` so each Salesforce user has independent state even on a shared browser. First visit (no stored state) defaults to the projects list.
 
-- **Triage view:** Default landing view. Renders `c-ticket-triage` — the BA agent triage queue (see [Triage pipeline](#triage-pipeline-ba-agent-scaffolding)).
-- **Projects view:** Lists all Project records. "+ New Project" opens `c-work-item-create` inline. Clicking a row sets `selectedProject` and switches to `board` view.
+- **Projects view:** Default landing view (first visit). Lists all Project records. "+ New Project" opens `c-work-item-create` inline. Clicking a row persists the view and project to `localStorage`, sets `selectedProject`, and switches to `board` view.
+- **Triage view:** First tab in the nav. Renders `c-ticket-triage` — the BA agent triage queue (see [Triage pipeline](#triage-pipeline-ba-agent-scaffolding)).
 - **Sprints view:** Lists all non-Backlog sprints with colour-coded status bars. The earliest non-completed sprint gets a "Close" button. Closing a sprint activates the next sprint and rolls forward any non-terminal items. "Generate Sprints" creates 6 future sprints if none exist.
-- **Board view:** Renders `c-work-item-board` with `project-id={selectedProjectId}`. Back arrow returns to Projects.
+- **Board view:** Renders `c-work-item-board` with `project-id={selectedProjectId}`. Breadcrumb shows the selected project name. Back arrow returns to Projects and clears the stored project.
 
 Sprint display logic: `allSprintsForDisplay` getter enriches each sprint with `barClass` (CSS colour by status) and `canClose` (only one sprint at a time is closeable).
 
