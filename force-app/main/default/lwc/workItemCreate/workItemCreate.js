@@ -59,6 +59,7 @@ export default class WorkItemCreate extends LightningElement {
   @track estimate = null;
   @track selectedSprintId = null;
   @track selectedParentId = null;
+  @track projectCode = "";
   @track isCreating = false;
 
   sprints = []; // populated by the getActiveSprints wire
@@ -103,6 +104,9 @@ export default class WorkItemCreate extends LightningElement {
   }
   get showAcceptanceCriteria() {
     return AC_TYPES.has(this.type);
+  }
+  get showProjectCode() {
+    return this.type === "Project";
   }
 
   // ── Computed properties ───────────────────────────────────────────────────
@@ -171,6 +175,13 @@ export default class WorkItemCreate extends LightningElement {
       this.toast("Record type not ready — try again", "", "error");
       return;
     }
+    if (this.showProjectCode) {
+      const code = this.projectCode?.trim().toUpperCase();
+      if (!/^[A-Z]{3}$/.test(code)) {
+        this.toast("Project Code must be exactly 3 letters (A–Z)", "", "error");
+        return;
+      }
+    }
 
     this.isCreating = true;
     const fields = {
@@ -181,6 +192,9 @@ export default class WorkItemCreate extends LightningElement {
     };
 
     // Optional fields — omit entirely when blank to avoid LDS validation errors
+    if (this.showProjectCode && this.projectCode?.trim()) {
+      fields.Project_Code__c = this.projectCode.trim().toUpperCase();
+    }
     if (this.description) fields.Description__c = this.description;
     if (this.userStory) fields.User_Story__c = this.userStory;
     if (this.acceptanceCriteria)
@@ -236,6 +250,7 @@ export default class WorkItemCreate extends LightningElement {
     this.estimate = null;
     this.selectedSprintId = null;
     this.selectedParentId = null;
+    this.projectCode = "";
   }
 
   toast(title, message, variant) {

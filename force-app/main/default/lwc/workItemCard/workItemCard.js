@@ -61,6 +61,10 @@ export default class WorkItemCard extends LightningElement {
     return PRIORITY_EMOJI[this.workItem?.Priority__c] ?? "";
   }
 
+  get ticketKey() {
+    return this.workItem?.Ticket_Key__c ?? "";
+  }
+
   // CSS class for the type badge pill (colour-coded by record type)
   get typeBadgeClass() {
     return `meta-badge meta-badge_type meta-badge_type--${this.workItemType.toLowerCase()}`;

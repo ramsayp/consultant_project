@@ -10,6 +10,12 @@ public with sharing class WorkItemTriggerHandler {
     'Completed'
   };
 
+  // ── beforeInsert ───────────────────────────────────────────────────────────
+  // Assigns Ticket_Key__c and Item_Number__c to incoming Story/Task/Bug records.
+  public static void beforeInsert(List<Work_Item__c> newItems) {
+    WorkItemService.assignTicketKeys(newItems);
+  }
+
   // ── afterInsert ────────────────────────────────────────────────────────────
   // Creates a General Epic for every newly inserted Project.
   public static void afterInsert(List<Work_Item__c> newItems) {
