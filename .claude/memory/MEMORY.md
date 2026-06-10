@@ -30,6 +30,7 @@
 ### LWC testing
 
 - [LWC Jest module mocking patterns](feedback/testing/lwc_jest_module_mocking.md) — what works on Windows with sfdx-lwc-jest (imperative vs wire, moduleNameMapper, schema .default)
+- [LWC stub components go in **stubs**/](feedback/testing/lwc_stub_pattern.md) — multi-file LWC stubs (.html+.js) must live in **stubs**/, not **mocks**/; haste-map duplicate-mock bug breaks lint-staged --findRelatedTests
 
 ### Memory system
 
