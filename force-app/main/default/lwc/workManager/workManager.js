@@ -2,16 +2,19 @@
 import { LightningElement, wire, track } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import { refreshApex } from "@salesforce/apex";
+import userId from "@salesforce/user/Id";
 import getWorkItems from "@salesforce/apex/WorkItemController.getWorkItems";
 import getAllSprints from "@salesforce/apex/WorkItemController.getAllSprints";
 import generateSprints from "@salesforce/apex/WorkItemController.generateSprints";
 import closeSprint from "@salesforce/apex/WorkItemController.closeSprint";
 
-// Root component — manages navigation between the Projects list, Sprints list,
-// and the Kanban board view for a selected project.
+const VALID_VIEWS = new Set(["triage", "projects", "sprints", "board"]);
+
+// Root component — manages navigation between the Triage queue, Projects list,
+// Sprints list, and the Kanban board view for a selected project.
 export default class WorkManager extends LightningElement {
   // ── State ─────────────────────────────────────────────────────────────────
-  @track view = "triage"; // active panel: 'triage' | 'projects' | 'sprints' | 'board'
+  @track view = "projects"; // active panel: 'triage' | 'projects' | 'sprints' | 'board'
   @track selectedProject = null; // { Id, Name } of the project currently open on the board
   @track showCreate = false; // controls the new-project creation form
   @track isGenerating = false; // true while the generate-sprints call is in flight
@@ -20,6 +23,36 @@ export default class WorkManager extends LightningElement {
   allSprints = []; // all non-completed sprints for the sprint panel
   _wiredProjects; // raw wire result — held so refreshApex can target it
   _wiredSprints; // raw wire result — held so refreshApex can target it
+
+  // ── localStorage keys (user-scoped) ──────────────────────────────────────
+  get _viewKey() {
+    return `wm_view_${userId}`;
+  }
+  get _projectKey() {
+    return `wm_project_${userId}`;
+  }
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  connectedCallback() {
+    const savedView = localStorage.getItem(this._viewKey);
+    if (!VALID_VIEWS.has(savedView)) return;
+
+    if (savedView === "board") {
+      try {
+        const proj = JSON.parse(localStorage.getItem(this._projectKey));
+        if (proj?.Id && proj?.Name) {
+          this.selectedProject = proj;
+          this.view = "board";
+        } else {
+          localStorage.removeItem(this._projectKey);
+        }
+      } catch {
+        localStorage.removeItem(this._projectKey);
+      }
+    } else {
+      this.view = savedView;
+    }
+  }
 
   // ── Wire adapters ─────────────────────────────────────────────────────────
   // Fetches all Project-type work items for the projects list panel
@@ -103,15 +136,20 @@ export default class WorkManager extends LightningElement {
     }));
   }
 
-  // ── Navigation handlers ───────────────────────────────────────────────────
+  // ── Navigation ────────────────────────────────────────────────────────────
+  _setView(view) {
+    this.view = view;
+    localStorage.setItem(this._viewKey, view);
+  }
+
   showProjects() {
-    this.view = "projects";
+    this._setView("projects");
   }
   showSprints() {
-    this.view = "sprints";
+    this._setView("sprints");
   }
   showTriage() {
-    this.view = "triage";
+    this._setView("triage");
   }
 
   handleNewProject() {
@@ -125,13 +163,18 @@ export default class WorkManager extends LightningElement {
   handleProjectSelect(event) {
     const { id, name } = event.currentTarget.dataset;
     this.selectedProject = { Id: id, Name: name };
-    this.view = "board";
+    this._setView("board");
+    localStorage.setItem(
+      this._projectKey,
+      JSON.stringify({ Id: id, Name: name })
+    );
   }
 
   // Returns to the projects list and clears the selected project
   handleBack() {
-    this.view = "projects";
     this.selectedProject = null;
+    this._setView("projects");
+    localStorage.removeItem(this._projectKey);
   }
 
   // After a project is created, hides the form and refreshes the projects wire
