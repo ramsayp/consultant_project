@@ -494,6 +494,98 @@ private class WorkItemService_Test {
   }
 
   @IsTest
+  static void projectCodeSetCascadesKeysToUnkeyedChildren() {
+    // Project has no code at insert time — story gets no key.
+    // Setting the code should cascade and assign a proper project key.
+    Work_Item__c projectNoCode = new Work_Item__c(
+      Name = 'No Code Project',
+      RecordTypeId = rtId('Project'),
+      Status__c = 'Active'
+    );
+    insert projectNoCode;
+    Work_Item__c epicNoCode = new Work_Item__c(
+      Name = 'No Code Epic',
+      RecordTypeId = rtId('Epic'),
+      Parent_Work_Item__c = projectNoCode.Id,
+      Status__c = 'To Do'
+    );
+    insert epicNoCode;
+    Work_Item__c story = new Work_Item__c(
+      Name = 'Story Without Key',
+      RecordTypeId = rtId('Story'),
+      Parent_Work_Item__c = epicNoCode.Id
+    );
+    insert story;
+    System.assertEquals(
+      null,
+      [SELECT Ticket_Key__c FROM Work_Item__c WHERE Id = :story.Id]
+      .Ticket_Key__c,
+      'Story should have no key when project has no code'
+    );
+
+    projectNoCode.Project_Code__c = 'NEW';
+    update projectNoCode;
+
+    System.assertEquals(
+      'NEW-00001',
+      [SELECT Ticket_Key__c FROM Work_Item__c WHERE Id = :story.Id]
+      .Ticket_Key__c,
+      'Setting project code should cascade key to unkeyed story'
+    );
+  }
+
+  @IsTest
+  static void projectCodeSetReplacesTRIKeyOnChildren() {
+    // Ticket approved to Story under a codeless project — key stays TRI.
+    // Setting the project code should replace the TRI key with a project key.
+    Work_Item__c projectNoCode = new Work_Item__c(
+      Name = 'No Code Project 2',
+      RecordTypeId = rtId('Project'),
+      Status__c = 'Active'
+    );
+    insert projectNoCode;
+    Work_Item__c epicNoCode = new Work_Item__c(
+      Name = 'No Code Epic 2',
+      RecordTypeId = rtId('Epic'),
+      Parent_Work_Item__c = projectNoCode.Id,
+      Status__c = 'To Do'
+    );
+    insert epicNoCode;
+    Work_Item__c ticket = new Work_Item__c(
+      Name = 'Login broken',
+      RecordTypeId = rtId('Ticket')
+    );
+    insert ticket;
+    System.assert(
+      [SELECT Ticket_Key__c FROM Work_Item__c WHERE Id = :ticket.Id]
+        .Ticket_Key__c
+        .startsWith('TRI-'),
+      'Ticket should have TRI key'
+    );
+
+    // Approve: reclassify to Story and parent to epic (no project code yet)
+    ticket.RecordTypeId = rtId('Story');
+    ticket.Parent_Work_Item__c = epicNoCode.Id;
+    update ticket;
+    System.assert(
+      [SELECT Ticket_Key__c FROM Work_Item__c WHERE Id = :ticket.Id]
+        .Ticket_Key__c
+        .startsWith('TRI-'),
+      'Story should still have TRI key — project has no code'
+    );
+
+    projectNoCode.Project_Code__c = 'FIX';
+    update projectNoCode;
+
+    System.assertEquals(
+      'FIX-00001',
+      [SELECT Ticket_Key__c FROM Work_Item__c WHERE Id = :ticket.Id]
+      .Ticket_Key__c,
+      'Setting project code should replace TRI key with project key'
+    );
+  }
+
+  @IsTest
   static void ticketSequenceIndependentFromProjectSequence() {
     Work_Item__c epic = [
       SELECT Id

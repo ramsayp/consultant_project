@@ -95,4 +95,28 @@ public with sharing class WorkItemService {
       }
     }
   }
+
+  // ── cascadeKeysToProjectChildren ──────────────────────────────────────────
+  // Called from afterUpdate when Project_Code__c is set or changed. Finds all
+  // Stories/Tasks/Bugs under the project that still have a TRI key or no key
+  // and assigns proper project-sequence keys via assignTicketKeys.
+  public static void cascadeKeysToProjectChildren(Set<Id> projectIds) {
+    List<Work_Item__c> toReKey = WorkItemSelector.getItemsNeedingKeysByProject(
+      projectIds
+    );
+    if (toReKey.isEmpty())
+      return;
+    assignTicketKeys(toReKey);
+    List<Work_Item__c> changed = new List<Work_Item__c>();
+    for (Work_Item__c item : toReKey) {
+      if (
+        item.Ticket_Key__c != null && !item.Ticket_Key__c.startsWith('TRI-')
+      ) {
+        changed.add(item);
+      }
+    }
+    if (!changed.isEmpty()) {
+      update changed;
+    }
+  }
 }
