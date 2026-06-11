@@ -14,7 +14,7 @@ Click **Project Management** from the app launcher (the grid icon at the top lef
 
 Work is structured in a hierarchy — each level breaks things down into smaller, more manageable pieces:
 
-- **Project** — the top level. Represents a complete area of work (e.g. a product, a client engagement, a system).
+- **Project** — the top level. Represents a complete area of work (e.g. a product, a client engagement, a system). Each project has a **Project Code** — a 3-letter identifier (e.g. `ORG`) set when the project is created. All Stories, Tasks, and Bugs in that project are automatically assigned a numbered key using this code (e.g. `ORG-00001`, `ORG-00002`).
 - **Epic** — a major feature or theme within a project. Epics group related stories and tasks together. Every project also has a **General** Epic created automatically — a catch-all for work that doesn't fit a specific Epic.
 - **Story** — a piece of functionality written from a user's perspective. Assigned to a sprint and delivered iteratively.
 - **Task** — a concrete piece of work that needs doing. More operational than a Story — configuration, documentation, meetings.
@@ -61,6 +61,10 @@ Moving a card also keeps its status in step with where it lands:
 
 This happens automatically — pulling a card back out of the Active sprint resets it to Not Selected/Selected even if it was mid-progress, since it's no longer being actively worked.
 
+### Ticket Numbers
+
+Every Story, Task, and Bug is automatically assigned a **ticket number** when it's created — for example, `ORG-00001`. The number is unique per project and appears on each kanban card and compact row in the backlog. Raw **Ticket** intake (submitted via the Triage tab before classification) receives a `TRI-NNNNN` number; once approved and classified as a Story, Task, or Bug, it is assigned a project-sequence number instead.
+
 ### Priority Indicators
 
 Each card shows a coloured left border and an emoji:
@@ -94,7 +98,7 @@ If you don't select a sprint, the new item automatically lands in the **Backlog*
 
 ### New Project
 
-Click **+ New Project** on the Projects view to create a new project. A **General** Epic is created automatically alongside it — no extra steps required.
+Click **+ New Project** on the Projects view to create a new project. Enter a **Project Code** — a 3-letter uppercase identifier (e.g. `ORG`, `CRM`, `API`). Every Story, Task, and Bug created under this project will receive a sequential ticket number prefixed with this code. A **General** Epic is created automatically alongside the project — no extra steps required.
 
 ### From a Record Page
 

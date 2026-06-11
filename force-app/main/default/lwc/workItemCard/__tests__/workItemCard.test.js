@@ -94,6 +94,35 @@ describe("estimate badge", () => {
   });
 });
 
+describe("ticket key display", () => {
+  it("shows ticket key on card when set", () => {
+    const el = create({ workItem: { Ticket_Key__c: "TST-00001" } });
+    const badge = el.shadowRoot.querySelector(".card__ticket-key");
+    expect(badge).not.toBeNull();
+    expect(badge.textContent).toBe("TST-00001");
+  });
+
+  it("hides ticket key on card when null", () => {
+    const el = create({ workItem: { Ticket_Key__c: null } });
+    expect(el.shadowRoot.querySelector(".card__ticket-key")).toBeNull();
+  });
+
+  it("shows ticket key on compact row when set", () => {
+    const el = create({
+      compact: true,
+      workItem: { Ticket_Key__c: "TRI-00003" }
+    });
+    const badge = el.shadowRoot.querySelector(".row__ticket-key");
+    expect(badge).not.toBeNull();
+    expect(badge.textContent).toBe("TRI-00003");
+  });
+
+  it("hides ticket key on compact row when null", () => {
+    const el = create({ compact: true, workItem: { Ticket_Key__c: null } });
+    expect(el.shadowRoot.querySelector(".row__ticket-key")).toBeNull();
+  });
+});
+
 describe("open event", () => {
   it("fires open with correct id on card click", () => {
     const el = create();

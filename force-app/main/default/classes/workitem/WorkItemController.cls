@@ -15,7 +15,7 @@ public with sharing class WorkItemController {
       'SELECT Id, Name, Status__c, Priority__c, Estimate__c, Sequence__c, ' +
       'Work_Mode__c, Assignee__c, Assignee__r.Name, Description__c, ' +
       'Sprint__c, Sprint__r.Name, Parent_Work_Item__c, Parent_Work_Item__r.Name, ' +
-      'RecordType.Name, RecordTypeId ' +
+      'RecordType.Name, RecordTypeId, Ticket_Key__c ' +
       'FROM Work_Item__c ' +
       'WHERE RecordTypeId = :rtId';
     if (sprintId != null) {
@@ -309,7 +309,7 @@ public with sharing class WorkItemController {
       'Sprint__r.Start_Date__c, Sprint__r.End_Date__c, ' +
       'Parent_Work_Item__c, Parent_Work_Item__r.Name, ' +
       'Parent_Work_Item__r.Parent_Work_Item__c, Parent_Work_Item__r.Parent_Work_Item__r.Name, ' +
-      'RecordType.Name, RecordTypeId, Is_General__c ' +
+      'RecordType.Name, RecordTypeId, Is_General__c, Ticket_Key__c ' +
       'FROM Work_Item__c WHERE RecordTypeId IN :rtIds';
 
     if (projectId == null) {

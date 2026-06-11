@@ -49,6 +49,8 @@ trigger WorkItemTrigger on Work_Item__c(
       }
     }
 
+    WorkItemTriggerHandler.beforeInsert(Trigger.new);
+
     // ── Selection status correction ──────────────────────────────────────────
     // workItemCreate.js always sets Status__c to its DEFAULT_STATUS regardless of
     // which sprint the user picked. Re-derive it from the item's final Sprint__c so

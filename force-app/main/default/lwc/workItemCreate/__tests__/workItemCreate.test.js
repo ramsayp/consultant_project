@@ -39,11 +39,18 @@ const flushAllPromises = () =>
     .then(() => Promise.resolve());
 
 const MOCK_RT_ID = "rt001AAA";
+const MOCK_RT_ID_PROJECT = "rt002AAA";
 const MOCK_OBJ_INFO = {
   recordTypeInfos: {
     rt001: {
       name: "Story",
       recordTypeId: MOCK_RT_ID,
+      available: true,
+      defaultRecordTypeMapping: false
+    },
+    rt002: {
+      name: "Project",
+      recordTypeId: MOCK_RT_ID_PROJECT,
       available: true,
       defaultRecordTypeMapping: false
     }
@@ -132,6 +139,95 @@ describe("sprint picker", () => {
     expect(picker).not.toBeNull();
     // Options include the blank option + 1 sprint
     expect(picker.options.length).toBe(2);
+  });
+});
+
+// ── Project code ────────────────────────────────────────────────────────────
+describe("project code field", () => {
+  it("shows for Project type", async () => {
+    const el = create("Project");
+    getObjectInfo.emit(MOCK_OBJ_INFO);
+    await Promise.resolve();
+    expect(
+      el.shadowRoot.querySelector('[data-field="projectCode"]')
+    ).not.toBeNull();
+  });
+
+  it("hidden for Story type", async () => {
+    const el = create("Story");
+    getObjectInfo.emit(MOCK_OBJ_INFO);
+    await Promise.resolve();
+    expect(
+      el.shadowRoot.querySelector('[data-field="projectCode"]')
+    ).toBeNull();
+  });
+
+  it("blocks creation when code is empty", async () => {
+    const el = create("Project");
+    getObjectInfo.emit(MOCK_OBJ_INFO);
+    await Promise.resolve();
+    const nameField = el.shadowRoot.querySelector('[data-field="name"]');
+    nameField.value = "New Project";
+    nameField.dispatchEvent(new CustomEvent("change"));
+    await Promise.resolve();
+    getBrandBtn(el.shadowRoot).dispatchEvent(new CustomEvent("click"));
+    await flushAllPromises();
+    expect(createRecord).not.toHaveBeenCalled();
+  });
+
+  it("blocks creation when code is 2 letters", async () => {
+    const el = create("Project");
+    getObjectInfo.emit(MOCK_OBJ_INFO);
+    await Promise.resolve();
+    const nameField = el.shadowRoot.querySelector('[data-field="name"]');
+    nameField.value = "New Project";
+    nameField.dispatchEvent(new CustomEvent("change"));
+    const codeField = el.shadowRoot.querySelector('[data-field="projectCode"]');
+    codeField.value = "AB";
+    codeField.dispatchEvent(new CustomEvent("change"));
+    await Promise.resolve();
+    getBrandBtn(el.shadowRoot).dispatchEvent(new CustomEvent("click"));
+    await flushAllPromises();
+    expect(createRecord).not.toHaveBeenCalled();
+  });
+
+  it("blocks creation when code contains digits", async () => {
+    const el = create("Project");
+    getObjectInfo.emit(MOCK_OBJ_INFO);
+    await Promise.resolve();
+    const nameField = el.shadowRoot.querySelector('[data-field="name"]');
+    nameField.value = "New Project";
+    nameField.dispatchEvent(new CustomEvent("change"));
+    const codeField = el.shadowRoot.querySelector('[data-field="projectCode"]');
+    codeField.value = "1AB";
+    codeField.dispatchEvent(new CustomEvent("change"));
+    await Promise.resolve();
+    getBrandBtn(el.shadowRoot).dispatchEvent(new CustomEvent("click"));
+    await flushAllPromises();
+    expect(createRecord).not.toHaveBeenCalled();
+  });
+
+  it("normalises lowercase to uppercase and includes in createRecord", async () => {
+    createRecord.mockResolvedValue({ id: "newProj001" });
+    const el = create("Project");
+    getObjectInfo.emit(MOCK_OBJ_INFO);
+    await Promise.resolve();
+    const nameField = el.shadowRoot.querySelector('[data-field="name"]');
+    nameField.value = "New Project";
+    nameField.dispatchEvent(new CustomEvent("change"));
+    const codeField = el.shadowRoot.querySelector('[data-field="projectCode"]');
+    codeField.value = "abc";
+    codeField.dispatchEvent(new CustomEvent("change"));
+    await Promise.resolve();
+    getBrandBtn(el.shadowRoot).dispatchEvent(new CustomEvent("click"));
+    await flushAllPromises();
+    expect(createRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fields: expect.objectContaining({
+          Project_Code__c: "ABC"
+        })
+      })
+    );
   });
 });
 

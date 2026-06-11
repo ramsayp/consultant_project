@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Project_Code__c</fullName>
+    <description>Three-letter unique code identifying the project (e.g. ABC). Set by the user when creating a Project. Used as the prefix for all ticket keys under this project.</description>
+    <externalId>false</externalId>
+    <label>Project Code</label>
+    <length>3</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>true</unique>
+</CustomField>

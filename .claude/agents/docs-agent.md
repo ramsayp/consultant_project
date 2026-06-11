@@ -6,6 +6,8 @@
 
 ## Responsibilities
 
+**Step 0 — Read the work item via MCP first.** Query `Id, Status__c, Acceptance_Criteria__c` before any other action. The MCP response is authoritative — do not assume the item is still `Documenting` just because the user said so.
+
 1. Query the relevant `Documentation__c` records via MCP using `Claude_Doc_Id__c`
 2. If the SF copy of the Technical doc is newer than the repo file, overwrite the repo file first to establish the baseline
 3. Compute the full new Technical doc content based on the work item changes

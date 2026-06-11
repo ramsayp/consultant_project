@@ -10,6 +10,12 @@ public with sharing class WorkItemTriggerHandler {
     'Completed'
   };
 
+  // ── beforeInsert ───────────────────────────────────────────────────────────
+  // Assigns Ticket_Key__c and Item_Number__c to incoming Story/Task/Bug records.
+  public static void beforeInsert(List<Work_Item__c> newItems) {
+    WorkItemService.assignTicketKeys(newItems);
+  }
+
   // ── afterInsert ────────────────────────────────────────────────────────────
   // Creates a General Epic for every newly inserted Project.
   public static void afterInsert(List<Work_Item__c> newItems) {
@@ -35,14 +41,17 @@ public with sharing class WorkItemTriggerHandler {
   }
 
   // ── beforeUpdate ───────────────────────────────────────────────────────────
-  // Blocks users from manually setting a General Epic to a terminal status.
-  // Skipped when systemCascade is true (system-driven Project status sync).
+  // 1. Blocks users from manually setting a General Epic to a terminal status.
+  //    Skipped when systemCascade is true (system-driven Project status sync).
+  // 2. Recalculates Ticket_Key__c when Parent_Work_Item__c changes — covers
+  //    Ticket approval (record type + parent set in same DML) and reparenting.
   public static void beforeUpdate(
     List<Work_Item__c> newItems,
     Map<Id, Work_Item__c> oldMap
   ) {
     if (systemCascade)
       return;
+
     Id epicRtId = rtId('Epic');
     for (Work_Item__c item : newItems) {
       if (item.RecordTypeId != epicRtId || !item.Is_General__c)
@@ -56,52 +65,85 @@ public with sharing class WorkItemTriggerHandler {
         );
       }
     }
+
+    List<Work_Item__c> reparented = new List<Work_Item__c>();
+    for (Work_Item__c item : newItems) {
+      Work_Item__c old = oldMap.get(item.Id);
+      if (
+        item.Parent_Work_Item__c != old.Parent_Work_Item__c &&
+        item.Parent_Work_Item__c != null
+      ) {
+        reparented.add(item);
+      }
+    }
+    if (!reparented.isEmpty()) {
+      WorkItemService.assignTicketKeys(reparented);
+    }
   }
 
   // ── afterUpdate ────────────────────────────────────────────────────────────
-  // Cascades a Project status change to its linked General Epic.
-  // Sets systemCascade = true so the beforeUpdate block is bypassed on the
-  // nested General Epic update.
+  // 1. Cascades a Project status change to its linked General Epic.
+  //    Sets systemCascade = true so beforeUpdate skips the terminal-status block.
+  // 2. Cascades key assignment when Project_Code__c is set or changed.
+  //    Finds Stories/Tasks/Bugs under the project with no key or a TRI key
+  //    and assigns proper project-sequence keys.
   public static void afterUpdate(
     List<Work_Item__c> newItems,
     Map<Id, Work_Item__c> oldMap
   ) {
     Id projectRtId = rtId('Project');
     Id epicRtId = rtId('Epic');
+
     Map<Id, String> projectStatusMap = new Map<Id, String>();
+    Set<Id> projectsWithNewCode = new Set<Id>();
+
     for (Work_Item__c item : newItems) {
       if (item.RecordTypeId != projectRtId)
         continue;
-      if (oldMap.get(item.Id).Status__c != item.Status__c) {
+      Work_Item__c old = oldMap.get(item.Id);
+      if (old.Status__c != item.Status__c) {
         projectStatusMap.put(item.Id, item.Status__c);
       }
+      if (
+        item.Project_Code__c != old.Project_Code__c &&
+        item.Project_Code__c != null
+      ) {
+        projectsWithNewCode.add(item.Id);
+      }
     }
-    if (projectStatusMap.isEmpty())
-      return;
-    List<Work_Item__c> generalEpics = [
-      SELECT Id, Parent_Work_Item__c
-      FROM Work_Item__c
-      WHERE
-        RecordTypeId = :epicRtId
-        AND Is_General__c = TRUE
-        AND Parent_Work_Item__c IN :projectStatusMap.keySet()
-    ];
-    if (generalEpics.isEmpty())
-      return;
-    List<Work_Item__c> toUpdate = new List<Work_Item__c>();
-    for (Work_Item__c epic : generalEpics) {
-      toUpdate.add(
-        new Work_Item__c(
-          Id = epic.Id,
-          Status__c = projectStatusMap.get(epic.Parent_Work_Item__c)
-        )
-      );
+
+    // Status cascade → General Epic
+    if (!projectStatusMap.isEmpty()) {
+      List<Work_Item__c> generalEpics = [
+        SELECT Id, Parent_Work_Item__c
+        FROM Work_Item__c
+        WHERE
+          RecordTypeId = :epicRtId
+          AND Is_General__c = TRUE
+          AND Parent_Work_Item__c IN :projectStatusMap.keySet()
+      ];
+      if (!generalEpics.isEmpty()) {
+        List<Work_Item__c> toUpdate = new List<Work_Item__c>();
+        for (Work_Item__c epic : generalEpics) {
+          toUpdate.add(
+            new Work_Item__c(
+              Id = epic.Id,
+              Status__c = projectStatusMap.get(epic.Parent_Work_Item__c)
+            )
+          );
+        }
+        systemCascade = true;
+        try {
+          update toUpdate;
+        } finally {
+          systemCascade = false;
+        }
+      }
     }
-    systemCascade = true;
-    try {
-      update toUpdate;
-    } finally {
-      systemCascade = false;
+
+    // Key cascade → Stories/Tasks/Bugs needing a project key
+    if (!projectsWithNewCode.isEmpty()) {
+      WorkItemService.cascadeKeysToProjectChildren(projectsWithNewCode);
     }
   }
 
