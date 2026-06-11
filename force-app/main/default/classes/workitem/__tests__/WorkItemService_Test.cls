@@ -623,4 +623,112 @@ private class WorkItemService_Test {
       'Ticket should get independent triage key'
     );
   }
+
+  @IsTest
+  static void taskGetsExpectedKey() {
+    Work_Item__c epic = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Epic'
+      LIMIT 1
+    ];
+    Work_Item__c task = WorkItemTestDataFactory.insertTask('Task One', epic.Id);
+    Work_Item__c result = [
+      SELECT Ticket_Key__c, Item_Number__c
+      FROM Work_Item__c
+      WHERE Id = :task.Id
+    ];
+    System.assertEquals(
+      'TST-00001',
+      result.Ticket_Key__c,
+      'Task should get TST-00001'
+    );
+    System.assertEquals(
+      1,
+      result.Item_Number__c.intValue(),
+      'Item number should be 1'
+    );
+  }
+
+  @IsTest
+  static void bugGetsExpectedKey() {
+    Work_Item__c epic = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Epic'
+      LIMIT 1
+    ];
+    WorkItemTestDataFactory.insertTask('Task First', epic.Id);
+    Work_Item__c bug = WorkItemTestDataFactory.insertBug('Bug One', epic.Id);
+    Work_Item__c result = [
+      SELECT Ticket_Key__c, Item_Number__c
+      FROM Work_Item__c
+      WHERE Id = :bug.Id
+    ];
+    System.assertEquals(
+      'TST-00002',
+      result.Ticket_Key__c,
+      'Bug inserted after a task should get TST-00002'
+    );
+    System.assertEquals(
+      2,
+      result.Item_Number__c.intValue(),
+      'Item number should be 2'
+    );
+  }
+
+  @IsTest
+  static void cascadeAcrossMultipleEpics() {
+    Work_Item__c project = WorkItemTestDataFactory.insertProject(
+      'Multi Epic Project',
+      null
+    );
+    Work_Item__c epic1 = WorkItemTestDataFactory.insertEpic(
+      'Epic Alpha',
+      project.Id
+    );
+    Work_Item__c epic2 = WorkItemTestDataFactory.insertEpic(
+      'Epic Beta',
+      project.Id
+    );
+    Work_Item__c s1 = WorkItemTestDataFactory.insertStory(
+      'Story in Alpha',
+      epic1.Id
+    );
+    Work_Item__c s2 = WorkItemTestDataFactory.insertStory(
+      'Story in Beta',
+      epic2.Id
+    );
+    System.assertEquals(
+      null,
+      [SELECT Ticket_Key__c FROM Work_Item__c WHERE Id = :s1.Id].Ticket_Key__c,
+      'Story in first epic should have no key before project code set'
+    );
+    System.assertEquals(
+      null,
+      [SELECT Ticket_Key__c FROM Work_Item__c WHERE Id = :s2.Id].Ticket_Key__c,
+      'Story in second epic should have no key before project code set'
+    );
+
+    project.Project_Code__c = 'MUL';
+    update project;
+
+    List<Work_Item__c> results = [
+      SELECT Ticket_Key__c, Item_Number__c
+      FROM Work_Item__c
+      WHERE Id IN :new List<Id>{ s1.Id, s2.Id }
+      ORDER BY Item_Number__c ASC
+    ];
+    Set<String> keys = new Set<String>();
+    for (Work_Item__c r : results) {
+      keys.add(r.Ticket_Key__c);
+    }
+    System.assertEquals(
+      2,
+      keys.size(),
+      'Stories under both epics should each get a unique project key'
+    );
+    System.assert(keys.contains('MUL-00001'), 'Should contain MUL-00001');
+    System.assert(keys.contains('MUL-00002'), 'Should contain MUL-00002');
+  }
 }
