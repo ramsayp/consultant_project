@@ -326,6 +326,174 @@ private class WorkItemService_Test {
   }
 
   @IsTest
+  static void ticketApprovedToEpicGetsProjectKey() {
+    Work_Item__c epic = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Epic'
+      LIMIT 1
+    ];
+
+    Work_Item__c ticket = new Work_Item__c(
+      Name = 'Login broken',
+      RecordTypeId = rtId('Ticket')
+    );
+    insert ticket;
+    System.assertEquals(
+      'TRI-00001',
+      [SELECT Ticket_Key__c FROM Work_Item__c WHERE Id = :ticket.Id]
+      .Ticket_Key__c,
+      'Should have TRI key before approval'
+    );
+
+    ticket.RecordTypeId = rtId('Story');
+    ticket.Parent_Work_Item__c = epic.Id;
+    update ticket;
+
+    Work_Item__c result = [
+      SELECT Ticket_Key__c, Item_Number__c
+      FROM Work_Item__c
+      WHERE Id = :ticket.Id
+    ];
+    System.assertEquals(
+      'TST-00001',
+      result.Ticket_Key__c,
+      'Approved ticket should get project key replacing TRI key'
+    );
+    System.assertEquals(
+      1,
+      result.Item_Number__c.intValue(),
+      'Item number should be 1 in the project sequence'
+    );
+  }
+
+  @IsTest
+  static void reparentedStoryGetsNewProjectKey() {
+    Work_Item__c project2 = new Work_Item__c(
+      Name = 'Project Two',
+      RecordTypeId = rtId('Project'),
+      Project_Code__c = 'TWO',
+      Status__c = 'Active'
+    );
+    insert project2;
+    Work_Item__c epic2 = new Work_Item__c(
+      Name = 'Epic Two',
+      RecordTypeId = rtId('Epic'),
+      Parent_Work_Item__c = project2.Id,
+      Status__c = 'To Do'
+    );
+    insert epic2;
+
+    Work_Item__c epic1 = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Epic'
+      LIMIT 1
+    ];
+
+    Work_Item__c story = new Work_Item__c(
+      Name = 'Story A',
+      RecordTypeId = rtId('Story'),
+      Parent_Work_Item__c = epic1.Id
+    );
+    insert story;
+    System.assertEquals(
+      'TST-00001',
+      [SELECT Ticket_Key__c FROM Work_Item__c WHERE Id = :story.Id]
+      .Ticket_Key__c,
+      'Should have TST key before reparent'
+    );
+
+    story.Parent_Work_Item__c = epic2.Id;
+    update story;
+
+    Work_Item__c result = [
+      SELECT Ticket_Key__c
+      FROM Work_Item__c
+      WHERE Id = :story.Id
+    ];
+    System.assertEquals(
+      'TWO-00001',
+      result.Ticket_Key__c,
+      'Reparented story should get new project key'
+    );
+  }
+
+  @IsTest
+  static void reparentWithNoProjectCodeSkipped() {
+    Work_Item__c projectNoCode = new Work_Item__c(
+      Name = 'No Code Project',
+      RecordTypeId = rtId('Project'),
+      Status__c = 'Active'
+    );
+    insert projectNoCode;
+    Work_Item__c epicNoCode = new Work_Item__c(
+      Name = 'No Code Epic',
+      RecordTypeId = rtId('Epic'),
+      Parent_Work_Item__c = projectNoCode.Id,
+      Status__c = 'To Do'
+    );
+    insert epicNoCode;
+
+    Work_Item__c story = new Work_Item__c(
+      Name = 'Orphan Story',
+      RecordTypeId = rtId('Story')
+    );
+    insert story;
+
+    story.Parent_Work_Item__c = epicNoCode.Id;
+    update story;
+
+    Work_Item__c result = [
+      SELECT Ticket_Key__c
+      FROM Work_Item__c
+      WHERE Id = :story.Id
+    ];
+    System.assertEquals(
+      null,
+      result.Ticket_Key__c,
+      'No key when project has no code'
+    );
+  }
+
+  @IsTest
+  static void bulkReparentIsSafe() {
+    Work_Item__c epic = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Epic'
+      LIMIT 1
+    ];
+
+    List<Work_Item__c> stories = new List<Work_Item__c>();
+    for (Integer i = 0; i < 3; i++) {
+      stories.add(
+        new Work_Item__c(Name = 'Orphan ' + i, RecordTypeId = rtId('Story'))
+      );
+    }
+    insert stories;
+
+    for (Work_Item__c s : stories) {
+      s.Parent_Work_Item__c = epic.Id;
+    }
+    update stories;
+
+    List<Work_Item__c> results = [
+      SELECT Ticket_Key__c, Item_Number__c
+      FROM Work_Item__c
+      WHERE Id IN :stories
+      ORDER BY Item_Number__c ASC
+    ];
+    Set<String> keys = new Set<String>();
+    for (Work_Item__c r : results) {
+      keys.add(r.Ticket_Key__c);
+    }
+    System.assertEquals(3, keys.size(), 'All 3 should have unique keys');
+    System.assert(keys.contains('TST-00001'), 'Should contain TST-00001');
+    System.assert(keys.contains('TST-00003'), 'Should contain TST-00003');
+  }
+
+  @IsTest
   static void ticketSequenceIndependentFromProjectSequence() {
     Work_Item__c epic = [
       SELECT Id

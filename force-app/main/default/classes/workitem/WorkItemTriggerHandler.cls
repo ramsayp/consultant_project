@@ -41,14 +41,17 @@ public with sharing class WorkItemTriggerHandler {
   }
 
   // ── beforeUpdate ───────────────────────────────────────────────────────────
-  // Blocks users from manually setting a General Epic to a terminal status.
-  // Skipped when systemCascade is true (system-driven Project status sync).
+  // 1. Blocks users from manually setting a General Epic to a terminal status.
+  //    Skipped when systemCascade is true (system-driven Project status sync).
+  // 2. Recalculates Ticket_Key__c when Parent_Work_Item__c changes — covers
+  //    Ticket approval (record type + parent set in same DML) and reparenting.
   public static void beforeUpdate(
     List<Work_Item__c> newItems,
     Map<Id, Work_Item__c> oldMap
   ) {
     if (systemCascade)
       return;
+
     Id epicRtId = rtId('Epic');
     for (Work_Item__c item : newItems) {
       if (item.RecordTypeId != epicRtId || !item.Is_General__c)
@@ -61,6 +64,20 @@ public with sharing class WorkItemTriggerHandler {
           'The General Epic status is controlled by its parent Project and cannot be set manually to Cancelled, Done, or Completed.'
         );
       }
+    }
+
+    List<Work_Item__c> reparented = new List<Work_Item__c>();
+    for (Work_Item__c item : newItems) {
+      Work_Item__c old = oldMap.get(item.Id);
+      if (
+        item.Parent_Work_Item__c != old.Parent_Work_Item__c &&
+        item.Parent_Work_Item__c != null
+      ) {
+        reparented.add(item);
+      }
+    }
+    if (!reparented.isEmpty()) {
+      WorkItemService.assignTicketKeys(reparented);
     }
   }
 
