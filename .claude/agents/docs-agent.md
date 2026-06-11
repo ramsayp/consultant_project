@@ -11,21 +11,16 @@
 1. Query the relevant `Documentation__c` records via MCP using `Claude_Doc_Id__c`
 2. If the SF copy of the Technical doc is newer than the repo file, overwrite the repo file first to establish the baseline
 3. Compute the full new Technical doc content based on the work item changes
-4. Create a `Change_Log__c` record — `Title__c` is required; link `Technical_Doc__c` to the Technical doc; `Work_Item__c` is optional; use record type `Initial` for first-time doc creation, `Update` for subsequent changes
-5. On the Change Log record, populate:
+4. Create the `Change_Log__c` record with **metadata fields only** (do not include large Rich Text Area fields in the create payload — the SF API silently drops them): `Title__c` (required), `Technical_Doc__c`, `Work_Item__c` (optional), `Technical_Doc_Removed__c`, `Technical_Doc_Added__c`, `User_Doc_Removed__c` (if applicable), `User_Doc_Added__c` (if applicable). For `RecordTypeId`: query `SELECT Id FROM RecordType WHERE SobjectType = 'Change_Log__c' AND DeveloperName = 'Initial'` (or `'Update'`) and pass the explicit Id — relationship notation (`"RecordType": {"DeveloperName": "..."}`) is rejected by the SF API because `DeveloperName` is not an indexed external ID on `RecordType`. Use record type `Initial` for first-time doc creation, `Update` for subsequent changes.
+5. Call `updateSobjectRecord` **separately** on the newly created Change Log record to set the large staged fields (the SF API silently drops Rich Text Area content on `createSobjectRecord` when payloads are large):
    - `Staged_Technical_Body__c` — the complete new Technical doc body (what will be published to SF)
-   - `Technical_Doc_Removed__c` — content removed from the current Technical doc in this change
-   - `Technical_Doc_Added__c` — content added to the Technical doc in this change
-6. If the change affects end-user behaviour, also populate on the Change Log:
-   - `Staged_User_Body__c` — the complete new User doc body
-   - `User_Doc_Removed__c` — content removed from the current User doc
-   - `User_Doc_Added__c` — content added to the User doc
-7. **Do NOT update `Documentation__c.Body__c` directly** — the Release Agent publishes the staged content at release time
-8. Sync the repo doc file(s) to match the staged content (so the commit reflects what will be published)
-9. Leave the Change Log as **Draft** — Release Agent sets it to Published
-10. Create a `Comment__c` record on the work item: Change Log title, which docs were updated (Technical / User), and a one-line summary of what changed
-11. Update Claude memory files if any architecture decisions changed during this work
-12. Set `Status__c = Releasing`
+   - `Staged_User_Body__c` — the complete new User doc body (if applicable)
+6. **Do NOT update `Documentation__c.Body__c` directly** — the Release Agent publishes the staged content at release time
+7. Sync the repo doc file(s) to match the staged content (so the commit reflects what will be published)
+8. Leave the Change Log as **Draft** — Release Agent sets it to Published
+9. Create a `Comment__c` record on the work item: Change Log title, which docs were updated (Technical / User), and a one-line summary of what changed
+10. Update Claude memory files if any architecture decisions changed during this work
+11. Set `Status__c = Releasing`
 
 ## Doc file mapping
 

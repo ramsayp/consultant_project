@@ -9,6 +9,7 @@
 - [MCP minimal access principle](feedback/tooling/mcp_minimal_access.md) — only activate MCP servers actively needed; deactivate everything else; bare minimal access
 - [Search all name variants on rename](feedback/tooling/search_variations.md) — grep hyphenated, spaced, title-cased, and camelCased forms; one pattern misses others
 - [MCP read tools need no confirmation](feedback/tooling/mcp_read_no_confirm.md) — soqlQuery, getObjectSchema, getRelatedRecords etc. always fire without asking; only write/mutate ops need narration
+- [MCP createSobjectRecord patterns](feedback/tooling/mcp_sobject_create_patterns.md) — RecordType: always pre-query for Id (relationship notation rejected); Rich Text Area fields: create with metadata only, then updateSobjectRecord separately (SF silently drops large RTA content on create)
 
 ### Communication & transparency
 
