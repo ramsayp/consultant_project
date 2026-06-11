@@ -2,6 +2,10 @@
 
 **Trigger:** Item with `Status__c` in (`To Do`, `In Progress`, `On Hold`) — work ready to start or resume
 
+## Step 0 — Read the work item via MCP first
+
+Query `Id, Status__c, Triage_Status__c, Sprint__c, Acceptance_Criteria__c, Triage_Notes__c` before any other action. The MCP response is authoritative — never assume the current status matches what the user described. Base all decisions (gates, rework vs first build) on the MCP-returned values.
+
 ## Gates (check first, before any work)
 
 **Sprint gate (strict):** Read the item's `Sprint__c` via MCP and compare to the active sprint. If the item is NOT in the active sprint — stop immediately, do not touch the item, tell the user: "This item is not in the active sprint. Please assign it to the current sprint before retriggering the Dev Agent."

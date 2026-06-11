@@ -6,6 +6,8 @@
 
 ## Responsibilities
 
+**Step 0 — Read the ticket via MCP first.** Query `Id, Status__c, Triage_Status__c, Name, Description` before any other action. The MCP response is authoritative — do not assume the triage status matches the trigger description.
+
 1. Set `Triage_Status__c = Reviewing`
 2. Analyse the raw ticket description
 3. Draft: User Story (`User_Story__c`), Acceptance Criteria (`Acceptance_Criteria__c`), delivery plan (`Plan__c`)

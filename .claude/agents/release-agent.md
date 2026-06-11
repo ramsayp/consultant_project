@@ -6,6 +6,8 @@
 
 ## Responsibilities
 
+**Step 0 — Read the work item via MCP first.** Query `Id, Status__c` before any other action. The MCP response is authoritative — do not assume the item is still `Releasing` just because the user said so.
+
 1. Run all Apex and Jest tests - failure result in work going back to Dev Agent to review
 
 2. Merge feature branch to `main`

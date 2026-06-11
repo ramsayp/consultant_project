@@ -13,7 +13,15 @@ At the start of every session, read the user's input and determine the agent rol
 | Says testing passed, or item is `Documenting`                   | **Docs Agent**                            | [agents/docs-agent.md](agents/docs-agent.md)               |
 | Says docs are done, or item is `Releasing`                      | **Release Agent**                         | [agents/release-agent.md](agents/release-agent.md)         |
 
-Always read the linked `Work_Item__c` record via MCP before acting. `Status__c` and `Triage_Status__c` are authoritative. Then read the relevant agent detail file before starting work.
+**Pre-flight — before any other action:**
+
+1. Query the `Work_Item__c` record via MCP:
+   ```
+   SELECT Id, Name, Status__c, Triage_Status__c, Sprint__c, Acceptance_Criteria__c, Triage_Notes__c
+   FROM Work_Item__c WHERE Id = '<id>'
+   ```
+2. Use the returned `Status__c` and `Triage_Status__c` as the authoritative current state. Never assume the status matches what the user said or what the routing table above suggests — the user may have already moved the item, or a previous agent may have updated it.
+3. Then read the relevant agent detail file and proceed.
 
 ---
 

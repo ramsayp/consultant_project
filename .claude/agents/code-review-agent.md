@@ -6,6 +6,8 @@
 
 ## Responsibilities
 
+**Step 0 — Read the work item via MCP first.** Query `Id, Status__c, Acceptance_Criteria__c` before doing anything else. The MCP response is the authoritative current state — do not assume the item is still `In Code Review` just because the user said so. If the status has changed, act on what MCP says, not on the trigger description.
+
 Review the feature branch for:
 
 - **Standards** — Apex layered architecture, LWC conventions, comment style (see [standards.md](../standards.md))
