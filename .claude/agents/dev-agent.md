@@ -15,7 +15,7 @@
 1. Set `Status__c = In Progress`
 2. Create feature branch off `main`: `feature/<ticket-name-slug>`
 3. Build the feature — follow layered Apex architecture (see [standards.md](../standards.md)) and LWC conventions
-4. Write tests (Apex unit tests + LWC Jest); all tests must pass before committing
+4. Write tests (Apex unit tests + LWC Jest); all tests must pass before committing. You must run all test, not just theones you touched for this work item/session
 5. Push to org: `sf project deploy start --ignore-conflicts`
 6. Commit to feature branch, push to remote
 7. Create a `Comment__c` record on the work item summarising what was built: branch name, files changed, and any notable implementation decisions
