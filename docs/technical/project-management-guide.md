@@ -12,26 +12,29 @@ A Salesforce-native project management tool built on Lightning Web Components (L
 
 The central object. All item types share one object, differentiated by Record Type. A self-referential lookup field (`Parent_Work_Item__c`) connects the hierarchy.
 
-| Field                    | Type                           | Purpose                                                                                                         |
-| ------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `Name`                   | Text                           | Title of the work item                                                                                          |
-| `RecordTypeId`           | Record Type                    | Determines item type (see below)                                                                                |
-| `Status__c`              | Picklist                       | Workflow stage (values vary by record type)                                                                     |
-| `Priority__c`            | Picklist                       | Critical / High / Medium / Low                                                                                  |
-| `Estimate__c`            | Number                         | Story-point estimate                                                                                            |
-| `Sequence__c`            | Number                         | Drag-and-drop position within a column                                                                          |
-| `Sprint__c`              | Lookup → Sprint\_\_c           | Sprint assignment (null = absorbed by backlog)                                                                  |
-| `Parent_Work_Item__c`    | Lookup → Work_Item\_\_c (self) | Parent in the hierarchy                                                                                         |
-| `Assignee__c`            | Lookup → User                  | Assigned team member                                                                                            |
-| `Work_Mode__c`           | Picklist                       | Auto-stamped on creation (see below)                                                                            |
-| `Description__c`         | Long Text                      | Free-form description                                                                                           |
-| `User_Story__c`          | Long Text                      | Story-type only; pre-filled with template                                                                       |
-| `Acceptance_Criteria__c` | Long Text                      | Story / Task / Bug                                                                                              |
-| `Triage_Status__c`       | Picklist                       | Ticket-type only; BA agent triage pipeline stage (see [Triage pipeline](#triage-pipeline-ba-agent-scaffolding)) |
-| `Triage_Notes__c`        | Long Text                      | Ticket-type only; reviewer notes captured on decline, for BA agent re-triage                                    |
-| `Target_Type__c`         | Picklist                       | Ticket-type only; what the ticket becomes (Story/Task/Bug) on approval                                          |
-| `Plan__c`                | Long Text                      | Ticket-type only; BA agent's drafted delivery plan                                                              |
-| `Is_General__c`          | Checkbox                       | `true` on the auto-created "General" Epic for each Project; see [General Epic](#general-epic)                   |
+| Field                    | Type                           | Purpose                                                                                                           |
+| ------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `Name`                   | Text                           | Title of the work item                                                                                            |
+| `RecordTypeId`           | Record Type                    | Determines item type (see below)                                                                                  |
+| `Status__c`              | Picklist                       | Workflow stage (values vary by record type)                                                                       |
+| `Priority__c`            | Picklist                       | Critical / High / Medium / Low                                                                                    |
+| `Estimate__c`            | Number                         | Story-point estimate                                                                                              |
+| `Sequence__c`            | Number                         | Drag-and-drop position within a column                                                                            |
+| `Sprint__c`              | Lookup → Sprint\_\_c           | Sprint assignment (null = absorbed by backlog)                                                                    |
+| `Parent_Work_Item__c`    | Lookup → Work_Item\_\_c (self) | Parent in the hierarchy                                                                                           |
+| `Assignee__c`            | Lookup → User                  | Assigned team member                                                                                              |
+| `Work_Mode__c`           | Picklist                       | Auto-stamped on creation (see below)                                                                              |
+| `Description__c`         | Long Text                      | Free-form description                                                                                             |
+| `User_Story__c`          | Long Text                      | Story-type only; pre-filled with template                                                                         |
+| `Acceptance_Criteria__c` | Long Text                      | Story / Task / Bug                                                                                                |
+| `Triage_Status__c`       | Picklist                       | Ticket-type only; BA agent triage pipeline stage (see [Triage pipeline](#triage-pipeline-ba-agent-scaffolding))   |
+| `Triage_Notes__c`        | Long Text                      | Ticket-type only; reviewer notes captured on decline, for BA agent re-triage                                      |
+| `Target_Type__c`         | Picklist                       | Ticket-type only; what the ticket becomes (Story/Task/Bug) on approval                                            |
+| `Plan__c`                | Long Text                      | Ticket-type only; BA agent's drafted delivery plan                                                                |
+| `Is_General__c`          | Checkbox                       | `true` on the auto-created "General" Epic for each Project; see [General Epic](#general-epic)                     |
+| `Item_Number__c`         | Number                         | Auto-assigned sequence number (numeric portion of `Ticket_Key__c`); null for non-numbered types                   |
+| `Project_Code__c`        | Text(3)                        | 3-letter uppercase code set on a Project record; drives `Ticket_Key__c` generation for child Story/Task/Bug items |
+| `Ticket_Key__c`          | Text(10)                       | Auto-assigned human-readable key — `CODE-NNNNN` for Story/Task/Bug; `TRI-NNNNN` for Tickets                       |
 
 #### Record type hierarchy
 
@@ -160,7 +163,7 @@ This prevents items from other projects appearing on the board.
 **File:** `force-app/main/default/triggers/WorkItemTrigger.trigger`
 **Fires:** before insert, after insert, before update, after update on `Work_Item__c`
 
-**Before insert — two passes.** Pass 1 (Backlog default): assigns the Backlog sprint to any Story, Task, or Bug inserted with a null `Sprint__c`. Pass 2 (selection status correction): re-derives `Status__c` from each item's final `Sprint__c` — Backlog → `Not Selected`, Planning sprint → `Selected`, Active sprint left at `Not Started`. Bulkified and safe for data load and API creation.
+**Before insert — three passes.** Pass 1 (Backlog default): assigns the Backlog sprint to any Story, Task, or Bug inserted with a null `Sprint__c`. Pass 2 (ticket key assignment): calls `WorkItemTriggerHandler.beforeInsert`, which routes to `WorkItemService.assignTicketKeys` — assigns `Ticket_Key__c` and `Item_Number__c` to incoming Story/Task/Bug and Ticket records (see [`WorkItemService.cls`](#workitemservicecls)). Pass 3 (selection status correction): re-derives `Status__c` from each item's final `Sprint__c` — Backlog → `Not Selected`, Planning sprint → `Selected`, Active sprint left at `Not Started`. Bulkified and safe for data load and API creation.
 
 **After insert, before update, after update** — delegated to `WorkItemTriggerHandler`.
 
@@ -168,11 +171,36 @@ This prevents items from other projects appearing on the board.
 
 **File:** `force-app/main/default/classes/workitem/WorkItemTriggerHandler.cls`
 
-Handles General Epic creation and status mirroring. Three entry points:
+Handles General Epic creation, status mirroring, and ticket key assignment. Four entry points:
 
+- **`beforeInsert`** — routes incoming Story/Task/Bug and Ticket records to `WorkItemService.assignTicketKeys` to assign `Ticket_Key__c` and `Item_Number__c`.
 - **`afterInsert`** — for every newly inserted Project, inserts one child Epic (`Name = 'General'`, `Is_General__c = true`) with the same initial `Status__c`.
-- **`beforeUpdate`** — blocks users from manually setting a General Epic's `Status__c` to a terminal value (`Cancelled`, `Done`, `Completed`). Skipped when `systemCascade = true`.
-- **`afterUpdate`** — when a Project's `Status__c` changes, updates all linked General Epics to match. Sets `systemCascade = true` before the nested DML and resets it in a `finally` block to bypass the `beforeUpdate` restriction during the cascade.
+- **`beforeUpdate`** — (1) blocks users from manually setting a General Epic's `Status__c` to a terminal value (`Cancelled`, `Done`, `Completed`) — skipped when `systemCascade = true`; (2) detects `Parent_Work_Item__c` changes and calls `WorkItemService.assignTicketKeys` on reparented items, covering Ticket approval (record type + parent assigned in the same DML) and manual reparenting.
+- **`afterUpdate`** — (1) when a Project's `Status__c` changes, updates all linked General Epics to match — sets `systemCascade = true` before nested DML and resets it in a `finally` block; (2) when a Project's `Project_Code__c` is set or changed, calls `WorkItemService.cascadeKeysToProjectChildren` to retroactively assign project-sequence keys to existing Story/Task/Bug children.
+
+---
+
+## `WorkItemService.cls`
+
+**File:** `force-app/main/default/classes/workitem/WorkItemService.cls`
+
+Service layer for `Work_Item__c` business operations. All methods `with sharing`.
+
+- **`assignTicketKeys(List<Work_Item__c> items)`** — assigns `Item_Number__c` and `Ticket_Key__c` in a single bulk-safe pass. Story/Task/Bug receive `CODE-NNNNN` keys using the parent project's `Project_Code__c` and a per-project sequential counter. Tickets receive `TRI-NNNNN` keys from a global counter across all Ticket records. Items that resolve no project code, or whose record type doesn't require a key (Epic, Project, Chapter, Step), are skipped silently.
+- **`cascadeKeysToProjectChildren(Set<Id> projectIds)`** — called from `afterUpdate` when a Project's `Project_Code__c` is set or changed. Queries Stories/Tasks/Bugs under the project that still have no key or a TRI key, calls `assignTicketKeys` on them, and DML-updates only those that received a new project-sequence key.
+
+---
+
+## `WorkItemSelector.cls` — key-related methods
+
+**File:** `force-app/main/default/classes/workitem/WorkItemSelector.cls`
+
+All methods `with sharing`. Methods added for ticket key generation:
+
+- **`getEpicsWithProjectCode(Set<Id> epicIds)`** — returns the supplied Epic records with their parent Project's `Project_Code__c` via relationship traversal (`Parent_Work_Item__r.Project_Code__c`).
+- **`getMaxItemNumberByProject(Set<Id> projectIds)`** — returns the highest `Item_Number__c` per project as a `Map<Id, Integer>`. Excludes TRI-keyed items via a range comparison (`Ticket_Key__c < 'TRI-'` OR `Ticket_Key__c > 'TRI-99999'`) so the triage counter cannot inflate the project counter. See [Key Design Decisions](#key-design-decisions) for why `NOT LIKE` is avoided.
+- **`getItemsNeedingKeysByProject(Set<Id> projectIds)`** — returns Story/Task/Bug records under the given projects whose `Ticket_Key__c` is null or `LIKE 'TRI-%'`; consumed by `cascadeKeysToProjectChildren`.
+- **`getMaxTicketItemNumber(Id ticketRtId)`** — returns the global maximum `Item_Number__c` across all Ticket records; returns 0 when no Tickets have been numbered yet.
 
 ---
 
@@ -327,6 +355,8 @@ Parent_Work_Item__r.Parent_Work_Item__r.Name;
 Parent_Work_Item__r.Name;
 ```
 
+**Ticket key:** when `Ticket_Key__c` is set, a monospace label is rendered in both card and compact row layouts — `CODE-NNNNN` for project items, `TRI-NNNNN` for triage tickets.
+
 **Events fired:** `open` (with `{ id }`) on click → parent board navigates to the record page. `dragstart` → encodes `{ itemId, sprintId }` in `dataTransfer`.
 
 ---
@@ -347,6 +377,7 @@ Fields shown adapt to the record type:
 | Parent picker (Epic dropdown) | Story, Task, Bug                      |
 | User Story                    | Story only (pre-filled with template) |
 | Acceptance Criteria           | Story, Task, Bug                      |
+| Project Code (3 letters)      | Project only                          |
 
 **Parent resolution order:** `selectedParentId` (user pick) → `parentId` prop → `projectId` (for Epics only) → null.
 
@@ -584,3 +615,9 @@ To seed sprints for a new org: open the **Sprints** tab in Project Management an
 **`Target_Type__c` decouples classification from reclassification:** Rather than approving directly into a chosen type, the reviewer (or BA agent) sets "what this will become" as a field on the Ticket first — saved immediately via `updateRecord` so the choice persists independent of the approve action. `approveTicket` then reads that field and refuses to proceed (`AuraHandledException`) if it's blank, making the classification step an explicit, auditable precondition rather than an implicit side effect of clicking Approve.
 
 **Selection status is destination-derived, never origin-derived:** `deriveSelectionStatus` looks only at where an item _lands_. This is the only design that handles every drag combination correctly without special-casing: a card pulled out of the Active sprint back into the Backlog or a future sprint resets to `Not Selected`/`Selected` even if it was `In Progress`/`Blocked`, because it's no longer being actively worked — and a card landing in the Active sprint is left alone (`null`) so `updateStatus` (which fires first in the same drop) keeps ownership of the kanban stage.
+
+**Sequential per-project keys, independent TRI counter:** Story/Task/Bug receive `CODE-NNNNN` keys counted per project (max `Item_Number__c` among non-TRI items in that project + 1). Tickets receive `TRI-NNNNN` keys from a global counter across all Ticket records. The two sequences are fully independent — a Ticket's `Item_Number__c` does not consume a slot in any project's counter, and vice versa. Bulk inserts within a single DML assign sequential, non-colliding keys in the order items appear in `Trigger.new`, using an in-memory counter incremented after each assignment.
+
+**TRI exclusion from project counter via range comparison:** `getMaxItemNumberByProject` uses `(Ticket_Key__c < 'TRI-' OR Ticket_Key__c > 'TRI-99999')` to exclude TRI-keyed items rather than `NOT (Ticket_Key__c LIKE 'TRI-%')`. The VS Code SOQL parser rejects `NOT` and `NOT LIKE` in aggregate query `WHERE` clauses; standard comparison operators achieve the same result. Project codes that sort alphabetically before `TRI-` (e.g. `ABC`, `ORG`) satisfy `< 'TRI-'`; codes that sort after `TRI-99999` (e.g. `TST`, `ZAP`) satisfy `> 'TRI-99999'`. The range `TRI-00001` through `TRI-99999` is excluded precisely.
+
+**Cascade on `Project_Code__c` change:** Setting a code on a previously-codeless Project does not fire triggers on existing child Story/Task/Bug records — those items' parents (Epics) have not changed. `WorkItemTriggerHandler.afterUpdate` detects `Project_Code__c` changes on Project records and calls `WorkItemService.cascadeKeysToProjectChildren` to retroactively assign project-sequence keys to any children that were created before the code was set, or whose TRI key should be replaced with a project-sequence key (typically items that were Ticket-approved into a codeless project).
