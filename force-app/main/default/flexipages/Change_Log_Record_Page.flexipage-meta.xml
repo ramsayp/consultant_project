@@ -189,7 +189,6 @@
         <name>detailTabContent</name>
         <type>Facet</type>
     </flexiPageRegions>
-    <!-- Staged Technical Body -->
     <flexiPageRegions>
         <itemInstances>
             <fieldInstance>
@@ -201,7 +200,7 @@
                 <identifier>RecordStaged_Technical_Body_cField</identifier>
             </fieldInstance>
         </itemInstances>
-        <name>Facet-1a2b3c4d-5e6f-7890-abcd-ef1234567890</name>
+        <name>Facet-782a5d3f-ea87-49d9-b45f-72f02c4cd6a8</name>
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
@@ -209,13 +208,13 @@
             <componentInstance>
                 <componentInstanceProperties>
                     <name>body</name>
-                    <value>Facet-1a2b3c4d-5e6f-7890-abcd-ef1234567890</value>
+                    <value>Facet-782a5d3f-ea87-49d9-b45f-72f02c4cd6a8</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:column</componentName>
-                <identifier>flexipage_column_stg_tech</identifier>
+                <identifier>flexipage_column8</identifier>
             </componentInstance>
         </itemInstances>
-        <name>Facet-2b3c4d5e-6f7a-8901-bcde-f01234567891</name>
+        <name>Facet-e9c22f6e-dea9-40c1-b001-feb7ce94550a</name>
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
@@ -223,7 +222,7 @@
             <componentInstance>
                 <componentInstanceProperties>
                     <name>columns</name>
-                    <value>Facet-2b3c4d5e-6f7a-8901-bcde-f01234567891</value>
+                    <value>Facet-e9c22f6e-dea9-40c1-b001-feb7ce94550a</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>horizontalAlignment</name>
@@ -234,13 +233,12 @@
                     <value>Staged</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:fieldSection</componentName>
-                <identifier>flexipage_fieldSection_stg_tech</identifier>
+                <identifier>flexipage_fieldSection5</identifier>
             </componentInstance>
         </itemInstances>
-        <name>Facet-3c4d5e6f-7a8b-9012-cdef-012345678912</name>
+        <name>Facet-82ab3692-e855-4ccb-be79-8775993b6790</name>
         <type>Facet</type>
     </flexiPageRegions>
-    <!-- Staged User Body -->
     <flexiPageRegions>
         <itemInstances>
             <fieldInstance>
@@ -252,7 +250,7 @@
                 <identifier>RecordStaged_User_Body_cField</identifier>
             </fieldInstance>
         </itemInstances>
-        <name>Facet-4d5e6f7a-8b9c-0123-def0-123456789abc</name>
+        <name>Facet-8e0fcbf8-5324-472a-b55f-c42f8a0f9aee</name>
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
@@ -260,13 +258,13 @@
             <componentInstance>
                 <componentInstanceProperties>
                     <name>body</name>
-                    <value>Facet-4d5e6f7a-8b9c-0123-def0-123456789abc</value>
+                    <value>Facet-8e0fcbf8-5324-472a-b55f-c42f8a0f9aee</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:column</componentName>
-                <identifier>flexipage_column_stg_user</identifier>
+                <identifier>flexipage_column9</identifier>
             </componentInstance>
         </itemInstances>
-        <name>Facet-5e6f7a8b-9c0d-1234-ef01-234567890bcd</name>
+        <name>Facet-17a93b09-da64-4715-a800-4d0142514dc9</name>
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
@@ -274,7 +272,7 @@
             <componentInstance>
                 <componentInstanceProperties>
                     <name>columns</name>
-                    <value>Facet-5e6f7a8b-9c0d-1234-ef01-234567890bcd</value>
+                    <value>Facet-17a93b09-da64-4715-a800-4d0142514dc9</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>horizontalAlignment</name>
@@ -285,13 +283,52 @@
                     <value>Staged</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:fieldSection</componentName>
-                <identifier>flexipage_fieldSection_stg_user</identifier>
+                <identifier>flexipage_fieldSection6</identifier>
             </componentInstance>
         </itemInstances>
-        <name>Facet-6f7a8b9c-0d1e-2345-f012-34567890cdef</name>
+        <name>Facet-04d5e477-2677-42cf-8f6a-1fc36eaf375d</name>
         <type>Facet</type>
     </flexiPageRegions>
-    <!-- Technical Doc Removed -->
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-82ab3692-e855-4ccb-be79-8775993b6790</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>label</name>
+                    <value>Technical New Doc</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>name</name>
+                    <value>accordionSection1</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:accordionSection</componentName>
+                <identifier>flexipage_accordionSection</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-04d5e477-2677-42cf-8f6a-1fc36eaf375d</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>label</name>
+                    <value>User New Doc</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>name</name>
+                    <value>accordionSection2</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:accordionSection</componentName>
+                <identifier>flexipage_accordionSection2</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-3f8085ce-294c-497c-b22a-26fc039d0720</name>
+        <type>Facet</type>
+    </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
             <fieldInstance>
@@ -342,7 +379,6 @@
         <name>Facet-9c0d1e2f-3a4b-5678-2345-67890abcdef0</name>
         <type>Facet</type>
     </flexiPageRegions>
-    <!-- Technical Doc Added -->
     <flexiPageRegions>
         <itemInstances>
             <fieldInstance>
@@ -393,7 +429,6 @@
         <name>Facet-2f3a4b5c-6d7e-8901-5678-90abcdef0123</name>
         <type>Facet</type>
     </flexiPageRegions>
-    <!-- User Doc Removed -->
     <flexiPageRegions>
         <itemInstances>
             <fieldInstance>
@@ -444,7 +479,6 @@
         <name>Facet-5c6d7e8f-9a0b-1234-89ab-cdef01234567</name>
         <type>Facet</type>
     </flexiPageRegions>
-    <!-- User Doc Added -->
     <flexiPageRegions>
         <itemInstances>
             <fieldInstance>
@@ -495,44 +529,7 @@
         <name>Facet-8f9a0b1c-2d3e-4567-bcde-f01234567890</name>
         <type>Facet</type>
     </flexiPageRegions>
-    <!-- Accordion sections (6 sections: 2 staged + 4 diff) -->
     <flexiPageRegions>
-        <itemInstances>
-            <componentInstance>
-                <componentInstanceProperties>
-                    <name>body</name>
-                    <value>Facet-3c4d5e6f-7a8b-9012-cdef-012345678912</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>label</name>
-                    <value>Staged Technical</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>name</name>
-                    <value>accordionSection_stg_tech</value>
-                </componentInstanceProperties>
-                <componentName>flexipage:accordionSection</componentName>
-                <identifier>flexipage_accordionSection_stg_tech</identifier>
-            </componentInstance>
-        </itemInstances>
-        <itemInstances>
-            <componentInstance>
-                <componentInstanceProperties>
-                    <name>body</name>
-                    <value>Facet-6f7a8b9c-0d1e-2345-f012-34567890cdef</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>label</name>
-                    <value>Staged User</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>name</name>
-                    <value>accordionSection_stg_user</value>
-                </componentInstanceProperties>
-                <componentName>flexipage:accordionSection</componentName>
-                <identifier>flexipage_accordionSection_stg_user</identifier>
-            </componentInstance>
-        </itemInstances>
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
@@ -609,6 +606,23 @@
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>accordionSections</name>
+                    <value>Facet-3f8085ce-294c-497c-b22a-26fc039d0720</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:accordion</componentName>
+                <identifier>flexipage_accordion2</identifier>
+                <visibilityRule>
+                    <criteria>
+                        <leftValue>{!Record.Status__c}</leftValue>
+                        <operator>NE</operator>
+                        <rightValue>Published</rightValue>
+                    </criteria>
+                </visibilityRule>
+            </componentInstance>
+        </itemInstances>
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
