@@ -46,6 +46,10 @@ Salesforce is the source of truth for `docs/technical/` and `docs/user/`. Users 
 | `docs/user/documentation-guide.md`           | `documentation-user`           | Documentation App — User Guide           |
 | `docs/user/project-management-guide.md`      | `project-management-user`      | Project Management App — User Guide      |
 
+## Salesforce Formula Rules
+
+**RTA field blank check** — `ISBLANK()` and `ISNULL()` do not work on Rich Text Area (HTML) fields in Salesforce validation rules or formula fields. `ISBLANK` always returns `false` for RTA fields regardless of content. Use `LEN(fieldName) > 0` instead.
+
 ## Workflow
 
 **After every `git commit`**, report outcome explicitly:
