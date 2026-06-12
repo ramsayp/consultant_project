@@ -30,24 +30,24 @@ Tracked fields (field history): Folder, Body, Title (Name), Owner.
 Immutable event record. Auto-number name: `CL-{0000}`. No field history tracking.
 Two Record Types: **Initial** (first-time doc creation) and **Update** (subsequent changes).
 
-| Field                      | Type                        | Label                   | Notes                                                                                                             |
-| -------------------------- | --------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `Name`                     | AutoNumber                  | Change Log Number       | Format: `CL-{0000}`                                                                                               |
-| `Title__c`                 | Text(255)                   | Title                   | **Required.** One-line description of the change                                                                  |
-| `Summary__c`               | Html (32,768)               | Summary                 | Full detail: what changed, why, caveats, follow-ups                                                               |
-| `Technical_Doc__c`         | Lookup → Documentation\_\_c | Technical Doc           | Which Technical doc was created/updated. `deleteConstraint: SetNull`                                              |
-| `Work_Item__c`             | Lookup → Work_Item\_\_c     | Work Item               | What triggered this change. `deleteConstraint: SetNull`                                                           |
-| `Changed_By__c`            | Lookup → User               | Changed By              | Human responsible. Separate from record owner. `deleteConstraint: SetNull`                                        |
-| `Change_Date__c`           | DateTime                    | Change Date             | When applied. Can be backdated                                                                                    |
-| `Environment__c`           | Picklist                    | Environment             | Scratch Org (default) / Sandbox / Production                                                                      |
-| `Status__c`                | Picklist                    | Status                  | Draft (default) / Reviewed / Published. Release Agent sets to Published                                           |
-| `Version__c`               | Text(20)                    | Version                 | e.g. "v1.2", "Sprint 4", "2026-05-21"                                                                             |
-| `Staged_Technical_Body__c` | Html (32,768)               | Staged Technical Body   | Complete new Technical doc body written by Docs Agent. Release Agent publishes this to `Technical_Doc__c.Body__c` |
-| `Staged_User_Body__c`      | Html (32,768)               | Staged User Body        | Complete new User doc body written by Docs Agent. Release Agent publishes this to the linked User doc `Body__c`   |
-| `Technical_Doc_Removed__c` | Html (32,768)               | Technical Doc (Removed) | Content removed from the Technical doc in this change. Populated by Docs Agent                                    |
-| `Technical_Doc_Added__c`   | Html (32,768)               | Technical Doc (Added)   | Content added to the Technical doc in this change. Populated by Docs Agent                                        |
-| `User_Doc_Removed__c`      | Html (32,768)               | User Doc (Removed)      | Content removed from the User doc in this change. Populated by Docs Agent                                         |
-| `User_Doc_Added__c`        | Html (32,768)               | User Doc (Added)        | Content added to the User doc in this change. Populated by Docs Agent                                             |
+| Field                      | Type                        | Label                   | Notes                                                                                                                                    |
+| -------------------------- | --------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `Name`                     | AutoNumber                  | Change Log Number       | Format: `CL-{0000}`                                                                                                                      |
+| `Title__c`                 | Text(255)                   | Title                   | **Required.** One-line description of the change                                                                                         |
+| `Summary__c`               | Html (32,768)               | Summary                 | Full detail: what changed, why, caveats, follow-ups                                                                                      |
+| `Technical_Doc__c`         | Lookup → Documentation\_\_c | Technical Doc           | Which Technical doc was created/updated. `deleteConstraint: SetNull`                                                                     |
+| `Work_Item__c`             | Lookup → Work_Item\_\_c     | Work Item               | What triggered this change. `deleteConstraint: SetNull`                                                                                  |
+| `Changed_By__c`            | Lookup → User               | Changed By              | Human responsible. Separate from record owner. `deleteConstraint: SetNull`                                                               |
+| `Change_Date__c`           | DateTime                    | Change Date             | When applied. Can be backdated                                                                                                           |
+| `Environment__c`           | Picklist                    | Environment             | Scratch Org (default) / Sandbox / Production                                                                                             |
+| `Status__c`                | Picklist                    | Status                  | Draft (default) / Reviewed / Published. Release Agent sets to Published                                                                  |
+| `Version__c`               | Text(20)                    | Version                 | e.g. "v1.2", "Sprint 4", "2026-05-21"                                                                                                    |
+| `Staged_Technical_Body__c` | Html (32,768)               | Staged Technical Body   | Complete new Technical doc body written by Docs Agent. Release Agent publishes this to `Technical_Doc__c.Body__c` then clears this field |
+| `Staged_User_Body__c`      | Html (32,768)               | Staged User Body        | Complete new User doc body written by Docs Agent. Release Agent publishes this to the linked User doc `Body__c` then clears this field   |
+| `Technical_Doc_Removed__c` | Html (32,768)               | Technical Doc (Removed) | Content removed from the Technical doc in this change. Populated by Docs Agent                                                           |
+| `Technical_Doc_Added__c`   | Html (32,768)               | Technical Doc (Added)   | Content added to the Technical doc in this change. Populated by Docs Agent                                                               |
+| `User_Doc_Removed__c`      | Html (32,768)               | User Doc (Removed)      | Content removed from the User doc in this change. Populated by Docs Agent                                                                |
+| `User_Doc_Added__c`        | Html (32,768)               | User Doc (Added)        | Content added to the User doc in this change. Populated by Docs Agent                                                                    |
 
 ---
 
@@ -99,6 +99,18 @@ No-op trigger. The before-snapshot logic (auto-populating `_Before__c` fields) w
 
 ---
 
+## Validation Rules
+
+### `Change_Log__c`
+
+| Rule                                 | Active | Error condition                                                                                                         | Error message                                                               |
+| ------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `Staged_Docs_Cleared_When_Published` | Yes    | `AND(ISPICKVAL(Status__c, "Published"), OR(NOT(ISBLANK(Staged_Technical_Body__c)), NOT(ISBLANK(Staged_User_Body__c))))` | Staged documentation fields must be blank when the Change Log is Published. |
+
+Enforces that the Release Agent clears staged fields in the same call that sets `Status__c = Published`. Prevents stale staged content persisting after a release.
+
+---
+
 ## Lightning Pages
 
 ### `Documentation_Record_Page`
@@ -115,11 +127,11 @@ Related User Doc / Related Technical Doc shown in Detail via visibility rules (S
 
 ### `Change_Log_Record_Page`
 
-| Tab              | Contents                                                                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Detail (default) | Details section (Title, Change Date, CL Number, Version); Summary section (Summary\_\_c); sidebar: Related (Technical Doc, Work Item) |
-| Guides           | Accordion: Staged Technical / Staged User / Technical Removed / Technical Added / User Removed / User Added                           |
-| Settings         | Ownership (Changed By, Last Modified By, Created By, Owner)                                                                           |
+| Tab              | Contents                                                                                                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Detail (default) | Details section (Title, Change Date, CL Number, Version); Summary section (Summary\_\_c); sidebar: Related (Technical Doc, Work Item)                                                                        |
+| Guides           | Two accordions: (1) **Staged docs** (hidden when `Status__c = Published`) — sections: Technical New Doc, User New Doc; (2) **Diff** — sections: Technical Removed, Technical Added, User Removed, User Added |
+| Settings         | Ownership (Changed By, Last Modified By, Created By, Owner)                                                                                                                                                  |
 
 Header actions: Edit, Delete, Clone, Change Owner.
 
@@ -166,6 +178,8 @@ Current tracked docs:
 
 **Change Log as staging area** — the Docs Agent writes the complete new doc content to `Staged_Technical_Body__c` and `Staged_User_Body__c` on the Change Log. The Release Agent publishes these staged fields to `Documentation__c.Body__c` at release time. This ensures documentation is only visible to users after the release is approved.
 
+**Staged docs cleared on publish** — when the Release Agent publishes a Change Log, it clears `Staged_Technical_Body__c` and `Staged_User_Body__c` atomically in the same call that sets `Status__c = Published`. A validation rule (`Staged_Docs_Cleared_When_Published`) enforces that staged fields cannot be non-null on a Published Change Log. The Lightning Record Page hides the staged-docs accordion once Published, so no empty sections are visible to users.
+
 **Diff fields are explicit, not automatic** — `Technical_Doc_Removed__c` / `Technical_Doc_Added__c` / `User_Doc_Removed__c` / `User_Doc_Added__c` are populated by the Docs Agent to describe what changed. There is no trigger-based snapshot mechanism.
 
 ---
@@ -194,5 +208,5 @@ Two-phase agentic workflow:
 2. Reads `Staged_Technical_Body__c` from the Change Log
 3. Updates `Technical_Doc__c.Body__c` with the staged content via MCP
 4. If `Staged_User_Body__c` is set, updates the linked User doc's `Body__c`
-5. Sets `Change_Log__c.Status__c = Published`
+5. Sets `Change_Log__c.Status__c = Published` and clears `Staged_Technical_Body__c` and `Staged_User_Body__c` in a **single atomic `updateSobjectRecord` call** — a validation rule (`Staged_Docs_Cleared_When_Published`) blocks staged fields from being non-null when Published, so they must be cleared in the same call. If this update fails, a `Comment__c` is created on the Work Item and the item remains in `Releasing`.
 6. Updates `Work_Item__c.Status__c = Done`
