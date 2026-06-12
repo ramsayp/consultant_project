@@ -104,14 +104,19 @@ Create a Change Log whenever a meaningful change is made to the documentation �
 
 ### The Guides tab
 
-The **Guides** tab on a Change Log shows before-and-after snapshots of the documentation:
+The **Guides** tab on a Change Log shows what documentation changed. It has two sections:
 
-- **Before Technical** — what the Technical doc said before the change (captured automatically when the Change Log was created)
-- **After Technical** — what the Technical doc says after the change (filled in once edits are complete)
-- **Before User** — same for the companion User doc
-- **After User** — same for the companion User doc after
+**Staged docs** — visible while the Change Log is in Draft or Reviewed state. Shows the new documentation that is queued to go live when the Change Log is published:
 
-The Before snapshots are captured automatically the moment a Change Log is created — no action needed. The After snapshots are filled in once the documentation has been updated.
+- **Technical New Doc** — the new content for the Technical documentation record
+- **User New Doc** — the new content for the companion User guide (if applicable)
+
+Once the Change Log is Published, this section is hidden automatically — the content has been pushed to the live documentation records and the staged copies are cleared.
+
+**Diff summary** — always visible. Shows what was removed and what was added compared to the previous version:
+
+- **Technical Removed** / **Technical Added**
+- **User Removed** / **User Added** (if applicable)
 
 ---
 
