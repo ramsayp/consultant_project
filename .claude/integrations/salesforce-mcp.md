@@ -88,6 +88,30 @@ Restart Claude Code after auth completes if the server still shows as disconnect
 
 ---
 
+## Usage patterns
+
+### Record Type — always pre-query for Id
+
+Relationship notation (`"RecordType": {"DeveloperName": "Update"}`) is rejected by the Salesforce API:
+
+> "DeveloperName is not an External ID or indexed field for RecordType"
+
+Always pre-query first:
+
+```soql
+SELECT Id FROM RecordType WHERE SobjectType = 'Change_Log__c' AND DeveloperName = 'Update'
+```
+
+Then pass the explicit `RecordTypeId` in the create payload.
+
+### Large Rich Text Area fields — two-step create then update
+
+The Salesforce API silently drops Rich Text Area field content on `createSobjectRecord` when the payload is large — the create returns `201 Created` with no error, but querying the record shows the field as null.
+
+Fix: create the record with metadata fields only, then call `updateSobjectRecord` on the new record Id to set the Rich Text Area fields. Long Text Area fields are not affected by this.
+
+---
+
 ## Troubleshooting / dead ends
 
 | Symptom                                    | Cause                                                        | Fix                                                                            |

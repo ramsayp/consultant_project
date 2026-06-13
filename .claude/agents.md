@@ -2,26 +2,37 @@
 
 ## Agent Routing — Session Start Rule
 
-At the start of every session, read the user's input and determine the agent role:
+**Step 1 — Pre-flight query. Do this before reading any further.**
 
-| User input                                                      | Agent role                                | Detail file                                                |
-| --------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------- |
-| Provides a Ticket in Triage (idea / bug needing classification) | **BA Agent**                              | [agents/ba-agent.md](agents/ba-agent.md)                   |
-| Provides a Backlog / `To Do` item to build                      | **Dev Agent**                             | [agents/dev-agent.md](agents/dev-agent.md)                 |
-| Says code is ready, or item is `In Code Review`                 | **Code Review Agent**                     | [agents/code-review-agent.md](agents/code-review-agent.md) |
-| Item is in `Testing` (human phase)                              | Acknowledge and wait — not Claude's stage |                                                            |
-| Says testing passed, or item is `Documenting`                   | **Docs Agent**                            | [agents/docs-agent.md](agents/docs-agent.md)               |
-| Says docs are done, or item is `Releasing`                      | **Release Agent**                         | [agents/release-agent.md](agents/release-agent.md)         |
+```
+SELECT Id, Name, Status__c, Triage_Status__c, Sprint__c, Acceptance_Criteria__c, Triage_Notes__c,
+       RecordType.DeveloperName
+FROM Work_Item__c WHERE Id = '<id>'
+```
 
-**Pre-flight — before any other action:**
+**Step 2 — Determine your role from the record state, not the user's message.**
 
-1. Query the `Work_Item__c` record via MCP:
-   ```
-   SELECT Id, Name, Status__c, Triage_Status__c, Sprint__c, Acceptance_Criteria__c, Triage_Notes__c
-   FROM Work_Item__c WHERE Id = '<id>'
-   ```
-2. Use the returned `Status__c` and `Triage_Status__c` as the authoritative current state. Never assume the status matches what the user said or what the routing table above suggests — the user may have already moved the item, or a previous agent may have updated it.
-3. Then read the relevant agent detail file and proceed.
+> ⚠️ The user's message is context for your work — it is not the routing trigger. A user describing implementation details, sharing screenshots, or explaining a technical problem does not mean Dev Agent applies. Only the SF record state decides.
+
+**If `RecordType.DeveloperName = 'Ticket'` — route on `Triage_Status__c`:**
+
+| `Triage_Status__c`          | Agent role                                            | Detail file                              |
+| --------------------------- | ----------------------------------------------------- | ---------------------------------------- |
+| `Not Started` or `Declined` | **BA Agent**                                          | [agents/ba-agent.md](agents/ba-agent.md) |
+| `Reviewing` or `Reviewed`   | BA Agent in progress — check Comment\_\_c for context |                                          |
+| `Approved`                  | Human moves item to Backlog — not Claude's action     |                                          |
+
+**All other record types — route on `Status__c`:**
+
+| `Status__c`      | Agent role                                | Detail file                                                |
+| ---------------- | ----------------------------------------- | ---------------------------------------------------------- |
+| `To Do`          | **Dev Agent**                             | [agents/dev-agent.md](agents/dev-agent.md)                 |
+| `In Code Review` | **Code Review Agent**                     | [agents/code-review-agent.md](agents/code-review-agent.md) |
+| `Testing`        | Acknowledge and wait — not Claude's stage |                                                            |
+| `Documenting`    | **Docs Agent**                            | [agents/docs-agent.md](agents/docs-agent.md)               |
+| `Releasing`      | **Release Agent**                         | [agents/release-agent.md](agents/release-agent.md)         |
+
+**Step 3 — Read the agent detail file for the matched role, then proceed.**
 
 ---
 

@@ -5,11 +5,8 @@
 ### Tooling & efficiency
 
 - [Trust your own edits](feedback/tooling/trust_your_own_edits.md) — don't re-read files you just wrote, don't stage files to pre-check length limits, don't run anonymous Apex/temp scripts to answer simple questions — just attempt the operation
-- [Prefer MCP for all SF data ops](feedback/tooling/prefer_mcp_over_anon_apex.md) — MCP is the first and only choice for any SF read/write; not just over Apex scripts but also over PowerShell REST API and sf CLI data commands; createSobjectRecord handles large string payloads fine
-- [MCP minimal access principle](feedback/tooling/mcp_minimal_access.md) — only activate MCP servers actively needed; deactivate everything else; bare minimal access
+- [MCP usage rules](feedback/tooling/mcp_usage.md) — reads fire without asking, writes need narration; always prefer MCP over Apex scripts or REST workarounds; Record Type pre-query pattern; Rich Text Area two-step create pattern
 - [Search all name variants on rename](feedback/tooling/search_variations.md) — grep hyphenated, spaced, title-cased, and camelCased forms; one pattern misses others
-- [MCP read tools need no confirmation](feedback/tooling/mcp_read_no_confirm.md) — soqlQuery, getObjectSchema, getRelatedRecords etc. always fire without asking; only write/mutate ops need narration
-- [MCP createSobjectRecord patterns](feedback/tooling/mcp_sobject_create_patterns.md) — RecordType: always pre-query for Id (relationship notation rejected); Rich Text Area fields: create with metadata only, then updateSobjectRecord separately (SF silently drops large RTA content on create)
 
 ### Communication & transparency
 
@@ -33,9 +30,14 @@
 - [LWC Jest module mocking patterns](feedback/testing/lwc_jest_module_mocking.md) — what works on Windows with sfdx-lwc-jest (imperative vs wire, moduleNameMapper, schema .default)
 - [LWC stub components go in **stubs**/](feedback/testing/lwc_stub_pattern.md) — multi-file LWC stubs (.html+.js) must live in **stubs**/, not **mocks**/; haste-map duplicate-mock bug breaks lint-staged --findRelatedTests
 
+### Agent routing
+
+- [Route from record state, not user message](feedback/agents/routing_from_record_state.md) — pre-flight is a hard gate; if Record Type = Ticket route on Triage_Status**c, otherwise route on Status**c; never from user message content
+
 ### Memory system
 
 - [Memory dual-save rule](feedback/meta/memory_dual_save.md) — always write memory files to both machine path and .claude/memory/ in repo; repo copy survives machine reformat; restore by copying back on new machine
+- [No abbreviations in memory](feedback/meta/no_abbreviations_in_memory.md) — always write the full term; abbreviations are ambiguous when read cold in a future session
 
 ## project/
 
