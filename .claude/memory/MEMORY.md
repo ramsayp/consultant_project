@@ -36,6 +36,7 @@
 
 ### Memory system
 
+- [Memory hygiene](feedback/meta/memory_hygiene.md) — merge-before-create; one file per domain not per incident; 200-line MEMORY.md hard cap; recency wins for contradictions; what never belongs in memory
 - [Memory dual-save rule](feedback/meta/memory_dual_save.md) — always write memory files to both machine path and .claude/memory/ in repo; repo copy survives machine reformat; restore by copying back on new machine
 - [No abbreviations in memory](feedback/meta/no_abbreviations_in_memory.md) — always write the full term; abbreviations are ambiguous when read cold in a future session
 
