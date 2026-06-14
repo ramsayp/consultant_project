@@ -25,6 +25,12 @@ MCP is the first and only choice for any Salesforce data read or write. Do not u
 
 Reserve non-MCP routes only for things MCP genuinely cannot do: governor-limit-sensitive bulk DML across tens of thousands of records, or transactional all-or-nothing semantics across many objects in a single Apex context.
 
+## Apex classes for custom MCP servers must be global
+
+`@InvocableMethod` classes appear in Flow Builder with `public` access, but the Salesforce API Catalog (which powers the MCP server Add Tools dialog) requires `global with sharing`. A `public` class will never appear in the Add Tools picker no matter how long you wait. Always declare MCP tool classes as `global with sharing class`.
+
+**Why:** API Catalog indexes across namespace boundaries; `public` is not visible at that scope.
+
 ## Record creation patterns
 
 **Record Type — always pre-query for Id.** Relationship notation (`"RecordType": {"DeveloperName": "Update"}`) is rejected by the Salesforce API with "DeveloperName is not an External ID or indexed field for RecordType". Pre-query: `SELECT Id FROM RecordType WHERE SobjectType = '...' AND DeveloperName = '...'` and pass the explicit `RecordTypeId` in the create payload.
