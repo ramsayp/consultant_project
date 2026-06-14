@@ -29,4 +29,6 @@ Reserve non-MCP routes only for things MCP genuinely cannot do: governor-limit-s
 
 **Record Type — always pre-query for Id.** Relationship notation (`"RecordType": {"DeveloperName": "Update"}`) is rejected by the Salesforce API with "DeveloperName is not an External ID or indexed field for RecordType". Pre-query: `SELECT Id FROM RecordType WHERE SobjectType = '...' AND DeveloperName = '...'` and pass the explicit `RecordTypeId` in the create payload.
 
-**Large Rich Text Area fields — two-step create then update.** The Salesforce API silently drops Rich Text Area content on `createSobjectRecord` when payloads are large — the create returns 201 success with no error, but the field is null on the created record. Fix: create with metadata fields only, then call `updateSobjectRecord` on the new record Id to set the Rich Text Area fields. Long Text Area fields are not affected.
+**Comment**c Body**c — always plain text.** The `workItemComments` LWC renders `Body__c` as plain text (no `lightning-formatted-rich-text` or `lwc:inner-html`). Writing HTML tags to the field stores them literally and they appear as raw tag text in the UI. Always write plain text to `Comment__c.Body__c`.
+
+**Large Rich Text Area fields on other objects — two-step create then update.** For RTA fields on objects other than Comment\_\_c: the Salesforce API can silently drop RTA content on `createSobjectRecord` when payloads are large. Fix: create with metadata fields only, then call `updateSobjectRecord` on the new record Id to set the RTA fields. Long Text Area fields are not affected.
