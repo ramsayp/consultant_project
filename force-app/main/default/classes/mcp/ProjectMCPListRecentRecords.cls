@@ -1,4 +1,4 @@
-public with sharing class ProjectMCPListRecentRecords {
+global with sharing class ProjectMCPListRecentRecords {
   public class Input {
     @InvocableVariable(
       required=true

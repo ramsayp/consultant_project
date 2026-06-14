@@ -1,4 +1,4 @@
-public with sharing class ProjectMCPUpdateRecord {
+global with sharing class ProjectMCPUpdateRecord {
   public class Input {
     @InvocableVariable(
       required=true

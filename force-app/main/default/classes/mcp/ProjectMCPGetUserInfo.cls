@@ -1,4 +1,4 @@
-public with sharing class ProjectMCPGetUserInfo {
+global with sharing class ProjectMCPGetUserInfo {
   public class Output {
     @InvocableVariable
     public String userId;

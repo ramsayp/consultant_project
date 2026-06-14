@@ -1,4 +1,4 @@
-public with sharing class ProjectMCPGetObjectSchema {
+global with sharing class ProjectMCPGetObjectSchema {
   public class Input {
     @InvocableVariable(
       description='Comma-separated object API names. If omitted, returns schema for all six project custom objects.'

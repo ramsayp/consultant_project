@@ -1,4 +1,4 @@
-public with sharing class ProjectMCPSOQLQuery {
+global with sharing class ProjectMCPSOQLQuery {
   public class Input {
     @InvocableVariable(
       required=true

@@ -1,4 +1,4 @@
-public with sharing class ProjectMCPGetRelatedRecords {
+global with sharing class ProjectMCPGetRelatedRecords {
   public class Input {
     @InvocableVariable(required=true description='Parent record Id.')
     public String parentId;

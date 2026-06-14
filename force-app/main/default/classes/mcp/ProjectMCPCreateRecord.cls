@@ -1,4 +1,4 @@
-public with sharing class ProjectMCPCreateRecord {
+global with sharing class ProjectMCPCreateRecord {
   public class Input {
     @InvocableVariable(
       required=true
