@@ -1,5 +1,5 @@
 global with sharing class ProjectMCPSOQLQuery {
-  public class Input {
+  global class Input {
     @InvocableVariable(
       required=true
       description='SOQL query to execute. Only the project custom objects are permitted: Work_Item__c, Sprint__c, Documentation__c, Change_Log__c, Comment__c, Folder__c.'
@@ -7,7 +7,7 @@ global with sharing class ProjectMCPSOQLQuery {
     public String query;
   }
 
-  public class Output {
+  global class Output {
     @InvocableVariable
     public String records;
     @InvocableVariable
@@ -22,7 +22,7 @@ global with sharing class ProjectMCPSOQLQuery {
     label='Execute SOQL Query'
     description='Executes a SOQL query restricted to the six project custom objects. Returns results as a JSON string.'
   )
-  public static List<Output> execute(List<Input> inputs) {
+  global static List<Output> execute(List<Input> inputs) {
     List<Output> results = new List<Output>();
     for (Input inp : inputs) {
       Output out = new Output();

@@ -1,5 +1,5 @@
 global with sharing class ProjectMCPGetUserInfo {
-  public class Output {
+  global class Output {
     @InvocableVariable
     public String userId;
     @InvocableVariable
@@ -20,7 +20,7 @@ global with sharing class ProjectMCPGetUserInfo {
     label='Get User Info'
     description='Returns identity information for the currently authenticated Salesforce user.'
   )
-  public static List<Output> execute(List<String> inputs) {
+  global static List<Output> execute(List<String> inputs) {
     Output out = new Output();
     try {
       User u = [

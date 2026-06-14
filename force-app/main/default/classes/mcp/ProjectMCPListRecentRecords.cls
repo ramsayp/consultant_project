@@ -1,5 +1,5 @@
 global with sharing class ProjectMCPListRecentRecords {
-  public class Input {
+  global class Input {
     @InvocableVariable(
       required=true
       description='API name of the object to list recent records for. Must be one of: Work_Item__c, Sprint__c, Documentation__c, Change_Log__c, Comment__c, Folder__c.'
@@ -13,7 +13,7 @@ global with sharing class ProjectMCPListRecentRecords {
     public Integer recordLimit;
   }
 
-  public class Output {
+  global class Output {
     @InvocableVariable
     public String records;
     @InvocableVariable
@@ -28,7 +28,7 @@ global with sharing class ProjectMCPListRecentRecords {
     label='List Recent Sobject Records'
     description='Returns the most recently modified records for a project custom object, ordered by LastModifiedDate descending.'
   )
-  public static List<Output> execute(List<Input> inputs) {
+  global static List<Output> execute(List<Input> inputs) {
     List<Output> results = new List<Output>();
     for (Input inp : inputs) {
       Output out = new Output();

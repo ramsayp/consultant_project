@@ -1,5 +1,5 @@
 global with sharing class ProjectMCPUpdateRecord {
-  public class Input {
+  global class Input {
     @InvocableVariable(
       required=true
       description='Salesforce record Id to update.'
@@ -12,7 +12,7 @@ global with sharing class ProjectMCPUpdateRecord {
     public String fieldsJson;
   }
 
-  public class Output {
+  global class Output {
     @InvocableVariable
     public Boolean success;
     @InvocableVariable
@@ -23,7 +23,7 @@ global with sharing class ProjectMCPUpdateRecord {
     label='Update Sobject Record'
     description='Updates an existing record. The record must belong to one of the project custom objects: Work_Item__c, Sprint__c, Documentation__c, Change_Log__c, Comment__c, Folder__c.'
   )
-  public static List<Output> execute(List<Input> inputs) {
+  global static List<Output> execute(List<Input> inputs) {
     List<Output> results = new List<Output>();
     for (Input inp : inputs) {
       Output out = new Output();

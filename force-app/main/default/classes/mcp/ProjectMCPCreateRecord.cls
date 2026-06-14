@@ -1,5 +1,5 @@
 global with sharing class ProjectMCPCreateRecord {
-  public class Input {
+  global class Input {
     @InvocableVariable(
       required=true
       description='API name of the object to create a record for. Must be one of: Work_Item__c, Sprint__c, Documentation__c, Change_Log__c, Comment__c, Folder__c.'
@@ -12,7 +12,7 @@ global with sharing class ProjectMCPCreateRecord {
     public String fieldsJson;
   }
 
-  public class Output {
+  global class Output {
     @InvocableVariable
     public String recordId;
     @InvocableVariable
@@ -25,7 +25,7 @@ global with sharing class ProjectMCPCreateRecord {
     label='Create Sobject Record'
     description='Creates a record for a project custom object. Allowed objects: Work_Item__c, Sprint__c, Documentation__c, Change_Log__c, Comment__c, Folder__c.'
   )
-  public static List<Output> execute(List<Input> inputs) {
+  global static List<Output> execute(List<Input> inputs) {
     List<Output> results = new List<Output>();
     for (Input inp : inputs) {
       Output out = new Output();

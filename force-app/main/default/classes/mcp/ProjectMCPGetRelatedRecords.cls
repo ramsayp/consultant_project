@@ -1,5 +1,5 @@
 global with sharing class ProjectMCPGetRelatedRecords {
-  public class Input {
+  global class Input {
     @InvocableVariable(required=true description='Parent record Id.')
     public String parentId;
     @InvocableVariable(
@@ -20,7 +20,7 @@ global with sharing class ProjectMCPGetRelatedRecords {
     public Integer recordLimit;
   }
 
-  public class Output {
+  global class Output {
     @InvocableVariable
     public String records;
     @InvocableVariable
@@ -35,7 +35,7 @@ global with sharing class ProjectMCPGetRelatedRecords {
     label='Get Related Records'
     description='Returns child records for a parent record. Both the parent and child objects must be project custom objects.'
   )
-  public static List<Output> execute(List<Input> inputs) {
+  global static List<Output> execute(List<Input> inputs) {
     List<Output> results = new List<Output>();
     for (Input inp : inputs) {
       Output out = new Output();

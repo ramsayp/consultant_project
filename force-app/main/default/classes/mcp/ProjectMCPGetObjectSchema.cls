@@ -1,12 +1,12 @@
 global with sharing class ProjectMCPGetObjectSchema {
-  public class Input {
+  global class Input {
     @InvocableVariable(
       description='Comma-separated object API names. If omitted, returns schema for all six project custom objects.'
     )
     public String objects;
   }
 
-  public class Output {
+  global class Output {
     @InvocableVariable
     public String schema;
     @InvocableVariable
@@ -19,7 +19,7 @@ global with sharing class ProjectMCPGetObjectSchema {
     label='Get Object Schema'
     description='Returns field-level schema for project custom objects. Call with no parameters to get all six objects, or pass a comma-separated list of names.'
   )
-  public static List<Output> execute(List<Input> inputs) {
+  global static List<Output> execute(List<Input> inputs) {
     List<Output> results = new List<Output>();
     for (Input inp : inputs) {
       Output out = new Output();
