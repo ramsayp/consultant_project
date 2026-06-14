@@ -25,11 +25,21 @@ MCP is the first and only choice for any Salesforce data read or write. Do not u
 
 Reserve non-MCP routes only for things MCP genuinely cannot do: governor-limit-sensitive bulk DML across tens of thousands of records, or transactional all-or-nothing semantics across many objects in a single Apex context.
 
-## Apex classes for custom MCP servers must be global
+## Apex classes for custom MCP servers must be fully global
 
-`@InvocableMethod` classes appear in Flow Builder with `public` access, but the Salesforce API Catalog (which powers the MCP server Add Tools dialog) requires `global with sharing`. A `public` class will never appear in the Add Tools picker no matter how long you wait. Always declare MCP tool classes as `global with sharing class`.
+`@InvocableMethod` classes appear in Flow Builder with `public` access, but the Salesforce API Catalog (which powers the MCP server Add Tools dialog) requires `global` everywhere — outer class, inner Input/Output classes, and the execute method. Anything less and the class will never appear in the Add Tools picker. The correct pattern (confirmed against the Salesforce reference implementation `headless-apex-mcp-tool`):
 
-**Why:** API Catalog indexes across namespace boundaries; `public` is not visible at that scope.
+```apex
+global with sharing class ProjectMCPXxx {
+  global class Input { ... }
+  global class Output { ... }
+
+  @InvocableMethod(label='...' description='...')
+  global static List<Output> execute(List<Input> inputs) { ... }
+}
+```
+
+**Why:** API Catalog indexes across namespace boundaries; `public` is not visible at that scope. Inner classes and the method must also be `global` for the schema to be generated and surfaced.
 
 ## Record creation patterns
 
