@@ -59,6 +59,19 @@ private class ProjectMCPSOQLQuery_Test {
   }
 
   @isTest
+  static void execute_recordTypeQuery_succeeds() {
+    ProjectMCPSOQLQuery.Input inp = new ProjectMCPSOQLQuery.Input();
+    inp.query = 'SELECT Id, DeveloperName FROM RecordType WHERE SObjectType = \'Sprint__c\' LIMIT 1';
+
+    List<ProjectMCPSOQLQuery.Output> results = ProjectMCPSOQLQuery.execute(
+      new List<ProjectMCPSOQLQuery.Input>{ inp }
+    );
+
+    System.assertEquals(true, results[0].success);
+    System.assertNotEquals(null, results[0].records);
+  }
+
+  @isTest
   static void execute_multipleInputs_returnsOneResultEach() {
     ProjectMCPSOQLQuery.Input inp1 = new ProjectMCPSOQLQuery.Input();
     inp1.query = 'SELECT Id FROM Sprint__c LIMIT 1';

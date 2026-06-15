@@ -2,7 +2,7 @@ global with sharing class ProjectMCPSOQLQuery {
   global class Input {
     @InvocableVariable(
       required=true
-      description='SOQL query to execute. Only the project custom objects are permitted: Work_Item__c, Sprint__c, Documentation__c, Change_Log__c, Comment__c, Folder__c.'
+      description='SOQL query to execute. Project custom objects and RecordType are permitted: Work_Item__c, Sprint__c, Documentation__c, Change_Log__c, Comment__c, Folder__c, RecordType.'
     )
     public String query;
   }
@@ -28,7 +28,7 @@ global with sharing class ProjectMCPSOQLQuery {
       Output out = new Output();
       try {
         String fromObj = ProjectMCPUtils.extractFromObject(inp.query);
-        ProjectMCPUtils.validateObject(fromObj);
+        ProjectMCPUtils.validateQueryObject(fromObj);
         List<SObject> records = Database.query(inp.query);
         out.records = JSON.serialize(records);
         out.totalSize = records.size();

@@ -31,7 +31,7 @@ private class ProjectMCPUtils_Test {
     Boolean threw = false;
     try {
       ProjectMCPUtils.validateObject('Account');
-    } catch (AuraHandledException e) {
+    } catch (IllegalArgumentException e) {
       threw = true;
     }
     System.assertEquals(true, threw, 'Should throw for a non-project object');
@@ -42,7 +42,7 @@ private class ProjectMCPUtils_Test {
     Boolean threw = false;
     try {
       ProjectMCPUtils.validateObject('');
-    } catch (AuraHandledException e) {
+    } catch (IllegalArgumentException e) {
       threw = true;
     }
     System.assertEquals(true, threw, 'Should throw for blank input');
@@ -53,10 +53,38 @@ private class ProjectMCPUtils_Test {
     Boolean threw = false;
     try {
       ProjectMCPUtils.validateObject(null);
-    } catch (AuraHandledException e) {
+    } catch (IllegalArgumentException e) {
       threw = true;
     }
     System.assertEquals(true, threw, 'Should throw for null input');
+  }
+
+  // ── validateQueryObject ───────────────────────────────────────────────────
+
+  @isTest
+  static void validateQueryObject_recordType_noException() {
+    Boolean threw = false;
+    try {
+      ProjectMCPUtils.validateQueryObject('RecordType');
+    } catch (Exception e) {
+      threw = true;
+    }
+    System.assertEquals(
+      false,
+      threw,
+      'RecordType should be permitted for queries'
+    );
+  }
+
+  @isTest
+  static void validateQueryObject_disallowedObject_throwsException() {
+    Boolean threw = false;
+    try {
+      ProjectMCPUtils.validateQueryObject('Account');
+    } catch (IllegalArgumentException e) {
+      threw = true;
+    }
+    System.assertEquals(true, threw);
   }
 
   // ── extractFromObject ─────────────────────────────────────────────────────
