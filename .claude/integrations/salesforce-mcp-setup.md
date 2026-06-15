@@ -179,10 +179,13 @@ Use Pattern B when the method requires no input at all (e.g., `ProjectMCPGetUser
 
 ## Troubleshooting / dead ends
 
-| Symptom                                    | Cause                                                        | Fix                                                                            |
-| ------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `{"errors":[{"message":"Invalid token"}]}` | JWT flag not enabled on the ECA                              | Turn on "Issue JWT-based access tokens" in Setup                               |
-| `error=redirect_uri_mismatch`              | Callback URL in ECA doesn't match                            | Set callback URL to exactly `http://localhost:38000/callback`                  |
-| Server connects but tools fail immediately | Opaque token cached from before JWT was enabled              | Clear token from `~/.claude.json` and re-authenticate                          |
-| Server missing after `claude mcp add`      | Windows duplicate key bug                                    | Copy `mcpServers` block to both `c:/...` and `C:/...` keys in `~/.claude.json` |
-| `mcp-remote` proxy approach                | Two Windows bugs: PKCE race condition + missing `expires_in` | Use `--transport http` (Claude Code's native transport) instead                |
+| Symptom                                    | Cause                                                            | Fix                                                                            |
+| ------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `{"errors":[{"message":"Invalid token"}]}` | JWT flag not enabled on the ECA                                  | Turn on "Issue JWT-based access tokens" in Setup                               |
+| `error=redirect_uri_mismatch`              | Callback URL in ECA doesn't match                                | Set callback URL to exactly `http://localhost:38000/callback`                  |
+| Server connects but tools fail immediately | Opaque token cached from before JWT was enabled                  | Clear token from `~/.claude.json` and re-authenticate                          |
+| Server missing after `claude mcp add`      | Windows duplicate key bug                                        | Copy `mcpServers` block to both `c:/...` and `C:/...` keys in `~/.claude.json` |
+| `mcp-remote` proxy approach                | Two Windows bugs: PKCE race condition + missing `expires_in`     | Use `--transport http` (Claude Code's native transport) instead                |
+| `complete_authentication` tool fails       | Loses OAuth state between turns — "No OAuth flow is in progress" | Do not use; let Claude Code's native OAuth handler run on first connection     |
+| ECA scope deploy fails                     | Lowercase scope names (`refresh_token`, `mcp_api`) rejected      | ECA metadata requires display names: `RefreshToken, MCP`                       |
+| Auth prompt opens then fails silently      | Registering `sobject-all` alongside custom server                | Shared `clientId` causes OAuth context interference — remove `sobject-all`     |
