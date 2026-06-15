@@ -2,6 +2,8 @@
 
 This file defines where new knowledge belongs. Read it before adding any file to `.claude/`.
 
+> **Before creating or updating any memory file, read [`.claude/memory/meta/memory_system.md`](memory/meta/memory_system.md).**
+
 ---
 
 ## Always-in-context (@-imported from CLAUDE.md)
