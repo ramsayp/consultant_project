@@ -1,122 +1,103 @@
 ---
 name: reference_salesforce_hosted_mcp_setup
-description: "Complete working setup for connecting Salesforce Hosted MCP (sobject-all) to Claude Code — what's required, what failed, what worked"
+description: "Complete working setup for connecting the custom salesforce-project-doc MCP server to Claude Code — object allowlist, Apex tools, what's required, what failed"
 metadata:
   node_type: memory
   type: reference
   originSessionId: 8930ac2c-c768-45b2-9fcc-a7bcfdf57de3
 ---
 
-# Salesforce Hosted MCP → Claude Code: Complete Setup
+# Salesforce Custom MCP Server → Claude Code: Complete Setup
 
-Took a full session to get working. This records every step so it can be repeated without pain.
+The `salesforce-sobject-all` platform server is **deactivated** — it had unrestricted access to all org objects and no metadata type to restrict it. The replacement is a custom Apex-backed server (`salesforce-project-doc`) that enforces a 6-object allowlist.
+
+Full setup guide: `docs/technical/mcp-setup-guide.md` (`Claude_Doc_Id__c`: `mcp-setup-technical`).
 
 ---
 
 ## What it gives you
 
-9 CRUD + SOQL tools (`createSobjectRecord`, `updateSobjectRecord`, `soqlQuery`, `find`, `getObjectSchema`, `getRelatedRecords`, `getUserInfo`, `listRecentSobjectRecords`, `updateRelatedRecord`) running against your live Salesforce org, authenticated as your user, respecting FLS and sharing rules.
+7 tools backed by Apex `@InvocableMethod` classes, restricted to: `Work_Item__c`, `Sprint__c`, `Documentation__c`, `Change_Log__c`, `Comment__c`, `Folder__c`. `RecordType` is additionally permitted for SOQL queries only.
+
+Server name in Claude Code: `salesforce-project-doc`  
+Endpoint: `https://api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall`
 
 ---
 
-## Part 1 — Salesforce Setup: External Client App
+## Part 1 — Salesforce: External Client App
 
-**Use the new ECA metadata type, NOT a legacy Connected App.**
+Same ECA as before — no changes needed. OAuth settings must still have:
 
-The External Client App lives in Setup → Integrations → External Client Apps (or deploy via metadata).
-
-### Metadata files
-
-`force-app/main/default/externalClientApps/Claude_MCP.eca-meta.xml`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<ExternalClientApplication xmlns="http://soap.sforce.com/2006/04/metadata">
-  <label>Claude MCP</label>
-  <orgScopedExternalApp>YOUR_ORG_ID:Claude_MCP</orgScopedExternalApp>
-</ExternalClientApplication>
-```
-
-`force-app/main/default/extlClntAppOauthSettings/Claude_MCP_oauth.ecaOauth-meta.xml`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<ExtlClntAppOauthSettings xmlns="http://soap.sforce.com/2006/04/metadata">
-  <commaSeparatedOauthScopes>RefreshToken, MCP</commaSeparatedOauthScopes>
-  <externalClientApplication>Claude_MCP</externalClientApplication>
-  <isFirstPartyAppEnabled>false</isFirstPartyAppEnabled>
-  <label>Claude_MCP_oauth</label>
-</ExtlClntAppOauthSettings>
-```
-
-### Critical OAuth settings (in Setup UI)
-
-| Setting                               | Value                             | Why                                                                                                                                                                |
-| ------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Callback URL                          | `http://localhost:38000/callback` | Exact match — Claude Code listens on port 38000                                                                                                                    |
-| Require secret for Web Server Flow    | **OFF**                           | Claude Code uses PKCE, no secret                                                                                                                                   |
-| Require secret for Refresh Token Flow | **OFF**                           | Same reason                                                                                                                                                        |
-| Require PKCE                          | **ON**                            | Claude Code always sends PKCE                                                                                                                                      |
-| Issue JWT-based access tokens         | **ON**                            | ⚠️ CRITICAL — `api.salesforce.com` validates tokens locally as JWTs; opaque session tokens (`00D...`) are rejected with `{"errors":[{"message":"Invalid token"}]}` |
+| Setting                                          | Value                                                          |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| Callback URL                                     | `http://localhost:38000/callback`                              |
+| Require secret for Web Server/Refresh Token Flow | **OFF**                                                        |
+| Require PKCE                                     | **ON**                                                         |
+| Issue JWT-based access tokens                    | **ON** (CRITICAL — `api.salesforce.com` rejects opaque tokens) |
 
 ---
 
-## Part 2 — Claude Code Setup
-
-### Add the server (run once in PowerShell in VS Code)
+## Part 2 — Salesforce: Deploy Apex Tool Classes + Server Setup
 
 ```powershell
-claude mcp add --transport http salesforce-sobject-all https://api.salesforce.com/platform/mcp/v1/platform/sobject-all
+sf project deploy start --source-dir force-app/main/default/classes/mcp --ignore-conflicts
 ```
 
-This writes to `~/.claude.json` under the current project key. The resulting config:
+Then in Setup → MCP Servers → `project-doc-object-all`: Add all 7 `ProjectMCP*` Apex actions → Activate.  
+The `McpServer` metadata type is not CLI-deployable — this step is always UI-only.
+
+---
+
+## Part 3 — Claude Code: Register the Server
+
+```powershell
+claude mcp add --transport http salesforce-project-doc https://api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall
+```
+
+`claude mcp add` does **not** write the `oauth` block for custom servers — add it manually to `~/.claude.json`:
 
 ```json
-"salesforce-sobject-all": {
+"salesforce-project-doc": {
   "type": "http",
-  "url": "https://api.salesforce.com/platform/mcp/v1/platform/sobject-all",
+  "url": "https://api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall",
   "oauth": {
-    "clientId": "YOUR_ECA_CONSUMER_KEY",
+    "clientId": "<Consumer Key from Setup → Claude MCP → OAuth Settings>",
     "callbackPort": 38000
   }
 }
 ```
 
-### ⚠️ Windows duplicate key bug
+Also set this once at the **global** level in `~/.claude.json` (not inside a project key):
 
-`~/.claude.json` stores project settings under the project path as a key. On Windows, `claude mcp add` may write under `C:/...` (uppercase) while Claude Code reads from `c:/...` (lowercase) — two different keys. Check `~/.claude.json` and copy the `mcpServers` block to both keys.
+```json
+"tengu_mcp_retry_failed_remote": true
+```
+
+Without it, Claude Code silently drops the connection on any failure and does not retry.
+
+### Windows duplicate key bug
+
+`claude mcp add` writes under `C:/...` (uppercase) while Claude Code reads from `c:/...` (lowercase). Apply the `oauth` block to **both** path variants in `~/.claude.json`.
 
 ---
 
-## Part 3 — Authentication
+## Part 4 — Authentication
 
-On first use, Claude Code's OAuth handler takes over automatically:
-
-1. Claude Code starts the MCP server connection
-2. A browser opens to Salesforce login (standard OAuth)
-3. After login + consent, Salesforce redirects to `http://localhost:38000/callback`
-4. Claude Code's local server catches it, exchanges the code for a JWT token
-5. Browser shows: **"Authentication Successful. You can close this window. Return to Claude Code."**
-6. Token is stored in `~/.claude.json` — no action needed
-
-Restart Claude Code after auth completes if the server shows as disconnected.
+Same as before — Claude Code's native OAuth handler opens a browser on first use.  
+`http://localhost:38000/callback` → JWT token stored in `~/.claude.json`. No restart needed.
 
 ---
 
 ## What failed / dead ends
 
-| Approach                                                           | Problem                                                                                                                                                                                              |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mcp-remote` proxy (`--transport sse`)                             | Two Windows bugs: PKCE race condition (`invalid code verifier`), missing `expires_in` field in Salesforce token response (tokens treated as immediately expired). Patching the npx cache is fragile. |
-| Opaque session token (no JWT flag)                                 | `api.salesforce.com` gateway validates tokens locally as JWTs. Opaque Salesforce session tokens fail with `{"errors":[{"message":"Invalid token"}]}`                                                 |
-| `mcp__...__authenticate` + `complete_authentication` tools         | The in-server OAuth flow tools lose their state between Claude Code turns — `complete_authentication` fails with "No OAuth flow is in progress". Claude Code's native transport handles auth better. |
-| Wrong callback URL (`/oauth/callback`, etc.)                       | Must be exactly `http://localhost:38000/callback`                                                                                                                                                    |
-| `commaSeparatedOauthScopes` with lowercase `refresh_token mcp_api` | Salesforce ECA metadata wants the display names: `RefreshToken, MCP`                                                                                                                                 |
-
----
-
-## Ongoing notes
-
-- Scopes: `RefreshToken + MCP` — do not expand without documented reason ([[feedback_mcp_minimal_access]])
-- This server is the **only** hosted MCP server that should be active — see [[reference_salesforce_hosted_mcp_setup]] → [[feedback_mcp_minimal_access]]
-- ECA metadata is in `force-app/main/default/externalClientApps/` and `extlClntAppOauthSettings/` — commit these
+| Approach                                           | Problem                                                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `salesforce-sobject-all` platform server           | Deactivated — unrestricted org access, no per-object restriction metadata                   |
+| `mcp-remote` proxy (`--transport sse`)             | Windows: PKCE race condition + missing `expires_in` in token response                       |
+| Opaque session token (JWT flag OFF)                | `api.salesforce.com` rejects non-JWT tokens with `{"errors":[{"message":"Invalid token"}]}` |
+| `complete_authentication` tool                     | Loses OAuth state between turns — fails with "No OAuth flow is in progress"                 |
+| Wrong callback URL                                 | Must be exactly `http://localhost:38000/callback`                                           |
+| Lowercase scope names (`refresh_token`, `mcp_api`) | ECA metadata requires display names: `RefreshToken, MCP`                                    |
+| Omitting `oauth` block after `claude mcp add`      | Auth prompts never appear — custom server adds no `oauth` block automatically               |
+| Registering `sobject-all` alongside custom server  | Shared `clientId` causes OAuth context interference                                         |
+| `tengu_mcp_retry_failed_remote: false` (default)   | Connection drops silently; tools disappear until ToolSearch forces reconnect                |
