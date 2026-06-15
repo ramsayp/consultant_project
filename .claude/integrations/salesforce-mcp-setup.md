@@ -103,15 +103,15 @@ Use the **ECA metadata type** (not a legacy Connected App).
 Run once in PowerShell in VS Code:
 
 ```powershell
-claude mcp add --transport http salesforce-sobject-all https://api.salesforce.com/platform/mcp/v1/platform/sobject-all
+claude mcp add --transport http salesforce-project-doc https://api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall
 ```
 
 This writes to `~/.claude.json`. The resulting entry:
 
 ```json
-"salesforce-sobject-all": {
+"salesforce-project-doc": {
   "type": "http",
-  "url": "https://api.salesforce.com/platform/mcp/v1/platform/sobject-all",
+  "url": "https://api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall",
   "oauth": {
     "clientId": "<ECA consumer key>",
     "callbackPort": 38000
