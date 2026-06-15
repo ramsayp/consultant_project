@@ -1,8 +1,60 @@
 # Salesforce Hosted MCP — Setup Guide
 
-Connects Claude Code to the Salesforce Hosted MCP `sobject-all` server, giving 9 CRUD + SOQL tools running against the live org as your authenticated user.
+Connects Claude Code to a Salesforce Hosted MCP custom server restricted to the 6 project custom objects, running against the live org as your authenticated user.
 
 For access policy and approved servers, see [`.claude/security/mcp.md`](../security/mcp.md).
+
+---
+
+## Active server — `salesforce-project-doc`
+
+Custom Apex-backed MCP server (`project-doc-object-all`) replacing the unrestricted `sobject-all` platform server. `sobject-all` is **deactivated** in Setup → MCP Servers.
+
+**Server URL:** `https://api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall`
+
+**Allowed objects:**
+
+| Object API Name    | Purpose                                                         |
+| ------------------ | --------------------------------------------------------------- |
+| `Work_Item__c`     | Projects, Epics, Stories, Tasks, Bugs, Chapters, Steps, Tickets |
+| `Sprint__c`        | Sprint records (incl. Backlog sprint)                           |
+| `Documentation__c` | Technical + User docs                                           |
+| `Change_Log__c`    | Append-only doc change events                                   |
+| `Comment__c`       | Work item comment threads                                       |
+| `Folder__c`        | Documentation folders                                           |
+
+**Tool name mapping** (tool IDs as they appear in Claude Code context):
+
+| Tool                                                                                       | Replaces (sobject-all)     | Notes                                   |
+| ------------------------------------------------------------------------------------------ | -------------------------- | --------------------------------------- |
+| `mcp__salesforce-project-doc__ProjectMCPSOQLQueryapex_ProjectMCPSOQLQuery`                 | `soqlQuery`                | Validates FROM clause against allowlist |
+| `mcp__salesforce-project-doc__ProjectMCPCreateRecordapex_ProjectMCPCreateRecord`           | `createSobjectRecord`      | Validates `objectApiName`               |
+| `mcp__salesforce-project-doc__ProjectMCPUpdateRecordapex_ProjectMCPUpdateRecord`           | `updateSobjectRecord`      | Derives object type from record ID      |
+| `mcp__salesforce-project-doc__ProjectMCPGetObjectSchemaapex_ProjectMCPGetObjectSchema`     | `getObjectSchema`          | Defaults to all 6 objects if blank      |
+| `mcp__salesforce-project-doc__ProjectMCPGetRelatedRecordsapex_ProjectMCPGetRelatedRecords` | `getRelatedRecords`        | Validates both parent and child objects |
+| `mcp__salesforce-project-doc__ProjectMCPListRecentRecordsapex_ProjectMCPListRecentRecords` | `listRecentSobjectRecords` | Orders by `LastModifiedDate DESC`       |
+| `mcp__salesforce-project-doc__ProjectMCPGetUserInfoapex_ProjectMCPGetUserInfo`             | `getUserInfo`              | No object restriction (identity-only)   |
+
+**Apex source:** `force-app/main/default/classes/mcp/`
+
+**Note on McpServer metadata type:** `sf project retrieve start --metadata "McpServer:project-doc-object-all"` fails — the type is not supported by the CLI. Custom MCP server configuration (tool assignments, activation) is UI-only in Setup → MCP Servers. There is no deployable metadata for it.
+
+### Registration in `~/.claude.json`
+
+```json
+"salesforce-project-doc": {
+  "type": "http",
+  "url": "https://api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall",
+  "oauth": {
+    "clientId": "<ECA consumer key — same as sobject-all>",
+    "callbackPort": 38000
+  }
+}
+```
+
+`claude mcp add` may not include the `oauth` block when adding a custom server. If auth fails, add the `oauth` block manually (same `clientId` and `callbackPort` as any other server using the same ECA). Apply the Windows duplicate key fix (both `c:/...` and `C:/...`) as usual.
+
+If the browser auth prompt does not open automatically, call the `mcp__salesforce-project-doc__authenticate` tool — it returns the OAuth URL to open manually.
 
 ---
 

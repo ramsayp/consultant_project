@@ -2,29 +2,47 @@
 
 ## Overview
 
-The Salesforce Hosted MCP (Model Context Protocol) server gives Claude Code read/write access to the live Salesforce org. This enables Claude to query records, create and update objects, and inspect schemas — all within a single agentic session, respecting field-level security and sharing rules.
+The Salesforce Hosted MCP (Model Context Protocol) integration gives Claude Code read/write access to the live Salesforce org, restricted to the 6 project custom objects. Claude can query records, create and update data, and inspect schemas — all within a single agentic session, respecting field-level security and sharing rules.
 
-**Server in use:** `salesforce-sobject-all`  
-**Endpoint:** `https://api.salesforce.com/platform/mcp/v1/platform/sobject-all`  
-**Transport:** HTTP (native Claude Code transport — not SSE/mcp-remote)
+**Server in use:** `salesforce-project-doc`  
+**Endpoint:** `https://api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall`  
+**Transport:** HTTP (native Claude Code transport)  
+**Type:** Custom Apex-backed server — replaces the deactivated `salesforce-sobject-all` platform server
+
+---
+
+## Object Allowlist
+
+All 7 tools enforce this allowlist. Any operation targeting an object outside it returns an error identifying the disallowed object.
+
+| Object API Name    | Purpose                                                         |
+| ------------------ | --------------------------------------------------------------- |
+| `Work_Item__c`     | Projects, Epics, Stories, Tasks, Bugs, Chapters, Steps, Tickets |
+| `Sprint__c`        | Sprint records (incl. Backlog sprint)                           |
+| `Documentation__c` | Technical + User docs                                           |
+| `Change_Log__c`    | Append-only doc change events                                   |
+| `Comment__c`       | Work item comment threads                                       |
+| `Folder__c`        | Documentation folders                                           |
+
+`RecordType` is additionally permitted for SOQL queries only — needed for the RecordTypeId pre-query pattern on record creates.
 
 ---
 
 ## Available Tools
 
-The server exposes 9 tools:
+7 tools, each backed by an Apex `@InvocableMethod` class in `force-app/main/default/classes/mcp/`:
 
-| Tool                       | Purpose                                  |
-| -------------------------- | ---------------------------------------- |
-| `soqlQuery`                | Execute arbitrary SOQL                   |
-| `find`                     | Search records by keyword                |
-| `getObjectSchema`          | Describe an object's fields and metadata |
-| `getRelatedRecords`        | Fetch child records via a relationship   |
-| `getUserInfo`              | Return the authenticated user's info     |
-| `listRecentSobjectRecords` | Recently viewed records for an object    |
-| `createSobjectRecord`      | Insert a new record                      |
-| `updateSobjectRecord`      | Update an existing record by ID          |
-| `updateRelatedRecord`      | Update a record via a relationship path  |
+| Tool (Claude Code name suffix)   | Apex class                        | Purpose                     | Restriction                                    |
+| -------------------------------- | --------------------------------- | --------------------------- | ---------------------------------------------- |
+| `...ProjectMCPSOQLQuery`         | `ProjectMCPSOQLQuery.cls`         | Execute SOQL                | All FROM clauses validated; `__r` names exempt |
+| `...ProjectMCPCreateRecord`      | `ProjectMCPCreateRecord.cls`      | Insert a record             | `objectApiName` validated                      |
+| `...ProjectMCPUpdateRecord`      | `ProjectMCPUpdateRecord.cls`      | Update a record by ID       | Object type derived from record ID             |
+| `...ProjectMCPGetObjectSchema`   | `ProjectMCPGetObjectSchema.cls`   | Describe object fields      | Defaults to all 6 objects if blank             |
+| `...ProjectMCPGetRelatedRecords` | `ProjectMCPGetRelatedRecords.cls` | Fetch child records         | Both parent and child objects validated        |
+| `...ProjectMCPListRecentRecords` | `ProjectMCPListRecentRecords.cls` | Recently modified records   | `objectApiName` validated                      |
+| `...ProjectMCPGetUserInfo`       | `ProjectMCPGetUserInfo.cls`       | Authenticated user identity | No restriction (identity-only)                 |
+
+Full tool ID prefix: `mcp__salesforce-project-doc__` — e.g. `mcp__salesforce-project-doc__ProjectMCPSOQLQueryapex_ProjectMCPSOQLQuery`.
 
 All operations run as the authenticated user — FLS and sharing rules apply.
 
@@ -37,20 +55,24 @@ Claude Code (VS Code)
     │
     │  HTTP + PKCE OAuth
     ▼
-api.salesforce.com/platform/mcp/v1/platform/sobject-all
+api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall
     │
     │  JWT-validated token
     ▼
-Salesforce Org (External Client App: Claude MCP)
+Apex @InvocableMethod classes (ProjectMCP*)
+    │
+    │  with sharing + object allowlist
+    ▼
+Project custom objects only
 ```
 
 Authentication uses OAuth 2.0 with PKCE. The gateway at `api.salesforce.com` validates tokens locally as JWTs — opaque Salesforce session tokens are rejected.
 
 ---
 
-## Part 1 — Salesforce Setup: External Client App
+## Part 1 — Salesforce: External Client App
 
-The integration uses the **External Client App (ECA)** metadata type — not a legacy Connected App.
+The same **External Client App (ECA)** that powered `sobject-all` continues to handle authentication for the custom server. No changes to the ECA metadata are needed.
 
 ### Metadata files
 
@@ -80,104 +102,138 @@ The integration uses the **External Client App (ECA)** metadata type — not a l
 </ExtlClntAppOauthSettings>
 ```
 
-> The `oauthLink` value is generated by Salesforce when the OAuth settings are saved via UI. It cannot be set manually — deploy the ECA first, then configure OAuth in Setup to let Salesforce populate it.
+> The `oauthLink` value is generated by Salesforce when OAuth settings are saved via Setup UI. Deploy the ECA first, then configure OAuth in Setup.
 
 ### OAuth settings (Setup UI)
 
-After deploying the metadata, complete these settings under **Setup → Integrations → External Client Apps → Claude MCP → OAuth Settings**:
+**Setup → Integrations → External Client Apps → Claude MCP → OAuth Settings**
 
-| Setting                               | Value                             | Reason                                                                                                                                          |
-| ------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Callback URL                          | `http://localhost:38000/callback` | Claude Code listens on port 38000 — must be exact                                                                                               |
-| Require secret for Web Server Flow    | **OFF**                           | Claude Code uses PKCE; no client secret involved                                                                                                |
-| Require secret for Refresh Token Flow | **OFF**                           | Same reason                                                                                                                                     |
-| Require PKCE                          | **ON**                            | Claude Code always sends PKCE                                                                                                                   |
-| Issue JWT-based access tokens         | **ON**                            | **Critical.** `api.salesforce.com` validates tokens as JWTs locally. Opaque session tokens fail with `{"errors":[{"message":"Invalid token"}]}` |
+| Setting                               | Value                             | Why                                                                                                                                              |
+| ------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Callback URL                          | `http://localhost:38000/callback` | Claude Code listens on port 38000 — must match exactly                                                                                           |
+| Require secret for Web Server Flow    | **OFF**                           | Claude Code uses PKCE; no client secret                                                                                                          |
+| Require secret for Refresh Token Flow | **OFF**                           | Same                                                                                                                                             |
+| Require PKCE                          | **ON**                            | Claude Code always sends PKCE                                                                                                                    |
+| Issue JWT-based access tokens         | **ON**                            | **Critical** — `api.salesforce.com` validates tokens locally as JWTs. Opaque session tokens fail with `{"errors":[{"message":"Invalid token"}]}` |
 
 ### OAuth scopes
 
 `commaSeparatedOauthScopes` uses the **display names**, not the API names:
 
-| Display name (in metadata) | What it grants                                 |
-| -------------------------- | ---------------------------------------------- |
-| `RefreshToken`             | Allows token refresh without re-authenticating |
-| `MCP`                      | Access to the MCP platform endpoints           |
+| Display name   | What it grants                                 |
+| -------------- | ---------------------------------------------- |
+| `RefreshToken` | Allows token refresh without re-authenticating |
+| `MCP`          | Access to the MCP platform endpoints           |
 
 Lowercase API names (`refresh_token`, `mcp_api`) are rejected by the ECA metadata deployer.
 
 ---
 
-## Part 2 — Claude Code Setup
+## Part 2 — Salesforce: Deploy Apex Tool Classes
 
-### Add the MCP server (run once)
-
-In **PowerShell in VS Code**, from the project directory:
+Deploy the 7 tool classes and their tests to the org:
 
 ```powershell
-claude mcp add --transport http salesforce-sobject-all https://api.salesforce.com/platform/mcp/v1/platform/sobject-all
+sf project deploy start --source-dir force-app/main/default/classes/mcp --ignore-conflicts
 ```
 
-This writes a server entry to `~/.claude.json` under the current project key. The resulting config block looks like:
+All classes are `global with sharing`. Test classes live in `__tests__/` and deploy with the same command (`.forceignore` excludes LWC test files but not Apex test classes).
+
+---
+
+## Part 3 — Salesforce: Custom MCP Server Setup
+
+> **Note:** The `McpServer` metadata type is not supported by the CLI (`sf project retrieve start --metadata "McpServer:..."` fails). Custom MCP server configuration — tool assignments and activation — is UI-only in Setup. There is no deployable metadata for it.
+
+1. Go to **Setup → MCP Servers**
+2. Open `project-doc-object-all`
+3. **Add Tools** → search for each `ProjectMCP*` Apex action and add all 7
+4. Click **Activate**
+
+The server appears in Claude Code as `salesforce-project-doc`.
+
+---
+
+## Part 4 — Claude Code: Register the Server
+
+Run once in **PowerShell in VS Code** from the project directory:
+
+```powershell
+claude mcp add --transport http salesforce-project-doc https://api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall
+```
+
+`claude mcp add` does not write the `oauth` block for custom servers. Add it manually to `~/.claude.json`:
 
 ```json
-"salesforce-sobject-all": {
+"salesforce-project-doc": {
   "type": "http",
-  "url": "https://api.salesforce.com/platform/mcp/v1/platform/sobject-all",
+  "url": "https://api.salesforce.com/platform/mcp/v1/custom/projectdocobjectall",
   "oauth": {
-    "clientId": "YOUR_ECA_CONSUMER_KEY",
+    "clientId": "<Consumer Key from Setup → Claude MCP → OAuth Settings>",
     "callbackPort": 38000
   }
 }
 ```
 
-The `clientId` is the **Consumer Key** from the Claude MCP External Client App in Setup. Claude Code prompts you to enter it when you first run `claude mcp add`.
-
 ### Windows: duplicate key bug
 
-`~/.claude.json` stores per-project settings under the project path as a key. On Windows, `claude mcp add` may write the entry under `C:/...` (uppercase drive letter) while Claude Code reads from `c:/...` (lowercase) — two different keys, so the server appears missing.
+On Windows, `claude mcp add` writes under `C:/...` (uppercase drive letter) while Claude Code reads from `c:/...` (lowercase). Apply the `oauth` block to **both** path key variants in `~/.claude.json`.
 
-**Fix:** Open `~/.claude.json`, find the `mcpServers` block under whichever key was written, and copy it to both the uppercase and lowercase variants of the project path key.
+### Connection stability
+
+Custom MCP servers close their HTTP connection more aggressively than hosted servers. Without retry enabled, Claude Code silently drops the connection and the tools disappear. Set this once at the global level in `~/.claude.json`:
+
+```json
+"tengu_mcp_retry_failed_remote": true
+```
 
 ---
 
-## Part 3 — First-Time Authentication
+## Part 5 — First-Time Authentication
 
-Authentication is handled automatically by Claude Code's native OAuth handler on first use:
+Authentication is handled automatically by Claude Code's native OAuth handler:
 
 1. Claude Code starts the MCP server connection
-2. A browser window opens to the Salesforce login page (standard OAuth)
+2. A browser window opens to the Salesforce login page
 3. Log in and grant consent
 4. Salesforce redirects to `http://localhost:38000/callback`
 5. Claude Code's local listener exchanges the authorisation code for a JWT access token
 6. Browser shows: **"Authentication Successful. You can close this window. Return to Claude Code."**
 7. The token is stored in `~/.claude.json` — no further action needed
 
-If the server shows as disconnected after auth completes, restart Claude Code.
+If the browser does not open automatically, call `mcp__salesforce-project-doc__authenticate` — it returns the OAuth URL to open manually.
 
 ---
 
 ## Ongoing Usage
 
-The MCP server is loaded as a **deferred tool** in Claude Code. It appears in the `system-reminder` block at the start of each conversation and must be activated via `ToolSearch` before its tools can be called.
+The MCP server loads as a **deferred tool** in Claude Code. Call `ToolSearch` with a relevant keyword to activate it. With `tengu_mcp_retry_failed_remote: true`, the connection re-establishes automatically if it drops.
 
-Only activate this server when actively needed. Deactivate it between tasks that don't require Salesforce access. See the minimal access principle in project memory.
-
-Token refresh is handled automatically. No manual re-authentication is needed unless the refresh token expires or is revoked.
+Token refresh is handled automatically. No manual re-authentication is normally needed.
 
 ---
 
 ## What Doesn't Work
 
-| Approach                                                                     | Problem                                                                                                                                                                                                                           |
-| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mcp-remote` proxy (`--transport sse`)                                       | Two Windows-specific bugs: PKCE race condition (`invalid code verifier`) and missing `expires_in` in the Salesforce token response (tokens treated as immediately expired). Patching the npx cache is fragile and not repeatable. |
-| No JWT flag (opaque session token)                                           | `api.salesforce.com` validates tokens locally as JWTs. Standard Salesforce session tokens (starting `00D...`) fail with `{"errors":[{"message":"Invalid token"}]}`                                                                |
-| In-server OAuth tools (`mcp__...__authenticate` + `complete_authentication`) | These tools lose OAuth state between Claude Code turns. `complete_authentication` fails with "No OAuth flow is in progress". Claude Code's native HTTP transport handles the OAuth handshake correctly.                           |
-| Wrong callback URL                                                           | Must be exactly `http://localhost:38000/callback`. Variations (`/oauth/callback`, port 1717, etc.) cause the browser redirect to fail.                                                                                            |
-| Lowercase scope names (`refresh_token mcp_api`)                              | ECA metadata requires the display names: `RefreshToken, MCP`.                                                                                                                                                                     |
+| Approach                                           | Problem                                                                                                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mcp-remote` proxy (`--transport sse`)             | Two Windows bugs: PKCE race condition (`invalid code verifier`) and missing `expires_in` in the token response (tokens treated as expired). |
+| No JWT flag (opaque session token)                 | `api.salesforce.com` validates tokens locally as JWTs. Session tokens fail with `{"errors":[{"message":"Invalid token"}]}`                  |
+| `complete_authentication` tool                     | Loses OAuth state between Claude Code turns — fails with "No OAuth flow is in progress". Native HTTP transport handles auth correctly.      |
+| Wrong callback URL                                 | Must be exactly `http://localhost:38000/callback`. Any variation fails.                                                                     |
+| Lowercase scope names (`refresh_token`, `mcp_api`) | ECA metadata requires display names: `RefreshToken, MCP`.                                                                                   |
+| Omitting `oauth` block after `claude mcp add`      | `claude mcp add` does not write the `oauth` block for custom servers. Auth prompts never appear without it.                                 |
+| `sobject-all` registered alongside custom server   | Shared `clientId` causes OAuth context interference. `sobject-all` is deactivated in Setup and must not be re-registered.                   |
+| `tengu_mcp_retry_failed_remote: false` (default)   | Claude Code silently drops the connection on any failure and does not retry. Tools disappear until ToolSearch forces a reconnect.           |
 
 ---
 
-## Key Design Decision
+## Key Design Decisions
 
-**ECA over legacy Connected App** — The External Client App metadata type is the current Salesforce standard for third-party integrations. Legacy Connected Apps have a different OAuth flow that does not support the `MCP` scope. The ECA approach is source-controlled alongside the rest of the project metadata and deploys cleanly with `sf project deploy start`.
+**Custom server over standard `sobject-all`** — The `sobject-all` server has unrestricted access to all org objects. Salesforce provides no metadata type to configure per-object restrictions on standard servers. A custom Apex-backed server was the only viable approach.
+
+**Apex `@InvocableMethod` over REST** — Custom MCP servers on Salesforce only accept Apex `@InvocableMethod` actions as tools. Each tool is a separate `global` class — Salesforce limits one `@InvocableMethod` per class.
+
+**`validateAllFromObjects` for SOQL security** — The SOQL tool validates every FROM clause in the query. Relationship names ending in `__r` are exempt as they are child traversals bounded by the outer object. This blocks WHERE subquery bypass attempts like `SELECT Id FROM Account WHERE Id IN (SELECT Id FROM Work_Item__c)`.
+
+**ECA over legacy Connected App** — The External Client App metadata type is the current Salesforce standard. Legacy Connected Apps do not support the `MCP` OAuth scope.

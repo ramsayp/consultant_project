@@ -47,4 +47,4 @@
 
 ## reference/
 
-- [Salesforce Hosted MCP setup](reference/salesforce_hosted_mcp_setup.md) — complete working setup for sobject-all → Claude Code: ECA metadata, OAuth settings (JWT required, no secrets, PKCE on, callback port 38000), claude mcp add command, Windows duplicate key bug, and all dead ends
+- [Salesforce Custom MCP setup](reference/salesforce_hosted_mcp_setup.md) — custom salesforce-project-doc server (replaces deactivated sobject-all): 6-object allowlist, 7 Apex tools, manual oauth block, tengu_mcp_retry_failed_remote, Windows key bug, all dead ends
