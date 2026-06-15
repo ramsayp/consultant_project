@@ -87,6 +87,94 @@ private class ProjectMCPUtils_Test {
     System.assertEquals(true, threw);
   }
 
+  // ── validateAllFromObjects ────────────────────────────────────────────────
+
+  @isTest
+  static void validateAllFromObjects_simpleQuery_passes() {
+    Boolean threw = false;
+    try {
+      ProjectMCPUtils.validateAllFromObjects('SELECT Id FROM Work_Item__c');
+    } catch (Exception e) {
+      threw = true;
+    }
+    System.assertEquals(false, threw, 'Simple allowed query should pass');
+  }
+
+  @isTest
+  static void validateAllFromObjects_recordTypeQuery_passes() {
+    Boolean threw = false;
+    try {
+      ProjectMCPUtils.validateAllFromObjects(
+        'SELECT Id FROM RecordType WHERE SObjectType = \'Sprint__c\''
+      );
+    } catch (Exception e) {
+      threw = true;
+    }
+    System.assertEquals(false, threw, 'RecordType should be permitted');
+  }
+
+  @isTest
+  static void validateAllFromObjects_relationshipSubquery_passes() {
+    Boolean threw = false;
+    try {
+      ProjectMCPUtils.validateAllFromObjects(
+        'SELECT Id, (SELECT Id FROM Work_Item_Comments__r) FROM Work_Item__c'
+      );
+    } catch (Exception e) {
+      threw = true;
+    }
+    System.assertEquals(
+      false,
+      threw,
+      'Relationship names ending in __r should be skipped'
+    );
+  }
+
+  @isTest
+  static void validateAllFromObjects_whereSubqueryDisallowedOuter_throws() {
+    Boolean threw = false;
+    try {
+      ProjectMCPUtils.validateAllFromObjects(
+        'SELECT Id FROM Account WHERE Id IN (SELECT Id FROM Work_Item__c)'
+      );
+    } catch (IllegalArgumentException e) {
+      threw = true;
+    }
+    System.assertEquals(
+      true,
+      threw,
+      'Non-project outer FROM should be blocked even with allowed inner subquery'
+    );
+  }
+
+  @isTest
+  static void validateAllFromObjects_whereSubqueryDisallowedInner_throws() {
+    Boolean threw = false;
+    try {
+      ProjectMCPUtils.validateAllFromObjects(
+        'SELECT Id FROM Work_Item__c WHERE OwnerId IN (SELECT Id FROM User)'
+      );
+    } catch (IllegalArgumentException e) {
+      threw = true;
+    }
+    System.assertEquals(
+      true,
+      threw,
+      'Non-project inner FROM in WHERE subquery should be blocked'
+    );
+  }
+
+  @isTest
+  static void validateAllFromObjects_blankSoql_noException() {
+    Boolean threw = false;
+    try {
+      ProjectMCPUtils.validateAllFromObjects('');
+    } catch (Exception e) {
+      threw = true;
+    }
+    System.assertEquals(false, threw, 'Blank input should not throw');
+  }
+
   // ── extractFromObject ─────────────────────────────────────────────────────
 
   @isTest

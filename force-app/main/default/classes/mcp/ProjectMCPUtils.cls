@@ -41,8 +41,27 @@ public with sharing class ProjectMCPUtils {
     }
   }
 
-  // Returns the main (outermost) FROM object in a SOQL string.
-  // Takes the last FROM match so subquery relationship names are skipped.
+  // Validates every FROM clause in a SOQL string against QUERY_ALLOWED_OBJECTS.
+  // Relationship names (ending in __r) are skipped — they are child traversals
+  // bounded by the outer object and cannot reference arbitrary non-project data.
+  // This blocks WHERE subquery bypasses like:
+  //   SELECT Id FROM Account WHERE Id IN (SELECT Id FROM Work_Item__c)
+  // where the outer FROM (Account) would previously be missed by extractFromObject.
+  public static void validateAllFromObjects(String soql) {
+    if (String.isBlank(soql))
+      return;
+    Pattern p = Pattern.compile('(?i)\\bFROM\\s+(\\w+)');
+    Matcher m = p.matcher(soql);
+    while (m.find()) {
+      String obj = m.group(1);
+      if (!obj.endsWith('__r')) {
+        validateQueryObject(obj);
+      }
+    }
+  }
+
+  // Returns the first non-relationship FROM object in a SOQL string.
+  // Used for error reporting; validation should use validateAllFromObjects.
   public static String extractFromObject(String soql) {
     if (String.isBlank(soql))
       return null;

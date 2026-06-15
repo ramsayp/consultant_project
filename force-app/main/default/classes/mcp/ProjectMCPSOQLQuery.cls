@@ -27,8 +27,7 @@ global with sharing class ProjectMCPSOQLQuery {
     for (Input inp : inputs) {
       Output out = new Output();
       try {
-        String fromObj = ProjectMCPUtils.extractFromObject(inp.query);
-        ProjectMCPUtils.validateQueryObject(fromObj);
+        ProjectMCPUtils.validateAllFromObjects(inp.query);
         List<SObject> records = Database.query(inp.query);
         out.records = JSON.serialize(records);
         out.totalSize = records.size();

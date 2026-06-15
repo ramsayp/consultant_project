@@ -72,6 +72,38 @@ private class ProjectMCPSOQLQuery_Test {
   }
 
   @isTest
+  static void execute_whereSubqueryDisallowedOuter_returnsError() {
+    ProjectMCPSOQLQuery.Input inp = new ProjectMCPSOQLQuery.Input();
+    inp.query = 'SELECT Id FROM Account WHERE Id IN (SELECT Id FROM Work_Item__c)';
+
+    List<ProjectMCPSOQLQuery.Output> results = ProjectMCPSOQLQuery.execute(
+      new List<ProjectMCPSOQLQuery.Input>{ inp }
+    );
+
+    System.assertEquals(false, results[0].success);
+    System.assert(
+      results[0].error.contains('not permitted'),
+      'Non-project outer object in WHERE subquery bypass should be blocked'
+    );
+  }
+
+  @isTest
+  static void execute_whereSubqueryDisallowedInner_returnsError() {
+    ProjectMCPSOQLQuery.Input inp = new ProjectMCPSOQLQuery.Input();
+    inp.query = 'SELECT Id FROM Work_Item__c WHERE OwnerId IN (SELECT Id FROM User)';
+
+    List<ProjectMCPSOQLQuery.Output> results = ProjectMCPSOQLQuery.execute(
+      new List<ProjectMCPSOQLQuery.Input>{ inp }
+    );
+
+    System.assertEquals(false, results[0].success);
+    System.assert(
+      results[0].error.contains('not permitted'),
+      'Non-project inner FROM in WHERE subquery should be blocked'
+    );
+  }
+
+  @isTest
   static void execute_multipleInputs_returnsOneResultEach() {
     ProjectMCPSOQLQuery.Input inp1 = new ProjectMCPSOQLQuery.Input();
     inp1.query = 'SELECT Id FROM Sprint__c LIMIT 1';
