@@ -140,27 +140,40 @@ Restart Claude Code after auth completes if the server still shows as disconnect
 
 ---
 
-## Usage patterns
+## MCP connection stability
 
-### Record Type — always pre-query for Id
+Set `tengu_mcp_retry_failed_remote: true` in `~/.claude.json`. The default is `false`, which causes Claude Code to silently drop the connection after any failure and never retry. Custom Salesforce MCP servers (`/custom/` endpoint) close the HTTP connection more aggressively than hosted servers. With retry disabled, every drop requires a manual ToolSearch to trigger reconnection, and after a restart the `authenticate` tool may never appear.
 
-Relationship notation (`"RecordType": {"DeveloperName": "Update"}`) is rejected by the Salesforce API:
+This is a global setting — add it once at the top level of `~/.claude.json`, not inside a project key.
 
-> "DeveloperName is not an External ID or indexed field for RecordType"
+---
 
-Always pre-query first:
+## Apex tool authoring rules
 
-```soql
-SELECT Id FROM RecordType WHERE SobjectType = 'Change_Log__c' AND DeveloperName = 'Update'
+All `ProjectMCP*` classes must be `global` at every level — outer class, inner `Input`/`Output` classes, and the `execute` method. `public` does not appear in the API Catalog's Add Tools picker.
+
+**`@InvocableVariable` rule — Input class must not be empty.** Salesforce rejects an `@InvocableMethod` whose parameter is an `Input` class with zero `@InvocableVariable` fields. This is a silent deploy failure — the class compiles but the tool is rejected when registered.
+
+Two valid patterns:
+
+```apex
+// Pattern A — Input class with at least one field
+global class Input {
+    @InvocableVariable(required=true)
+    global String recordId;
+}
+
+@InvocableMethod(label='...' description='...')
+global static List<Output> execute(List<Input> inputs) { ... }
 ```
 
-Then pass the explicit `RecordTypeId` in the create payload.
+```apex
+// Pattern B — no Input class needed; use List<String> directly
+@InvocableMethod(label='...' description='...')
+global static List<Output> execute(List<String> inputs) { ... }
+```
 
-### Large Rich Text Area fields — two-step create then update
-
-The Salesforce API silently drops Rich Text Area field content on `createSobjectRecord` when the payload is large — the create returns `201 Created` with no error, but querying the record shows the field as null.
-
-Fix: create the record with metadata fields only, then call `updateSobjectRecord` on the new record Id to set the Rich Text Area fields. Long Text Area fields are not affected by this.
+Use Pattern B when the method requires no input at all (e.g., `ProjectMCPGetUserInfo` — identity lookup, no parameters). `List<String>` is a valid `@InvocableMethod` primitive type and avoids the empty-class rejection.
 
 ---
 

@@ -5,7 +5,7 @@
 ### Tooling & efficiency
 
 - [Trust your own edits](feedback/tooling/trust_your_own_edits.md) — don't re-read files you just wrote, don't stage files to pre-check length limits, don't run anonymous Apex/temp scripts to answer simple questions — just attempt the operation
-- [MCP usage rules](feedback/tooling/mcp_usage.md) — reads fire without asking, writes need narration; always prefer MCP over Apex scripts or REST workarounds; Record Type pre-query pattern; Rich Text Area two-step create pattern
+- [Salesforce MCP rules](feedback/tooling/salesforce_mcp_rules.md) — reads fire without asking, writes need narration; always prefer MCP over Apex scripts or REST workarounds; Apex tool authoring patterns; Record Type pre-query; RTA two-step create
 - [Search all name variants on rename](feedback/tooling/search_variations.md) — grep hyphenated, spaced, title-cased, and camelCased forms; one pattern misses others
 
 ### Communication & transparency

@@ -2,7 +2,7 @@
 
 Follows the [core security principle](README.md): bare minimal access.
 
-For setup and configuration, see [`.claude/integrations/salesforce-mcp.md`](../integrations/salesforce-mcp.md).
+For setup and configuration, see [`.claude/integrations/salesforce-mcp-setup.md`](../integrations/salesforce-mcp-setup.md).
 
 ---
 
@@ -56,4 +56,4 @@ The **Claude MCP** External Client App provides OAuth credentials for Claude Cod
 
 Do not expand the scopes on this app without a documented reason.
 
-The required OAuth settings (PKCE, JWT tokens, callback URL, no secrets) are documented in [`.claude/integrations/salesforce-mcp.md`](../integrations/salesforce-mcp.md).
+The required OAuth settings (PKCE, JWT tokens, callback URL, no secrets) are documented in [`.claude/integrations/salesforce-mcp-setup.md`](../integrations/salesforce-mcp-setup.md).
