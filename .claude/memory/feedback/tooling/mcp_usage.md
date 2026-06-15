@@ -41,6 +41,14 @@ global with sharing class ProjectMCPXxx {
 
 **Why:** API Catalog indexes across namespace boundaries; `public` is not visible at that scope. Inner classes and the method must also be `global` for the schema to be generated and surfaced.
 
+## MCP connection stability
+
+**Set `tengu_mcp_retry_failed_remote: true` in `~/.claude.json`.** The default is `false`, which causes Claude Code to silently drop the MCP server connection after any failure and never retry. Custom Salesforce MCP servers (`/custom/` endpoint) close the HTTP connection more aggressively than hosted servers (`/hosted/`). With retry disabled, every drop requires a manual ToolSearch to trigger reconnection, and after a restart the `authenticate` tool may never appear.
+
+**Why:** Changing to `true` causes Claude Code to automatically re-establish the connection, making the server stable across multiple sequential calls and across VS Code restarts without manual re-auth.
+
+**How to apply:** If MCP tools keep disappearing mid-session or the `authenticate` tool doesn't appear after restart, check this setting first. It's a global setting in `~/.claude.json` — only needs to be set once.
+
 ## Record creation patterns
 
 **Record Type — always pre-query for Id.** Relationship notation (`"RecordType": {"DeveloperName": "Update"}`) is rejected by the Salesforce API with "DeveloperName is not an External ID or indexed field for RecordType". Pre-query: `SELECT Id FROM RecordType WHERE SobjectType = '...' AND DeveloperName = '...'` and pass the explicit `RecordTypeId` in the create payload.
