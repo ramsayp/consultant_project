@@ -60,7 +60,7 @@ public with sharing class ProjectMCPUtils {
     }
   }
 
-  // Returns the first non-relationship FROM object in a SOQL string.
+  // Returns the last FROM match in a SOQL string (outer object for relationship queries).
   // Used for error reporting; validation should use validateAllFromObjects.
   public static String extractFromObject(String soql) {
     if (String.isBlank(soql))
