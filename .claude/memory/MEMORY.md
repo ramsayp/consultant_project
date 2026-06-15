@@ -19,6 +19,7 @@
 
 - [Prettier + VS Code XML config for Salesforce](feedback/salesforce/sf_metadata_prettier_xml.md) — exclude xml from Prettier; noGrammar+downloadExternalResources+validation.filters fix; systemId:'' anti-pattern; targetNamespace cascade bug; required field permission set error
 - [Lock app nav personalisation + Lightning Record Pages](feedback/salesforce/app_nav_personalisation.md) — always set isNavPersonalizationDisabled:true on every Lightning App; always create a FlexiPage for every new custom object; human must set org default in Lightning App Builder after deploy
+- [Salesforce platform rules](feedback/salesforce/salesforce_platform_rules.md) — RTA fields: use LEN() > 0 not ISBLANK/ISNULL; growing collection of SF platform gotchas
 
 ### Documentation & Markdown conventions
 
@@ -30,15 +31,17 @@
 - [LWC Jest module mocking patterns](feedback/testing/lwc_jest_module_mocking.md) — what works on Windows with sfdx-lwc-jest (imperative vs wire, moduleNameMapper, schema .default)
 - [LWC stub components go in **stubs**/](feedback/testing/lwc_stub_pattern.md) — multi-file LWC stubs (.html+.js) must live in **stubs**/, not **mocks**/; haste-map duplicate-mock bug breaks lint-staged --findRelatedTests
 
-### Agent routing
-
-- [Route from record state, not user message](feedback/agents/routing_from_record_state.md) — pre-flight is a hard gate; if Record Type = Ticket route on Triage_Status**c, otherwise route on Status**c; never from user message content
-
 ### Memory system
 
 - [Memory system rules](feedback/meta/memory_system.md) — dual-save both locations every time; no abbreviations; merge before create; one file per domain; 200-line MEMORY.md cap; what never belongs in memory
 
 ## project/
+
+### project/feedback/
+
+- [Route from record state, not user message](project/feedback/routing_from_record_state.md) — pre-flight is a hard gate; Work_Item**c: Ticket routes on Triage_Status**c, all others on Status\_\_c; never from user message content
+
+### project/
 
 - [Agent pipeline architecture](project/agent_pipeline.md) — formalised multi-agent SDLC pipeline; BA→Dev→Code Review→Human Test→Docs→Release; routing rules, spike handling, Apex layer standards
 - [Salesforce is source of truth for docs](project/sf_source_of_truth.md) — pull from SF before editing docs/; update repo+SF+Change_Log after; only `Title__c` required on `Change_Log__c`, don't hunt for a `Work_Item__c` to link; Rich Text Area cap is a fixed 32,768 (don't pre-check)

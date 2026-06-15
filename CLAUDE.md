@@ -13,6 +13,7 @@ Both the file and the `MEMORY.md` index must be updated in each location. The re
 
 ---
 
+@.claude/structure.md
 @.claude/agents.md
 @.claude/pipeline.md
 @.claude/standards.md

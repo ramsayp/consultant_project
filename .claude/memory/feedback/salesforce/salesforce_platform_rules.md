@@ -1,6 +1,6 @@
 ---
-name: rta-field-formula-check
-description: ISBLANK and ISNULL do not work on Rich Text Area fields in Salesforce formulas — use LEN() > 0 instead
+name: salesforce_platform_rules
+description: Salesforce platform gotchas — field type quirks, formula limitations, and API constraints that apply to any SF project
 metadata:
   type: feedback
 ---
