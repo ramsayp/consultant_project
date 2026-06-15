@@ -18,6 +18,5 @@ Both the file and the `MEMORY.md` index must be updated in each location. The re
 @.claude/pipeline.md
 @.claude/standards.md
 @.claude/salesforce.md
-@.claude/memory.md
 @.claude/apps/project-management/overview.md
 @.claude/apps/documentation/overview.md
