@@ -662,6 +662,29 @@ private class WorkItemController_Test {
   }
 
   @isTest
+  static void testGetTriageQueue_excludesNonTicketRecordTypes() {
+    Work_Item__c task = new Work_Item__c(
+      Name = 'A task that should not appear',
+      RecordTypeId = wiRtId('Task'),
+      Status__c = 'To Do',
+      Triage_Status__c = 'Not Started'
+    );
+    insert task;
+
+    Test.startTest();
+    List<Work_Item__c> queue = WorkItemController.getTriageQueue();
+    Test.stopTest();
+
+    for (Work_Item__c w : queue) {
+      System.assertNotEquals(
+        task.Id,
+        w.Id,
+        'Non-Ticket work items must not appear in the triage queue'
+      );
+    }
+  }
+
+  @isTest
   static void testApproveTicket() {
     Id ticketId = WorkItemController.createTicket('Approve me', null, 'Medium');
     update new Work_Item__c(

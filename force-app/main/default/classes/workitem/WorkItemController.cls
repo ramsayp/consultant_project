@@ -507,7 +507,13 @@ public with sharing class WorkItemController {
         CreatedDate
       FROM Work_Item__c
       WHERE
-        Triage_Status__c IN ('Not Started', 'Reviewing', 'Reviewed', 'Declined')
+        RecordType.DeveloperName = 'Ticket'
+        AND Triage_Status__c IN (
+          'Not Started',
+          'Reviewing',
+          'Reviewed',
+          'Declined'
+        )
       ORDER BY CreatedDate ASC
     ];
   }
