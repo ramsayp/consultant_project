@@ -1,5 +1,6 @@
 import { createElement } from "lwc";
 import TicketSubmit from "c/ticketSubmit";
+import { publish } from "lightning/messageService";
 
 // ── Apex mocks ──────────────────────────────────────────────────────────────
 jest.mock("@salesforce/apex/WorkItemController.createTicket", () => ({
@@ -84,6 +85,9 @@ describe("handleSubmit", () => {
     expect(createdHandler).toHaveBeenCalledWith(
       expect.objectContaining({ detail: { id: "a00001" } })
     );
+    expect(publish).toHaveBeenCalledWith(undefined, "TicketTriageChannel__c", {
+      ticketId: "a00001"
+    });
   });
 
   it("does not call createTicket when title is empty", async () => {

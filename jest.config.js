@@ -10,6 +10,8 @@ module.exports = {
   moduleNameMapper: {
     "^@salesforce/apex$": "<rootDir>/__mocks__/@salesforce/apex.js",
     "^@salesforce/apex/(.+)$": "<rootDir>/__mocks__/@salesforce/apex/$1.js",
+    "^@salesforce/messageChannel/(.+)$":
+      "<rootDir>/__mocks__/@salesforce/messageChannel/$1.js",
     "^@salesforce/schema/(.+)$": "<rootDir>/__mocks__/@salesforce/schema.js",
     "^lightning/uiRecordApi$": "<rootDir>/__mocks__/lightning/uiRecordApi.js",
     "^@salesforce/user/Id$": "<rootDir>/__mocks__/@salesforce/user/Id.js",

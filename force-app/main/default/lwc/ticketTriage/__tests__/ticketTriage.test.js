@@ -1,5 +1,6 @@
 import { createElement } from "lwc";
 import TicketTriage from "c/ticketTriage";
+import { subscribe, unsubscribe } from "lightning/messageService";
 
 // ── Navigation mock ─────────────────────────────────────────────────────────
 // The engine seals NavigationMixin's prototype once a component is registered,
@@ -21,16 +22,13 @@ jest.mock("lightning/navigation", () => {
 
 import { NavigationMixin } from "lightning/navigation";
 
-// ── Apex wire mock ──────────────────────────────────────────────────────────
-// require() inside factory avoids the jest.mock hoisting / out-of-scope error
-jest.mock("@salesforce/apex/WorkItemController.getTriageQueue", () => {
-  const {
-    createApexTestWireAdapter
-  } = require("@salesforce/wire-service-jest-util");
-  const adapter = createApexTestWireAdapter(jest.fn());
-  return { default: adapter, __esModule: true };
-});
-
+// ── Apex mock ───────────────────────────────────────────────────────────────
+// Loaded imperatively now (not @wire) so a fresh server call happens on every
+// mount, rather than serving the cacheable wire's stale cross-instance cache.
+jest.mock("@salesforce/apex/WorkItemController.getTriageQueue", () => ({
+  default: jest.fn(),
+  __esModule: true
+}));
 import getTriageQueue from "@salesforce/apex/WorkItemController.getTriageQueue";
 
 // ── Test data ───────────────────────────────────────────────────────────────
@@ -67,31 +65,44 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+const flushAllPromises = () =>
+  Promise.resolve()
+    .then(() => Promise.resolve())
+    .then(() => Promise.resolve())
+    .then(() => Promise.resolve());
+
 // ── Rendering ───────────────────────────────────────────────────────────────
 describe("rendering", () => {
-  it("shows empty state when wire returns no tickets", () => {
+  it("shows empty state when the queue is empty", async () => {
+    getTriageQueue.mockResolvedValue([]);
     const el = create();
-    getTriageQueue.emit([]);
-    return Promise.resolve().then(() => {
-      expect(el.shadowRoot.querySelector(".wm-empty")).not.toBeNull();
-    });
+    await flushAllPromises();
+    expect(el.shadowRoot.querySelector(".wm-empty")).not.toBeNull();
   });
 
-  it("renders one card per queued ticket", () => {
+  it("renders one card per queued ticket", async () => {
+    getTriageQueue.mockResolvedValue(TICKETS);
     const el = create();
-    getTriageQueue.emit(TICKETS);
-    return Promise.resolve().then(() => {
-      expect(el.shadowRoot.querySelectorAll(".triage-card").length).toBe(2);
-    });
+    await flushAllPromises();
+    expect(el.shadowRoot.querySelectorAll(".triage-card").length).toBe(2);
+  });
+
+  it("shows an error message when the load fails", async () => {
+    getTriageQueue.mockRejectedValue({ body: { message: "boom" } });
+    const el = create();
+    await flushAllPromises();
+    expect(
+      el.shadowRoot.querySelector(".slds-text-color_error").textContent
+    ).toBe("boom");
   });
 });
 
 // ── Navigation ──────────────────────────────────────────────────────────────
 describe("navigation", () => {
   it("navigates to the ticket's record page on card click", async () => {
+    getTriageQueue.mockResolvedValue(TICKETS);
     const el = create();
-    getTriageQueue.emit(TICKETS);
-    await Promise.resolve();
+    await flushAllPromises();
 
     el.shadowRoot.querySelector('[data-id="wi001"]').click();
 
@@ -99,5 +110,36 @@ describe("navigation", () => {
       type: "standard__recordPage",
       attributes: { recordId: "wi001", actionName: "view" }
     });
+  });
+});
+
+// ── Live refresh ──────────────────────────────────────────────────────────────
+describe("triage channel refresh", () => {
+  it("subscribes on connect and unsubscribes on disconnect", async () => {
+    getTriageQueue.mockResolvedValue([]);
+    const el = create();
+    await flushAllPromises();
+    expect(subscribe).toHaveBeenCalledWith(
+      undefined,
+      "TicketTriageChannel__c",
+      expect.any(Function)
+    );
+
+    document.body.removeChild(el);
+    expect(unsubscribe).toHaveBeenCalled();
+  });
+
+  it("reloads the queue when a ticket-created message arrives", async () => {
+    getTriageQueue.mockResolvedValue([]);
+    create();
+    await flushAllPromises();
+    expect(getTriageQueue).toHaveBeenCalledTimes(1);
+
+    getTriageQueue.mockResolvedValue(TICKETS);
+    const onMessage = subscribe.mock.calls[0][2];
+    onMessage();
+    await flushAllPromises();
+
+    expect(getTriageQueue).toHaveBeenCalledTimes(2);
   });
 });
