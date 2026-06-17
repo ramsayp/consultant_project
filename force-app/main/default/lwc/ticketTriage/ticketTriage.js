@@ -4,7 +4,8 @@ import { NavigationMixin } from "lightning/navigation";
 import {
   subscribe,
   unsubscribe,
-  MessageContext
+  MessageContext,
+  APPLICATION_SCOPE
 } from "lightning/messageService";
 import getTriageQueue from "@salesforce/apex/WorkItemController.getTriageQueue";
 import TICKET_TRIAGE_CHANNEL from "@salesforce/messageChannel/TicketTriageChannel__c";
@@ -19,6 +20,9 @@ import TICKET_TRIAGE_CHANNEL from "@salesforce/messageChannel/TicketTriageChanne
 // browser refresh. Imperative calls to a cacheable method always hit the
 // server fresh. Same-session creates from ticketSubmit (utility bar, outside
 // this component's tree) are picked up via the TicketTriageChannel message.
+// Subscribed with APPLICATION_SCOPE — the default scope only delivers within
+// the same page region, and the utility bar is a different region from this
+// component's App Page body.
 export default class TicketTriage extends NavigationMixin(LightningElement) {
   @track tickets = [];
   @track error;
@@ -33,7 +37,8 @@ export default class TicketTriage extends NavigationMixin(LightningElement) {
     this.subscription = subscribe(
       this.messageContext,
       TICKET_TRIAGE_CHANNEL,
-      () => this.loadTickets()
+      () => this.loadTickets(),
+      { scope: APPLICATION_SCOPE }
     );
   }
 

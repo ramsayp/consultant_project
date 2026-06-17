@@ -1,6 +1,10 @@
 import { createElement } from "lwc";
 import TicketTriage from "c/ticketTriage";
-import { subscribe, unsubscribe } from "lightning/messageService";
+import {
+  subscribe,
+  unsubscribe,
+  APPLICATION_SCOPE
+} from "lightning/messageService";
 
 // ── Navigation mock ─────────────────────────────────────────────────────────
 // The engine seals NavigationMixin's prototype once a component is registered,
@@ -122,7 +126,8 @@ describe("triage channel refresh", () => {
     expect(subscribe).toHaveBeenCalledWith(
       undefined,
       "TicketTriageChannel__c",
-      expect.any(Function)
+      expect.any(Function),
+      { scope: APPLICATION_SCOPE }
     );
 
     document.body.removeChild(el);
