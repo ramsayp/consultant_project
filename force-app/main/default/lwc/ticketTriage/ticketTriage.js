@@ -14,13 +14,13 @@ import TICKET_TRIAGE_CHANNEL from "@salesforce/messageChannel/TicketTriageChanne
 // or human review. Clicking a card opens the ticket's record page, where the
 // ticketReview applet handles classification and approve/decline.
 //
-// Loaded imperatively (not @wire) because getTriageQueue is cacheable=true —
-// a wired call would keep serving the platform's cached response across
-// remounts, so newly created/deleted tickets wouldn't show up without a full
-// browser refresh. Imperative calls to a cacheable method always hit the
-// server fresh. Same-session creates from ticketSubmit (utility bar, outside
-// this component's tree) are picked up via the TicketTriageChannel message.
-// Subscribed with APPLICATION_SCOPE — the default scope only delivers within
+// Loaded imperatively (not @wire) and getTriageQueue is NOT cacheable — the
+// platform's storable-action cache for cacheable=true methods applies even to
+// imperative calls, not only wired ones, so a cacheable method here would
+// keep serving stale results no matter how loadTickets() is triggered.
+// Same-session creates from ticketSubmit (utility bar, outside this
+// component's tree) are picked up via the TicketTriageChannel message,
+// subscribed with APPLICATION_SCOPE — the default scope only delivers within
 // the same page region, and the utility bar is a different region from this
 // component's App Page body.
 //

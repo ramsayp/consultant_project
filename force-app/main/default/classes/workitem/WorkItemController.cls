@@ -489,7 +489,13 @@ public with sharing class WorkItemController {
   // Returns every ticket not yet approved — the BA agent's working set
   // (Not Started/Reviewing/Reviewed) plus Declined tickets awaiting BA
   // re-triage — for the human reviewer's Triage queue.
-  @AuraEnabled(cacheable=true)
+  //
+  // Not cacheable: this is called imperatively (never via @wire) specifically
+  // so every call hits the server fresh. cacheable=true methods are served
+  // from the platform's storable-action cache even when called imperatively,
+  // not only when wired — confirmed by live testing, contradicting the
+  // commonly-cited assumption that imperative calls always bypass it.
+  @AuraEnabled
   public static List<Work_Item__c> getTriageQueue() {
     return [
       SELECT
