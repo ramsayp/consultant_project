@@ -34,6 +34,8 @@ Query `Id, Status__c, Triage_Status__c, Sprint__c, Acceptance_Criteria__c, Triag
 5. **Create a `Comment__c` record** summarising what was reworked: what failed, what changed, and the root cause
 6. Set `Status__c = In Code Review`
 
+**Escalation after repeated rework failures:** If the _same_ Testing-stage symptom is reported as still failing after two consecutive fix attempts that were each based on plausible theory about platform/runtime behaviour (not direct observation), stop proposing a third theoretical fix. Add temporary diagnostic logging (e.g. `console.log` at each decision point — handler fired, value received, async call resolved) directly in the deployed code, redeploy, and ask the human tester to reproduce with the browser console open and share the output. Remove the logging once the real root cause is confirmed — never commit debug logging to the branch. Two rounds of "still doesn't work" on a stale-data style bug is the signal to switch from theory to live evidence, not to guess a third time.
+
 ## Apex architecture
 
 All new Apex must follow this layer structure:
