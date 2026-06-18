@@ -1,6 +1,6 @@
 // ── Imports ───────────────────────────────────────────────────────────────────
 import { LightningElement, wire, track } from "lwc";
-import { NavigationMixin } from "lightning/navigation";
+import { NavigationMixin, CurrentPageReference } from "lightning/navigation";
 import {
   subscribe,
   unsubscribe,
@@ -23,6 +23,14 @@ import TICKET_TRIAGE_CHANNEL from "@salesforce/messageChannel/TicketTriageChanne
 // Subscribed with APPLICATION_SCOPE — the default scope only delivers within
 // the same page region, and the utility bar is a different region from this
 // component's App Page body.
+//
+// Also wired to CurrentPageReference: this app has tab persistence enabled
+// (ProjectManagement.app-meta.xml, isNavTabPersistenceDisabled=false), so
+// navigating to a ticket's record page and back does not necessarily destroy
+// and recreate this component — connectedCallback alone can't be trusted to
+// re-fire. CurrentPageReference re-emits on every navigation event, including
+// returning to an already-open tab, so it reloads the queue whether or not
+// the component was actually remounted.
 export default class TicketTriage extends NavigationMixin(LightningElement) {
   @track tickets = [];
   @track error;
@@ -32,8 +40,12 @@ export default class TicketTriage extends NavigationMixin(LightningElement) {
 
   subscription;
 
-  connectedCallback() {
+  @wire(CurrentPageReference)
+  handlePageRefChange() {
     this.loadTickets();
+  }
+
+  connectedCallback() {
     this.subscription = subscribe(
       this.messageContext,
       TICKET_TRIAGE_CHANNEL,
