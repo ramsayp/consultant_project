@@ -6,6 +6,10 @@
       </h2>
     </div>
 
+    <template if:true={error}>
+      <p class="slds-text-color_error">{error}</p>
+    </template>
+
     <template if:false={hasTickets}>
       <div class="wm-empty">
         <p>No tickets awaiting triage.</p>

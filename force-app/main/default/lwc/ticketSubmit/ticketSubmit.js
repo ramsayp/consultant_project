@@ -1,14 +1,21 @@
 // ── Imports ───────────────────────────────────────────────────────────────────
-import { LightningElement, track } from "lwc";
+import { LightningElement, wire, track } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
+import { publish, MessageContext } from "lightning/messageService";
 import createTicket from "@salesforce/apex/WorkItemController.createTicket";
+import TICKET_TRIAGE_CHANNEL from "@salesforce/messageChannel/TicketTriageChannel__c";
 
 // Lightweight ticket submission form — the entry point for the BA agent triage
 // pipeline. Used both as the utility bar panel (any user) and the admin
 // "+ New Ticket" action in the Project Management app. Creates a raw Ticket
 // awaiting BA agent triage; no record-type-aware fields here, unlike workItemCreate.
 // Fired events: 'created' (with { id }) on success, 'cancel' on cancel.
+// Also publishes on TicketTriageChannel so an open Triage queue (which lives
+// outside this component's tree in the utility bar) refreshes immediately.
 export default class TicketSubmit extends LightningElement {
+  @wire(MessageContext)
+  messageContext;
+
   @track title = "";
   @track description = "";
   @track priority = "Medium";
@@ -46,6 +53,7 @@ export default class TicketSubmit extends LightningElement {
         priority: this.priority
       });
       this.toast("Ticket submitted", this.title, "success");
+      publish(this.messageContext, TICKET_TRIAGE_CHANNEL, { ticketId: id });
       this.dispatchEvent(new CustomEvent("created", { detail: { id } }));
       this.reset();
     } catch (err) {

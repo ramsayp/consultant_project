@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Ticket Triage Channel</masterLabel>
+    <isExposed>true</isExposed>
+    <description>Notifies the Triage queue when a ticket is created so it can refresh without a full page reload.</description>
+    <lightningMessageFields>
+        <fieldName>ticketId</fieldName>
+        <description>Id of the ticket that was just created.</description>
+    </lightningMessageFields>
+</LightningMessageChannel>
