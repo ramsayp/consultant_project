@@ -53,6 +53,10 @@ Trigger → TriggerHandler → Service → Domain → Selector
 
 No business logic in triggers. All classes `with sharing`. Mock at Selector or Service interface in tests.
 
+## Agent-specific behaviour notes
+
+**Release Agent — no Change Log:** If the Docs Agent determined no documentation update was required and created no `Change_Log__c`, the Release Agent skips steps 5–8 (query Change Log, publish staged content, close out Change Log) entirely. No Change Log means no staged content to publish. Note the skip in the release Comment.
+
 ## Status field reference
 
 - `Triage_Status__c` values: Not Started, Reviewing, Reviewed, Approved, Declined
