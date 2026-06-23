@@ -8,7 +8,7 @@ A Salesforce-native project management tool built on Lightning Web Components (L
 
 ## Data Model
 
-### Work_Item\_\_c (custom object)
+### `Work_Item__c` (custom object)
 
 The central object. All item types share one object, differentiated by Record Type. A self-referential lookup (`Parent_Work_Item__c`) connects the hierarchy. Key fields: `Name`, `RecordTypeId`, `Status__c` (workflow stage, varies by type), `Priority__c`, `Estimate__c`, `Sequence__c`, `Sprint__c`, `Parent_Work_Item__c`, `Assignee__c`, `Work_Mode__c`, `Description__c`, `User_Story__c` (Story only), `Acceptance_Criteria__c` (Story/Task/Bug), `Is_General__c` (Epic).
 
@@ -42,13 +42,13 @@ When a Project is inserted, `WorkItemTrigger` automatically creates a child Epic
 
 ---
 
-### Sprint\_\_c (custom object)
+### `Sprint__c` (custom object)
 
 Fields: `Name` (date-range display), `RecordTypeId` (Sprint or Backlog), `Status__c` (Backlog/Planning/Active/Completed), `Start_Date__c`, `End_Date__c`, `Sequence__c`. The Backlog record (`Sequence__c = 9999`) is a permanent catch-all and always renders last on the board.
 
 ---
 
-### Comment\_\_c (custom object)
+### `Comment__c` (custom object)
 
 `Body__c` (Long Text), `Work_Item__c` (lookup) — comment thread on a work item.
 
@@ -143,7 +143,7 @@ Reassign a work item's parent via a combobox of eligible candidates. Saves via L
 
 ### sprintCreate
 
-Manual Sprint\_\_c creation form; auto-calculates End Date as Start + 13 days.
+Manual `Sprint__c` creation form; auto-calculates End Date as Start + 13 days.
 
 ---
 
@@ -204,7 +204,7 @@ Terminal statuses (stay on closed sprint): Completed, Cancelled, Done, Fixed, Cl
 
 ## Key Design Decisions
 
-**Backlog as a sprint record:** one Sprint**c (RecordType Backlog, Sequence**c = 9999) absorbs all unassigned items. Detection uses `RecordType.DeveloperName === 'Backlog'`, not Status\_\_c.
+**Backlog as a sprint record:** one `Sprint__c` (RecordType Backlog, `Sequence__c` = 9999) absorbs all unassigned items. Detection uses `RecordType.DeveloperName === 'Backlog'`, not `Status__c`.
 
 **getActiveSprints stays cacheable:** `ensureBacklogSprint` runs imperatively from connectedCallback, preserving @wire reactivity.
 
@@ -218,17 +218,17 @@ Terminal statuses (stay on closed sprint): Completed, Cancelled, Done, Fixed, Cl
 
 **Active-sprint-only kanban:** only the Active sprint gets the full 8-column board; every other sprint renders as a flat list.
 
-**Ticket is a record type, not a separate object:** approval is a single RecordTypeId update. Triage_Status**c keeps pipeline stage separate from Status**c kanban values.
+**Ticket is a record type, not a separate object:** approval is a single RecordTypeId update. `Triage_Status__c` keeps pipeline stage separate from `Status__c` kanban values.
 
 **Review lives on the record, not in the queue:** ticketTriage only lists and links; all approve/decline logic lives in ticketReview.
 
-**Target_Type\_\_c decouples classification from reclassification:** the reviewer sets "what this becomes" as its own auto-saved field before approving; approveTicket refuses (AuraHandledException) if it's blank.
+**`Target_Type__c` decouples classification from reclassification:** the reviewer sets "what this becomes" as its own auto-saved field before approving; approveTicket refuses (AuraHandledException) if it's blank.
 
 **Sequential per-project keys, independent TRI counter:** Story/Task/Bug receive `CODE-NNNNN` keys counted per project; Tickets receive `TRI-NNNNN` keys from a global counter. The two sequences are fully independent.
 
 **TRI exclusion from project counter via range comparison:** `getMaxItemNumberByProject` uses `(Ticket_Key__c < 'TRI-' OR Ticket_Key__c > 'TRI-99999')` to exclude TRI-keyed items. `NOT LIKE` is rejected by the VS Code SOQL parser in aggregate WHERE clauses. Project codes sorting before `TRI-` (e.g. `ORG`) satisfy `< 'TRI-'`; codes sorting after `TRI-99999` (e.g. `TST`) satisfy `> 'TRI-99999'`.
 
-**Cascade on Project_Code\_\_c change:** setting a code on a codeless Project does not fire triggers on existing child Story/Task/Bug records — their parents (Epics) have not changed. `WorkItemTriggerHandler.afterUpdate` detects `Project_Code__c` changes and calls `WorkItemService.cascadeKeysToProjectChildren` to retroactively key any children created before the code was set.
+**Cascade on `Project_Code__c` change:** setting a code on a codeless Project does not fire triggers on existing child Story/Task/Bug records — their parents (Epics) have not changed. `WorkItemTriggerHandler.afterUpdate` detects `Project_Code__c` changes and calls `WorkItemService.cascadeKeysToProjectChildren` to retroactively key any children created before the code was set.
 
 **getTriageQueue is imperative and explicitly not cacheable:** Marking it cacheable=true looks natural for a read-only query, but live testing showed the platform's storable-action cache for cacheable=true Apex methods is served even on imperative calls, not only wired ones — a ticket created or deleted elsewhere kept producing the same stale row count no matter how the reload was triggered. Dropping cacheable=true was the actual fix; the cross-component reload triggers (ticketTriage's TicketTriageChannel subscription and CurrentPageReference wiring) are necessary but not sufficient without it.
 
