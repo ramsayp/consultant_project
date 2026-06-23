@@ -22,3 +22,5 @@ This surfaced when writing memory files (`MEMORY.md`, `sf_source_of_truth.md`, `
 - After any Markdown edit mentioning Salesforce API names, a quick self-check: did I wrap every `__c`/`__r`/`__mdt`/`__e` identifier in backticks? If yes, Prettier (and GitHub) will leave it untouched.
 
 See also [[trust_your_own_edits]] — same session, same theme: understand _why_ something happened before reaching for a tool-config fix.
+
+**Recurrence (2026-06-23):** This rule was _known_ but not _actively applied_ while drafting new Key Design Decision bullets for `docs/technical/project-management-guide.md` — wrote bare `Sprint__c`, `Status__c`, `Triage_Status__c` in bold lead-ins, which Prettier mangled into `Sprint**c` etc. on commit. Wasn't caught until a late pre-publish verification pass, after the corrupted content had already been staged into `Change_Log__c.Staged_Technical_Body__c`. **Add an explicit grep self-check** (`grep -n '\*\*c\b'` or similar) immediately after writing/editing any doc content with Salesforce field names, before staging it anywhere — don't rely on remembering the rule in the moment of writing.

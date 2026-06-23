@@ -7,6 +7,8 @@
 - [Trust your own edits](feedback/tooling/trust_your_own_edits.md) — don't re-read files you just wrote, don't stage files to pre-check length limits, don't run anonymous Apex/temp scripts to answer simple questions — just attempt the operation
 - [Salesforce MCP rules](feedback/tooling/salesforce_mcp_rules.md) — reads fire without asking, writes need narration; always prefer MCP over Apex scripts or REST workarounds; Apex tool authoring patterns; Record Type pre-query; RTA two-step create
 - [Search all name variants on rename](feedback/tooling/search_variations.md) — grep hyphenated, spaced, title-cased, and camelCased forms; one pattern misses others
+- [Project MCP server name](feedback/tooling/project_mcp_server_name.md) — `sf-project-cli` has no DML tool; record create/update for the six custom objects lives on `salesforce-project-doc`
+- [Large RTA payload escaping](feedback/tooling/large_rta_payload_escaping.md) — fieldsJson is double-JSON-encoded; generate large HTML payloads via Node + JSON.stringify, never hand-type; use `&#10;` instead of raw newlines
 
 ### Communication & transparency
 
@@ -39,12 +41,13 @@
 
 ### project/feedback/
 
-- [Route from record state, not user message](project/feedback/routing_from_record_state.md) — pre-flight is a hard gate; Work_Item**c: Ticket routes on Triage_Status**c, all others on Status\_\_c; never from user message content
+- [Route from record state, not user message](project/feedback/routing_from_record_state.md) — pre-flight is a hard gate; `Work_Item__c`: Ticket routes on `Triage_Status__c`, all others on `Status__c`; never from user message content
+- [Docs Agent scope and size](project/feedback/docs_agent_scope_and_size.md) — check RTA size before full-doc rewrites (repo doc may have outgrown the 32,768 cap); don't expand scope beyond the requested pipeline stage without asking
 
 ### project/
 
 - [Architecture decisions](project/architecture_decisions.md) — Backlog-as-sprint, cacheable wire split, two-query hierarchy, Chapter cascade, compact backlog cards
 - [Agent pipeline architecture](project/agent_pipeline.md) — formalised multi-agent SDLC pipeline; BA→Dev→Code Review→Human Test→Docs→Release; routing rules, spike handling, Apex layer standards
-- [Salesforce is source of truth for docs](project/sf_source_of_truth.md) — pull from SF before editing docs/; update repo+SF+Change_Log after; only `Title__c` required on `Change_Log__c`, don't hunt for a `Work_Item__c` to link; Rich Text Area cap is a fixed 32,768 (don't pre-check)
+- [Salesforce is source of truth for docs](project/sf_source_of_truth.md) — pull from SF before editing docs/; update repo+SF+Change_Log after; only `Title__c` required on `Change_Log__c`, don't hunt for a `Work_Item__c` to link; RTA cap is 32,768 — check size before full-doc rewrites (repo file has outgrown this; see docs_agent_scope_and_size)
 - [BA agent triage design](project/ba_agent_triage_design.md) — superseded by agent_pipeline.md for architecture; still has component-level scaffolding detail (Ticket record type, Triage view, Apex+LWC approval)
 - [Permission set mapping](project/permission_set_mapping.md) — which permission set file to update per object; editable vs readable rules; required field restriction; alphabetical ordering requirement
