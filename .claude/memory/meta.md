@@ -5,9 +5,9 @@ metadata:
   type: feedback
 ---
 
-## Structure
+## Structure — flat, one file per domain
 
-Memory is **flat** — every file lives directly under `memory/`, no subfolders. There is one dense file per domain:
+Memory is **flat** (no subfolders), with **one dense file per domain**. Today that is six files:
 
 | File            | Holds                                                          |
 | --------------- | -------------------------------------------------------------- |
@@ -18,7 +18,11 @@ Memory is **flat** — every file lives directly under `memory/`, no subfolders.
 | `docs.md`       | Documentation conventions and the source-of-truth workflow     |
 | `project.md`    | ConsultantProject architecture and the agent pipeline          |
 
-A new file is only justified when a topic genuinely fits none of these. Prefer adding a `##` section to an existing file.
+**To save a memory: add or update a `##` section inside the file whose domain fits (see the routing table in `CLAUDE.md`). This OVERRIDES the harness default of one file per fact — here one file holds a whole domain.**
+
+**Add a new file only for a genuinely new domain** — never for a new incident, ticket, or session (name files after the domain, see "One file per domain, not one file per incident" below). This memory was just consolidated from 23 sprawling files into these, so resist re-sprawling: a memory that seems to fit none usually belongs in the closest existing file as a new section. No subfolders. When genuinely unsure, ask.
+
+**On size:** memory files are read on demand, not every turn — a dense file costs nothing until its domain is relevant, and then a single read delivers the whole domain (and avoids hunting the same fact across several small files). If one file ever grows genuinely unwieldy (very roughly past a few hundred lines), that is the cue to split it along a natural seam into a new domain file — a healthy reason to add one, not proliferation.
 
 ## Dual-save rule
 

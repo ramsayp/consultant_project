@@ -54,4 +54,4 @@ Memory lives directly under `memory/` — no subfolders. Each file is the single
 | `docs.md`       | Documentation and Markdown conventions, plus Salesforce-as-source-of-truth for docs                             |
 | `project.md`    | ConsultantProject specifics — architecture decisions, agent pipeline, permission-set mapping                    |
 
-**Where new knowledge goes:** add a `##` section to the existing file whose domain fits. A platform gotcha or Claude behaviour rule goes in `salesforce.md` / `how_i_work.md`; anything referencing `Work_Item__c`, sprint stages, record types, or this app's architecture goes in `project.md`. A new file is justified only when a topic fits none of the six.
+**Where new knowledge goes:** default to adding a `##` section in the existing file whose domain fits — see the routing table in `CLAUDE.md`. A platform gotcha or Claude behaviour rule goes in `salesforce.md` / `how_i_work.md`; anything referencing `Work_Item__c`, sprint stages, record types, or this app's architecture goes in `project.md`. Add a new file only for a genuinely new domain (named after the domain, not a task), and keep `memory/` flat — no subfolders.
