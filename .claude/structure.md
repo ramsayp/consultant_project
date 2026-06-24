@@ -2,7 +2,7 @@
 
 This file defines where new knowledge belongs. Read it before adding any file to `.claude/`.
 
-> **Before creating or updating any memory file, read [`.claude/memory/meta/memory_system.md`](memory/meta/memory_system.md).**
+> **Before creating or updating any memory file, read [`.claude/memory/meta.md`](memory/meta.md).**
 
 ---
 
@@ -33,45 +33,25 @@ This file defines where new knowledge belongs. Read it before adding any file to
 
 ## Standards vs Skills vs Memory
 
-| Category               | Question to ask                                                  | Examples                                                             |
-| ---------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
-| **`standards.md`**     | Is this a convention _we_ chose for our code?                    | Layered Apex architecture, `with sharing`, comment style             |
-| **`skills/`**          | Is this a step-by-step guide for a specific task?                | How to write an Apex test, how to set up MCP                         |
-| **`memory/feedback/`** | Is this a platform constraint or lesson learned from experience? | RTA formula quirk, permission set restrictions, MCP connection rules |
+| Category           | Question to ask                                                  | Examples                                                             |
+| ------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **`standards.md`** | Is this a convention _we_ chose for our code?                    | Layered Apex architecture, `with sharing`, comment style             |
+| **`skills/`**      | Is this a step-by-step guide for a specific task?                | How to write an Apex test, how to set up MCP                         |
+| **`memory/`**      | Is this a platform constraint or lesson learned from experience? | RTA formula quirk, permission set restrictions, MCP connection rules |
 
 ---
 
-## Memory — Generic vs Project-specific
+## Memory — flat, one dense file per domain
 
-**Generic** (`memory/feedback/`) — applies to any Salesforce project or Claude Code session.
+Memory lives directly under `memory/` — no subfolders. Each file is the single canonical home for its domain; everything else cross-links with `[[name]]`. Read [`memory/meta.md`](memory/meta.md) before creating or editing any memory.
 
-**Project-specific** (`memory/project/feedback/`) — tied to ConsultantProject's data model, agents, or workflows.
+| File            | Holds                                                                                                           |
+| --------------- | --------------------------------------------------------------------------------------------------------------- |
+| `meta.md`       | Rules about the memory system itself — dual-save, naming, merge-before-create, the 200-line cap                 |
+| `how_i_work.md` | Behavioural / communication / workflow feedback — terminal naming, narration, git status, scope discipline      |
+| `salesforce.md` | Salesforce platform gotchas, metadata/Prettier/deploy, MCP tooling, the Rich Text Area cap and payload escaping |
+| `testing.md`    | LWC Jest mocking and stub patterns                                                                              |
+| `docs.md`       | Documentation and Markdown conventions, plus Salesforce-as-source-of-truth for docs                             |
+| `project.md`    | ConsultantProject specifics — architecture decisions, agent pipeline, permission-set mapping                    |
 
-**When in doubt:** if the rule references `Work_Item__c`, sprint stages, specific record types, or ConsultantProject's app architecture — it's project-specific. If it's a Salesforce platform gotcha or Claude Code behaviour rule — it's generic.
-
-### Generic (`memory/feedback/`)
-
-| Subfolder        | Contents                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------ |
-| `salesforce/`    | Salesforce platform gotchas — field type quirks, metadata constraints, formula limitations |
-| `tooling/`       | MCP and Claude Code usage and authoring rules                                              |
-| `testing/`       | LWC Jest and Apex test patterns                                                            |
-| `communication/` | How to communicate with the user (tone, narration, specificity)                            |
-| `docs/`          | Documentation and Markdown conventions                                                     |
-| `agents/`        | Generic agent routing principles                                                           |
-| `meta/`          | Rules about the memory system itself                                                       |
-
-### Project-specific (`memory/project/`)
-
-| File / Folder               | Contents                                                                                        |
-| --------------------------- | ----------------------------------------------------------------------------------------------- |
-| `feedback/`                 | Corrections specific to ConsultantProject (agent routing for `Work_Item__c`, project workflows) |
-| `agent_pipeline.md`         | Multi-agent SDLC pipeline design                                                                |
-| `kanban_stage_design.md`    | Kanban stage layout and agent ownership                                                         |
-| `permission_set_mapping.md` | Which permission set to update per object                                                       |
-| `ba_agent_triage_design.md` | BA agent and triage pipeline scaffolding                                                        |
-| `sf_source_of_truth.md`     | Salesforce as source of truth for documentation                                                 |
-
-### Reference (`memory/reference/`)
-
-Pointers to where information lives in external systems (MCP server details, doc IDs, etc.).
+**Where new knowledge goes:** add a `##` section to the existing file whose domain fits. A platform gotcha or Claude behaviour rule goes in `salesforce.md` / `how_i_work.md`; anything referencing `Work_Item__c`, sprint stages, record types, or this app's architecture goes in `project.md`. A new file is justified only when a topic fits none of the six.

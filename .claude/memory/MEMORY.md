@@ -1,53 +1,15 @@
 # Memory Index
 
-## feedback/
+Memory is flat — one dense file per domain, directly under `memory/`. Read [meta.md](meta.md) before creating or editing any memory.
 
-### Tooling & efficiency
+- [meta.md](meta.md) — how to write and manage memory: dual-save both locations, no abbreviations, merge-before-create (one canonical home per fact), filename == `name:` slug, 200-line cap, what never belongs in memory
 
-- [Trust your own edits](feedback/tooling/trust_your_own_edits.md) — don't re-read files you just wrote, don't stage files to pre-check length limits, don't run anonymous Apex/temp scripts to answer simple questions — just attempt the operation
-- [Salesforce MCP rules](feedback/tooling/salesforce_mcp_rules.md) — reads fire without asking, writes need narration; always prefer MCP over Apex scripts or REST workarounds; Apex tool authoring patterns; Record Type pre-query; RTA two-step create
-- [Search all name variants on rename](feedback/tooling/search_variations.md) — grep hyphenated, spaced, title-cased, and camelCased forms; one pattern misses others
-- [Project MCP server name](feedback/tooling/project_mcp_server_name.md) — `sf-project-cli` has no DML tool; record create/update for the six custom objects lives on `salesforce-project-doc`
-- [Large RTA payload escaping](feedback/tooling/large_rta_payload_escaping.md) — fieldsJson is double-JSON-encoded; generate large HTML payloads via Node + JSON.stringify, never hand-type; use `&#10;` instead of raw newlines
+- [how_i_work.md](how_i_work.md) — behavioural rules: name the terminal; narrate before permission prompts; git status after every commit; memory-status line in agent summaries; trust your own edits (don't re-read/pre-check); search all name variants on rename; route from record state not the user's message; don't expand scope beyond the requested stage
 
-### Communication & transparency
+- [salesforce.md](salesforce.md) — platform gotchas (`LEN()>0` for Rich Text Area, `cacheable` cache, LMS `APPLICATION_SCOPE`); metadata/Prettier/XML config and deploy; MCP tooling (which server owns DML, prefer-MCP, confirmation, record-creation patterns); the canonical Rich Text Area 32,768 cap and `fieldsJson` payload escaping
 
-- [Always name the terminal](feedback/communication/be_specific_about_terminal.md) — never say "run in the terminal"; always specify PowerShell in VS Code, Bash tool, or Claude Code chat
-- [Narrate before permission prompts](feedback/communication/narrate_before_permission_prompts.md) — say what a Bash/SOQL/MCP call does and why, immediately before it fires — the Yes/No dialog shows raw mechanics only, user can't judge intent from a query string
-- [git status after every commit](feedback/communication/git_status_after_commit.md) — run git status after every commit; flag if ahead of origin (push needed) or behind (investigate); offer to commit after any approved file change
-- [Memory update confirmation in summaries](feedback/communication/memory_update_confirmation.md) — every agent task summary must end with a memory line: either what was saved, or explicit confirmation that no update was needed and why
+- [testing.md](testing.md) — LWC Jest on Windows: module mocking (imperative Apex, wire adapters, `uiRecordApi` via moduleNameMapper, schema `.default`, variant matching, wire emit) and why stubs go in `__stubs__/` not `__mocks__/`
 
-### Salesforce metadata & deploy conventions
+- [docs.md](docs.md) — documentation conventions: `overview.md` vs `salesforce.md` split; backtick `__c`/`__r`/`__mdt` API names in Markdown; Salesforce is source of truth for docs (pull before edit, `Change_Log__c` only needs `Title__c`, doc inventory)
 
-- [Prettier + VS Code XML config for Salesforce](feedback/salesforce/sf_metadata_prettier_xml.md) — exclude xml from Prettier; noGrammar+downloadExternalResources+validation.filters fix; systemId:'' anti-pattern; targetNamespace cascade bug; required field permission set error
-- [Lock app nav personalisation + Lightning Record Pages](feedback/salesforce/app_nav_personalisation.md) — always set isNavPersonalizationDisabled:true on every Lightning App; always create a FlexiPage for every new custom object; human must set org default in Lightning App Builder after deploy
-- [Salesforce platform rules](feedback/salesforce/salesforce_platform_rules.md) — RTA fields: use LEN() > 0 not ISBLANK/ISNULL; growing collection of SF platform gotchas
-
-### Documentation & Markdown conventions
-
-- [App docs structure convention](feedback/docs/app_docs_structure.md) — overview.md = architecture + diagram; salesforce.md = field tables + record types; overview.md @-imported, salesforce.md is reference only
-- [Backtick `__c`/`__r`/`__mdt` API names in Markdown](feedback/docs/markdown_double_underscore_api_names.md) — CommonMark parses double-underscore as bold; bare `Field__c` mentions get mangled by Prettier/GitHub — always wrap in backticks (not a Prettier bug, spec behavior)
-
-### LWC testing
-
-- [LWC Jest module mocking patterns](feedback/testing/lwc_jest_module_mocking.md) — what works on Windows with sfdx-lwc-jest (imperative vs wire, moduleNameMapper, schema .default)
-- [LWC stub components go in **stubs**/](feedback/testing/lwc_stub_pattern.md) — multi-file LWC stubs (.html+.js) must live in **stubs**/, not **mocks**/; haste-map duplicate-mock bug breaks lint-staged --findRelatedTests
-
-## meta/
-
-- [Memory system rules](meta/memory_system.md) — dual-save both locations every time; no abbreviations; merge before create; one file per domain; 200-line MEMORY.md cap; what never belongs in memory
-
-## project/
-
-### project/feedback/
-
-- [Route from record state, not user message](project/feedback/routing_from_record_state.md) — pre-flight is a hard gate; `Work_Item__c`: Ticket routes on `Triage_Status__c`, all others on `Status__c`; never from user message content
-- [Docs Agent scope and size](project/feedback/docs_agent_scope_and_size.md) — check RTA size before full-doc rewrites (repo doc may have outgrown the 32,768 cap); don't expand scope beyond the requested pipeline stage without asking
-
-### project/
-
-- [Architecture decisions](project/architecture_decisions.md) — Backlog-as-sprint, cacheable wire split, two-query hierarchy, Chapter cascade, compact backlog cards
-- [Agent pipeline architecture](project/agent_pipeline.md) — formalised multi-agent SDLC pipeline; BA→Dev→Code Review→Human Test→Docs→Release; routing rules, spike handling, Apex layer standards
-- [Salesforce is source of truth for docs](project/sf_source_of_truth.md) — pull from SF before editing docs/; update repo+SF+Change_Log after; only `Title__c` required on `Change_Log__c`, don't hunt for a `Work_Item__c` to link; RTA cap is 32,768 — check size before full-doc rewrites (repo file has outgrown this; see docs_agent_scope_and_size)
-- [BA agent triage design](project/ba_agent_triage_design.md) — superseded by agent_pipeline.md for architecture; still has component-level scaffolding detail (Ticket record type, Triage view, Apex+LWC approval)
-- [Permission set mapping](project/permission_set_mapping.md) — which permission set file to update per object; editable vs readable rules; required field restriction; alphabetical ordering requirement
+- [project.md](project.md) — ConsultantProject specifics: architecture decisions (Backlog-as-sprint, cacheable wire split, two-query hierarchy, Chapter cascade, compact cards); multi-agent SDLC pipeline (routing lives in `agents.md`); object→permission-set mapping; historical BA-agent triage design

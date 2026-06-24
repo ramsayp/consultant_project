@@ -105,4 +105,4 @@ const flushAllPromises = () =>
 
 ## Salesforce Metadata
 
-Platform constraints and gotchas live in `.claude/memory/feedback/salesforce/` — see the MEMORY.md index.
+Platform constraints and gotchas live in `.claude/memory/salesforce.md` — see the MEMORY.md index.
