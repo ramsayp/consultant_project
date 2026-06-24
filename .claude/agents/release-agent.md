@@ -17,6 +17,7 @@
 6. Publish staged content to Salesforce:
    - Update `Technical_Doc__c.Body__c` with `Change_Log__c.Staged_Technical_Body__c` via `updateSobjectRecord`
    - If `Staged_User_Body__c` is not empty, find the linked User doc via `Technical_Doc__c.Related_User_Doc__c` and update its `Body__c`
+   - **Large payload encoding:** generate the JSON value via `node -e "process.stdout.write(JSON.stringify('<content>'))"` — never hand-type it. Replace raw newlines with `&#10;`. See `memory/feedback/tooling/large_rta_payload_escaping.md` for the full pattern.
 7. Close out the Change Log in a **single atomic `updateSobjectRecord` call**: set `Status__c = 'Published'` and clear `Staged_Technical_Body__c = null` and `Staged_User_Body__c = null` together. A validation rule blocks staged fields from being non-null when Published — the fields must be cleared in the same call, not in a separate step.
    - If this update fails (e.g. the validation rule fires because staged fields were not cleared correctly), create a `Comment__c` on the work item describing the error and leave `Status__c = Releasing`. Do not advance to Done.
 8. Publish any other `Documentation__c` records that are in Draft state and related to this work

@@ -20,6 +20,7 @@
 5. Call `updateSobjectRecord` **separately** on the newly created Change Log record to set the large staged fields (the SF API silently drops Rich Text Area content on `createSobjectRecord` when payloads are large):
    - `Staged_Technical_Body__c` — the complete new Technical doc body (what will be published to SF)
    - `Staged_User_Body__c` — the complete new User doc body (if applicable)
+   - **Large payload encoding:** generate the JSON value via `node -e "process.stdout.write(JSON.stringify('<content>'))"` — never hand-type it. Replace raw newlines with `&#10;`. The `fieldsJson` parameter is double-JSON-encoded (a JSON string whose value is itself a JSON object). See `memory/feedback/tooling/large_rta_payload_escaping.md` for the full pattern.
 6. **Do NOT update `Documentation__c.Body__c` directly** — the Release Agent publishes the staged content at release time
 7. Sync the repo doc file(s) to match the staged content (so the commit reflects what will be published)
 8. Leave the Change Log as **Draft** — Release Agent sets it to Published
