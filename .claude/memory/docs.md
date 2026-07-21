@@ -61,3 +61,31 @@ Technical guides, user guides, and change-log entries live in Salesforce (`Docum
 | `docs/technical/mcp-setup-guide.md`          | `mcp-setup-technical`          | MCP Setup — Technical Guide              |
 | `docs/user/documentation-guide.md`           | `documentation-user`           | Documentation App — User Guide           |
 | `docs/user/project-management-guide.md`      | `project-management-user`      | Project Management App — User Guide      |
+
+## Comparing repo Markdown against a Salesforce document body
+
+`Documentation__c.Body__c` holds Quill-flavoured HTML; the repo holds Markdown. To decide whether the two are in sync, compare **normalised plain text extracted from both** — never raw markup, and never a character-count delta on its own.
+
+**Why:** An ad-hoc currency check produced three wrong answers before a correct one. Splitting text into sentences chunked HTML list items and Markdown ordered-list items completely differently, inventing forty-two non-existent missing sentences, which were reported to the user as whole missing sections. Stripping underscores as Markdown emphasis mangled every Salesforce API name (`Work_Item__c` became `WorkItemc`) and produced one hundred and sixty-four phantom differences. Mapping unrecognised numeric entities to spaces hid emoji that were present in both copies. The user had to challenge the finding before it was checked properly.
+
+**How to apply:**
+
+- Decode entities before comparing, including astral-plane characters: Quill stores emoji as numeric entities such as `&#128308;` while leaving Basic Multilingual Plane punctuation like the em dash literal.
+- Never strip `_` when normalising Markdown — it destroys every Salesforce API name.
+- Do not sentence-split. Compare word sequences with a longest-common-subsequence diff and report the differing runs. A length delta is a symptom to investigate, not evidence.
+- Expect harmless noise from tables and fenced code blocks, where HTML and Markdown tokenise differently. Judge sync on prose runs, not on total counts.
+- Quill serialisation to match when writing: `<hr></hr>`, `<ol>`/`<ul>` with `<li>`, `<strong>`, `<em>`, `<code>`, and `&#39;` for apostrophes.
+- A Markdown-to-Quill converter can only regenerate a document whose source has no tables and no fenced code blocks. A document containing `<table>` or `<pre class="ql-syntax">` must be patched surgically instead, asserting that each replacement matched exactly once.
+
+## Writing large document bodies to Salesforce
+
+For a Rich Text Area payload of any real size, write it from a file using `sf data update bulk` rather than pasting the content into a tool call.
+
+**Why:** The agent protocols prescribe generating the value with `node` and passing it through an MCP call. At around twenty thousand characters that is slow and carries transcription risk, since the content has to pass through the response twice. A file-based bulk update removes the risk entirely and was noticeably faster.
+
+**How to apply:**
+
+- Build a comma-separated-values file with `Id` and the target field, wrapping the value in double quotes and doubling any internal double quote.
+- Use carriage-return-plus-line-feed line endings — the Bulk Application Programming Interface rejects line-feed-only input with `LineEnding is invalid on user data`.
+- Confirm the body contains no raw line breaks before writing, or the row structure breaks.
+- Always re-read the field afterwards and compare it to the intended content. Rich Text Area values can be silently dropped or truncated; see [[salesforce]] for the 32,768 character cap.

@@ -108,3 +108,16 @@ A request like "go straight to code review" or "doc agent go" means: do that one
 **Why:** Same discipline as record-state routing, applied to scope _within_ a role. A Docs Agent session spent significant time on an unrequested full-document backfill that also blew the Rich Text Area cap.
 
 **How to apply:** When any pipeline stage surfaces a side issue (doc drift, stale data, missing dependency), stop and flag it with options rather than silently expanding the task. Reserve full backfills for when the user explicitly asks. For the Rich Text Area size check that goes with full-document rewrites, see [[salesforce]] and [[docs]].
+
+## Check the whole stack before declaring a fix complete — or a claim wrong
+
+When a rule is implemented in more than one place, changing one copy is not a fix. And before contradicting a statement about how something behaves, verify every layer that could produce that behaviour — not only the layer currently being read.
+
+**Why:** Two separate failures in one session. First, a Backlog membership rule existed in two functions in the same Lightning Web Component; only one was changed, so what rendered and what drag-and-drop re-sequencing operated on silently disagreed, and the work item bounced back from code review for rework. Second, in that same review the Code Review Agent asserted that work items created without a sprint would disappear from the board, contradicting the Dev Agent's correct statement that they default to the Backlog sprint. That assertion was made from the Lightning Web Component alone; a before-insert pass in `WorkItemTrigger` already assigns the Backlog sprint. The finding was a false positive, and it reached the user as fact and influenced a product decision before being caught.
+
+**How to apply:**
+
+- After changing any filter, guard, or derivation rule, grep for other implementations of the same rule before reporting the work complete. A duplicate often carries a comment saying it mirrors the original — search by behaviour, not only by name.
+- Before stating that something is impossible, unreachable, or broken, check Apex triggers, services, and validation rules as well as the client-side code. A user interface can permit a value that a before-insert trigger then corrects.
+- When contradicting a previous agent's claim, treat that claim as a hypothesis to disprove with evidence from every relevant layer — not as an error to assert from a partial reading.
+- If a claim already given to the user turns out to be wrong, correct it explicitly and say so; do not let it stand because the resulting decision happened to be acceptable anyway.
