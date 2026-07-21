@@ -5,6 +5,9 @@ import WorkItemBoard from "../workItemBoard";
 import getBoardItems from "@salesforce/apex/WorkItemController.getBoardItems";
 import ensureBacklogSprint from "@salesforce/apex/WorkItemController.ensureBacklogSprint";
 import getActiveSprints from "@salesforce/apex/WorkItemController.getActiveSprints";
+import updateSequences from "@salesforce/apex/WorkItemController.updateSequences";
+import updateSprint from "@salesforce/apex/WorkItemController.updateSprint";
+import updateStatus from "@salesforce/apex/WorkItemController.updateStatus";
 
 // getActiveSprints is consumed via @wire, so it needs a wire adapter rather than
 // the plain jest.fn() shared mock. Override it here (see standards.md).
@@ -89,6 +92,9 @@ describe("c-work-item-board sprint sections", () => {
   async function renderBoard() {
     ensureBacklogSprint.mockResolvedValue();
     getBoardItems.mockResolvedValue(WORK_ITEMS);
+    updateSprint.mockResolvedValue();
+    updateStatus.mockResolvedValue();
+    updateSequences.mockResolvedValue();
 
     const element = createElement("c-work-item-board", { is: WorkItemBoard });
     document.body.appendChild(element);
@@ -131,5 +137,30 @@ describe("c-work-item-board sprint sections", () => {
 
     const activeCard = element.shadowRoot.querySelector('[data-id="wActive"]');
     expect(activeCard).not.toBeNull();
+  });
+
+  // _colItems() drives drop sequencing and must apply the same rule as
+  // sprintSections — otherwise reordering sequences over cards nobody can see.
+  it("sequences only Backlog-sprint items when a card is dropped into Backlog", async () => {
+    const element = await renderBoard();
+
+    const backlogList = element.shadowRoot.querySelector(
+      '.backlog-list[data-sprint-id="sprintBacklog"]'
+    );
+    const dropEvent = new CustomEvent("drop");
+    dropEvent.dataTransfer = {
+      getData: () =>
+        JSON.stringify({ itemId: "wActive", sprintId: "sprintActive" })
+    };
+    backlogList.dispatchEvent(dropEvent);
+    await flushAllPromises();
+
+    expect(updateSequences).toHaveBeenCalled();
+    const { workItemIds } = updateSequences.mock.calls.at(-1)[0];
+    expect(workItemIds).not.toContain("wCompleted");
+    expect(workItemIds).not.toContain("wOrphan");
+    expect(workItemIds).toEqual(
+      expect.arrayContaining(["wBacklog", "wActive"])
+    );
   });
 });

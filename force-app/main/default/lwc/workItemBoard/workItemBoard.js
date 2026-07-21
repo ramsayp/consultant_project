@@ -466,21 +466,13 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
   // list-view sprints (Planning + Backlog), where there's no per-stage grouping.
   // (mirrors the sprintSections filter so drag-drop sequencing stays consistent)
   _colItems(stage, sprintId) {
-    const sprintIds = new Set(this.sprints.map((s) => s.Id));
     const sprint = this.sprints.find((s) => s.Id === sprintId);
-    const isBacklog = sprint?.RecordType?.DeveloperName === "Backlog";
     const isActive = sprint?.Status__c === "Active";
     return this.workItems.filter((i) => {
       if (i.RecordType?.Name === "Epic") return false;
       if (isActive && (STATUS_TO_STAGE[i.Status__c] || "To Do") !== stage)
         return false;
-      if (isBacklog)
-        return (
-          i.Sprint__c === sprintId ||
-          !i.Sprint__c ||
-          !sprintIds.has(i.Sprint__c)
-        );
-      return i.Sprint__c === sprintId;
+      return i.Sprint__c === sprintId; // same rule as sprintSections — own sprint only
     });
   }
 
