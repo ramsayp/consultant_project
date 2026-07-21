@@ -121,6 +121,8 @@ App Page entry point. Four-view state machine: triage, projects, sprints, board.
 
 Kanban board scoped to one project. `connectedCallback` calls `ensureBacklogSprint` imperatively then `loadItems`. Two tabs: Boards (sprint kanban) and Epics (pinned General + grouped regular Epics). Only the Active sprint shows the full 8-column kanban; every other sprint renders as a flat priority-sorted list with compact cards. Drag/drop encodes `{ itemId, sprintId }`.
 
+Every sprint section — Backlog included — contains only the items whose `Sprint__c` matches that section's sprint. Two functions apply this rule and must stay in step: `sprintSections` (what renders) and `_colItems` (what drag-drop sequencing operates on). If they diverge, reordering a list persists `Sequence__c` across cards that are not on screen.
+
 ### workItemCard
 
 Renders a work item as a full card (kanban) or compact row (backlog/list views), with a coloured priority indicator. When `Ticket_Key__c` is set, a `CODE-NNNNN` or `TRI-NNNNN` label is displayed in both layouts. Fires `open` and `dragstart`.
@@ -204,7 +206,7 @@ Terminal statuses (stay on closed sprint): Completed, Cancelled, Done, Fixed, Cl
 
 ## Key Design Decisions
 
-**Backlog as a sprint record:** one `Sprint__c` (RecordType Backlog, `Sequence__c` = 9999) absorbs all unassigned items. Detection uses `RecordType.DeveloperName === 'Backlog'`, not `Status__c`.
+**Backlog as a sprint record:** one `Sprint__c` (RecordType Backlog, `Sequence__c` = 9999) is the permanent home for unscheduled work. Items get there at **insert** — the `WorkItemTrigger` Backlog-default pass assigns the Backlog sprint to any Story/Task/Bug created with a null `Sprint__c` — not by the board filtering them in afterwards. The Backlog swimlane renders only items whose `Sprint__c` is the Backlog sprint; it does not sweep in items belonging to Completed or otherwise unloaded sprints. Detection uses `RecordType.DeveloperName === 'Backlog'`, not `Status__c`.
 
 **getActiveSprints stays cacheable:** `ensureBacklogSprint` runs imperatively from connectedCallback, preserving @wire reactivity.
 
