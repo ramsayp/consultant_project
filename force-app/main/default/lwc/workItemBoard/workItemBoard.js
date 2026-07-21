@@ -224,11 +224,11 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
   // one section per sprint. Only the Active sprint renders as a kanban (columns
   // keyed by stage); every other sprint — Planning sprints and Backlog alike —
   // renders as a flat list, like the Backlog view always has.
-  // The Backlog sprint absorbs items with no sprint or with a deleted sprint Id.
+  // Every section — Backlog included — shows only the items actually assigned to
+  // that sprint; the Backlog swimlane holds exactly the items in the Backlog sprint.
   // Sort order: Active sprint first (for prominence), then the rest in their
   // incoming Sequence__c order, with Backlog always pinned last.
   get sprintSections() {
-    const sprintIds = new Set(this.sprints.map((s) => s.Id));
     const sorted = [...this.sprints].sort((a, b) => {
       const aIsBacklog = a.RecordType?.DeveloperName === "Backlog";
       const bIsBacklog = b.RecordType?.DeveloperName === "Backlog";
@@ -244,14 +244,7 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
       const isListView = !isActive;
       const items = this.workItems.filter((i) => {
         if (i.RecordType?.Name === "Epic") return false; // epics appear on the epics tab only
-        // Backlog absorbs items with no sprint or an unknown sprint Id
-        if (isBacklog)
-          return (
-            i.Sprint__c === sprint.Id ||
-            !i.Sprint__c ||
-            !sprintIds.has(i.Sprint__c)
-          );
-        return i.Sprint__c === sprint.Id;
+        return i.Sprint__c === sprint.Id; // each section shows only its own sprint's items
       });
       const columns = isActive
         ? STAGES.map((stage) => {
@@ -473,21 +466,13 @@ export default class WorkItemBoard extends NavigationMixin(LightningElement) {
   // list-view sprints (Planning + Backlog), where there's no per-stage grouping.
   // (mirrors the sprintSections filter so drag-drop sequencing stays consistent)
   _colItems(stage, sprintId) {
-    const sprintIds = new Set(this.sprints.map((s) => s.Id));
     const sprint = this.sprints.find((s) => s.Id === sprintId);
-    const isBacklog = sprint?.RecordType?.DeveloperName === "Backlog";
     const isActive = sprint?.Status__c === "Active";
     return this.workItems.filter((i) => {
       if (i.RecordType?.Name === "Epic") return false;
       if (isActive && (STATUS_TO_STAGE[i.Status__c] || "To Do") !== stage)
         return false;
-      if (isBacklog)
-        return (
-          i.Sprint__c === sprintId ||
-          !i.Sprint__c ||
-          !sprintIds.has(i.Sprint__c)
-        );
-      return i.Sprint__c === sprintId;
+      return i.Sprint__c === sprintId; // same rule as sprintSections — own sprint only
     });
   }
 

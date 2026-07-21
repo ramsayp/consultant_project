@@ -86,6 +86,8 @@ Switch to the **Epics** tab on the board to see all epics for the current projec
 
 At the bottom of the board is the **Backlog** — the default home for new Stories, Tasks, and Bugs. Any item created without an explicit sprint is automatically placed here. Backlog items appear as compact rows so you can see many at once. Drag any item up into a sprint column when you're ready to schedule it.
 
+The Backlog lists only the items actually held there. Anything assigned to a sprint stays with that sprint — including sprints that have already been completed — so finished work no longer piles up in the Backlog.
+
 ---
 
 ## Creating Work Items
