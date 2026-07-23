@@ -40,6 +40,8 @@
 | `docs/user/project-management-guide.md`      | `project-management-user`      |
 | `docs/user/documentation-guide.md`           | `documentation-user`           |
 
+> The **canonical, machine-checked copy of this mapping is `DOC_MAP` in `scripts/docs-check.js`** — the health check runs from it. When adding or renaming a doc, update the script first, then mirror the change here and in `memory/docs.md`.
+
 ## Failure
 
 Set `Status__c = On Hold`, create a `Comment__c` record describing the failure.

@@ -178,7 +178,7 @@ function fetchSfBody(claudeDocId, org) {
   const query = `SELECT Body__c FROM Documentation__c WHERE Claude_Doc_Id__c = '${claudeDocId}'`;
   const cmd =
     `sf data query --query "${query}" --json` +
-    (org ? ` --target-org ${org}` : "");
+    (org ? ` --target-org "${org}"` : "");
   let raw;
   try {
     raw = execSync(cmd, {
