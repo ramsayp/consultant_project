@@ -206,7 +206,11 @@ Two-phase agentic workflow:
 
 1. Merges feature branch and deploys
 2. Reads `Staged_Technical_Body__c` from the Change Log
-3. Updates `Technical_Doc__c.Body__c` with the staged content via MCP
-4. If `Staged_User_Body__c` is set, updates the linked User doc's `Body__c`
+3. Publishes the staged content to `Technical_Doc__c.Body__c` via a file-based `sf data update bulk` load
+4. If `Staged_User_Body__c` is set, publishes it to the linked User doc's `Body__c`
 5. Sets `Change_Log__c.Status__c = Published` and clears `Staged_Technical_Body__c` and `Staged_User_Body__c` in a **single atomic `updateSobjectRecord` call** — a validation rule (`Staged_Docs_Cleared_When_Published`) blocks staged fields from being non-null when Published, so they must be cleared in the same call. If this update fails, a `Comment__c` is created on the Work Item and the item remains in `Releasing`.
 6. Updates `Work_Item__c.Status__c = Done`
+
+**Drift health check (`scripts/docs-check.js`):**
+
+Both phases guard against repo/Salesforce drift. The Docs Agent runs `npm run docs:check` before writing anything and stops if a doc it is about to touch has drifted; the Release Agent re-runs it with `--assert` after publishing and blocks completion unless every touched doc reports the repo and Salesforce in sync. The check compares normalised plain text rather than markup, so the Markdown-vs-Quill format difference does not register as drift, and it excludes code and diagram blocks whose formatting legitimately differs between the two. Large `Body__c` and staged-field writes go through a file-based `sf data update bulk` load (CRLF-terminated CSV) with a byte-for-byte read-back, not inline payloads.
