@@ -89,3 +89,12 @@ For a Rich Text Area payload of any real size, write it from a file using `sf da
 - Use carriage-return-plus-line-feed line endings — the Bulk Application Programming Interface rejects line-feed-only input with `LineEnding is invalid on user data`.
 - Confirm the body contains no raw line breaks before writing, or the row structure breaks.
 - Always re-read the field afterwards and compare it to the intended content. Rich Text Area values can be silently dropped or truncated; see [[salesforce]] for the 32,768 character cap.
+- Ignore the bulk command's console output — it is almost entirely progress-spinner redraw noise and can run to tens of kilobytes. Re-querying the field is the verification; the command output is not.
+
+### Expect Salesforce to re-encode apostrophes on save
+
+A byte-for-byte comparison after a Rich Text write will report a mismatch that is **longer** than what was sent, not shorter. Salesforce encodes `'` to `&#39;`, adding four characters per apostrophe.
+
+**Why:** A staged technical body came back 22,594 characters against a 22,586-character source. The instinct is truncation, but truncation makes a value shorter — a longer value means normalisation. The delta was exactly two apostrophes inside a `<code>getCandidateParents('Ticket')</code>` fragment.
+
+**How to apply:** before concluding a write failed, normalise the local copy (`body.replace(/'/g, "&#39;")`) and compare again. Only treat it as a real failure if the value came back **shorter** or still differs after normalising. Either write `&#39;` in generated HTML from the start, or re-sync the local file to the returned value so later comparisons are clean.

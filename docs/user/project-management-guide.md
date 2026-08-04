@@ -65,6 +65,8 @@ This happens automatically — pulling a card back out of the Active sprint rese
 
 Every Story, Task, and Bug is automatically assigned a **ticket number** when it's created — for example, `ORG-00001`. The number is unique per project and appears on each kanban card and compact row in the backlog. Raw **Ticket** intake (submitted via the Triage tab before classification) receives a `TRI-NNNNN` number; once approved and classified as a Story, Task, or Bug, it is assigned a project-sequence number instead.
 
+When you approve a ticket, you must choose both what it will become (Story, Task, or Bug) and the **Epic** it belongs to. Approve stays greyed out until both are set. The Epic is what connects the item to a project — without one it would land in the Backlog with no board to appear on.
+
 ### Priority Indicators
 
 Each card shows a coloured left border and an emoji:

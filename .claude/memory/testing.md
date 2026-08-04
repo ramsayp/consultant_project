@@ -84,6 +84,41 @@ getObjectInfo.emit(MOCK_OBJ_INFO); // correct
 getObjectInfo.emit({ data: MOCK_OBJ_INFO, error: undefined }); // WRONG
 ```
 
+### 7. A new Apex import needs a physical stub file before `jest.mock` will work
+
+`jest.mock("@salesforce/apex/Controller.newMethod", factory)` fails with `Configuration error: Could not locate module ... mapped as __mocks__/@salesforce/apex/$1.js` unless that file exists.
+
+**Why:** `jest.config.js` maps `^@salesforce/apex/(.+)$` to `<rootDir>/__mocks__/@salesforce/apex/$1.js`. `moduleNameMapper` resolves _before_ the `jest.mock` factory is consulted, so a missing file is a hard resolution failure, not a fallback to the factory. Pattern 1 above is necessary but not sufficient on its own.
+
+**How to apply:** whenever an LWC under test gains a new `@salesforce/apex/...` import, create the matching one-line stub in the same commit:
+
+```javascript
+// __mocks__/@salesforce/apex/WorkItemController.getCandidateParents.js
+module.exports = { default: jest.fn(), __esModule: true };
+```
+
+### 8. `jest.clearAllMocks()` keeps implementations — reset defaults in `beforeEach`
+
+`clearAllMocks` resets recorded calls, instances and results. It does **not** remove an implementation set by `mockResolvedValue` / `mockRejectedValue`, so a rejection configured in one test leaks into every test that runs afterwards.
+
+**Why:** A `notifyRecordUpdateAvailable.mockRejectedValue(...)` in a `describe("approve")` test silently applied to every later `describe("decline")` test. Nothing went red — the component swallowed the rejection by design — so it would have quietly weakened the rest of the suite indefinitely.
+
+**How to apply:** for any mock whose rejection path is exercised, restore the happy-path default explicitly in `beforeEach`. A green suite is not evidence that mock state is clean; leaked implementations fail silently by definition.
+
+### 9. Asserting on toasts
+
+The `sfdx-lwc-jest` stub dispatches a bubbling, composed `CustomEvent` named `lightning__showtoast` whose `detail` is the toast object:
+
+```javascript
+function captureToasts(el) {
+  const toasts = [];
+  el.addEventListener("lightning__showtoast", (e) => toasts.push(e.detail));
+  return toasts;
+}
+```
+
+Assert `toHaveLength(1)` alongside the title — that pins that no _second_, contradicting toast fired, which is usually the actual defect.
+
 ## Stub components go in `__stubs__/`, not `__mocks__/`
 
 Use `__stubs__/` (not `__mocks__/`) for multi-file LWC stub components used to isolate a child component.
