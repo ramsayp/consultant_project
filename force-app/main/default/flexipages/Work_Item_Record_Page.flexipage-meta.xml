@@ -648,6 +648,13 @@
             <componentInstance>
                 <componentName>workItemParentSelector</componentName>
                 <identifier>c_workItemParentSelector</identifier>
+                <visibilityRule>
+                    <criteria>
+                        <leftValue>{!Record.RecordType.Name}</leftValue>
+                        <operator>NE</operator>
+                        <rightValue>Ticket</rightValue>
+                    </criteria>
+                </visibilityRule>
             </componentInstance>
         </itemInstances>
         <itemInstances>

@@ -686,11 +686,19 @@ private class WorkItemController_Test {
 
   @isTest
   static void testApproveTicket() {
+    Id epicId = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Epic'
+      LIMIT 1
+    ]
+    .Id;
     Id ticketId = WorkItemController.createTicket('Approve me', null, 'Medium');
     update new Work_Item__c(
       Id = ticketId,
       Triage_Status__c = 'Reviewed',
-      Target_Type__c = 'Story'
+      Target_Type__c = 'Story',
+      Parent_Work_Item__c = epicId
     );
 
     Test.startTest();
@@ -701,6 +709,7 @@ private class WorkItemController_Test {
       SELECT
         Triage_Status__c,
         Status__c,
+        Parent_Work_Item__c,
         RecordType.DeveloperName,
         Sprint__r.RecordType.DeveloperName
       FROM Work_Item__c
@@ -710,6 +719,11 @@ private class WorkItemController_Test {
     System.assertEquals('Not Selected', ticket.Status__c);
     System.assertEquals('Story', ticket.RecordType.DeveloperName);
     System.assertEquals('Backlog', ticket.Sprint__r.RecordType.DeveloperName);
+    System.assertEquals(
+      epicId,
+      ticket.Parent_Work_Item__c,
+      'Approval must preserve the Epic — losing it orphans the item off every board'
+    );
   }
 
   @isTest
@@ -729,6 +743,43 @@ private class WorkItemController_Test {
       System.assertNotEquals(null, e.getMessage());
     }
     Test.stopTest();
+  }
+
+  // Target type set but no Epic — the state that used to approve into a board
+  // no query could reach.
+  @isTest
+  static void testApproveTicket_requiresEpic() {
+    Id ticketId = WorkItemController.createTicket(
+      'Approve me with no epic',
+      null,
+      'Medium'
+    );
+    update new Work_Item__c(
+      Id = ticketId,
+      Triage_Status__c = 'Reviewed',
+      Target_Type__c = 'Story'
+    );
+
+    Test.startTest();
+    try {
+      WorkItemController.approveTicket(ticketId);
+      System.assert(false, 'Expected AuraHandledException');
+    } catch (AuraHandledException e) {
+      System.assertNotEquals(null, e.getMessage());
+    }
+    Test.stopTest();
+
+    Work_Item__c ticket = [
+      SELECT Triage_Status__c, RecordType.DeveloperName
+      FROM Work_Item__c
+      WHERE Id = :ticketId
+    ];
+    System.assertEquals(
+      'Reviewed',
+      ticket.Triage_Status__c,
+      'A rejected approval must leave the ticket untouched'
+    );
+    System.assertEquals('Ticket', ticket.RecordType.DeveloperName);
   }
 
   @isTest
@@ -769,6 +820,13 @@ private class WorkItemController_Test {
 
   @isTest
   static void testGetTicketReviewContext() {
+    Id epicId = [
+      SELECT Id
+      FROM Work_Item__c
+      WHERE Name = 'Test Epic'
+      LIMIT 1
+    ]
+    .Id;
     Id ticketId = WorkItemController.createTicket(
       'Review me',
       'Raw ticket description',
@@ -778,7 +836,8 @@ private class WorkItemController_Test {
       Id = ticketId,
       Triage_Status__c = 'Declined',
       Triage_Notes__c = 'Needs more detail',
-      Target_Type__c = 'Bug'
+      Target_Type__c = 'Bug',
+      Parent_Work_Item__c = epicId
     );
 
     Test.startTest();
@@ -791,6 +850,22 @@ private class WorkItemController_Test {
     System.assertEquals('Declined', ctx.get('triageStatus'));
     System.assertEquals('Needs more detail', ctx.get('triageNotes'));
     System.assertEquals('Bug', ctx.get('targetType'));
+    System.assertEquals(epicId, ctx.get('parentId'));
+    System.assertEquals('Test Epic', ctx.get('parentName'));
+  }
+
+  @isTest
+  static void testGetTicketReviewContext_noEpic() {
+    Id ticketId = WorkItemController.createTicket('No epic yet', null, 'Low');
+
+    Test.startTest();
+    Map<String, Object> ctx = WorkItemController.getTicketReviewContext(
+      ticketId
+    );
+    Test.stopTest();
+
+    System.assertEquals(null, ctx.get('parentId'));
+    System.assertEquals(null, ctx.get('parentName'));
   }
 
   // ── General Epic trigger ──────────────────────────────────────────────────

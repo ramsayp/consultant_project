@@ -16,10 +16,15 @@ jest.mock("@salesforce/apex/WorkItemController.declineTicket", () => ({
   default: jest.fn(),
   __esModule: true
 }));
+jest.mock("@salesforce/apex/WorkItemController.getCandidateParents", () => ({
+  default: jest.fn(),
+  __esModule: true
+}));
 
 import getTicketReviewContext from "@salesforce/apex/WorkItemController.getTicketReviewContext";
 import approveTicket from "@salesforce/apex/WorkItemController.approveTicket";
 import declineTicket from "@salesforce/apex/WorkItemController.declineTicket";
+import getCandidateParents from "@salesforce/apex/WorkItemController.getCandidateParents";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 function getButtonByLabel(container, label) {
@@ -27,6 +32,17 @@ function getButtonByLabel(container, label) {
     (b) => b.label === label
   );
 }
+
+function getComboboxByLabel(container, label) {
+  return [...container.querySelectorAll("lightning-combobox")].find(
+    (c) => c.label === label
+  );
+}
+
+const EPICS = [
+  { Id: "ep001", Name: "Org Changes" },
+  { Id: "ep002", Name: "Project Manager Post Release fixes" }
+];
 
 const flushAllPromises = () =>
   Promise.resolve()
@@ -38,21 +54,34 @@ const TICKET_CONTEXT = {
   recordTypeName: "Ticket",
   triageStatus: "Reviewing",
   triageNotes: null,
-  targetType: ""
+  targetType: "",
+  parentId: null,
+  parentName: null
+};
+
+// Target type already set but still no Epic — the state that used to allow an
+// orphaning approval
+const TICKET_NO_EPIC_CONTEXT = {
+  ...TICKET_CONTEXT,
+  targetType: "Story"
 };
 
 const DECLINED_CONTEXT = {
   recordTypeName: "Ticket",
   triageStatus: "Declined",
   triageNotes: "Needs more detail on the AC",
-  targetType: "Story"
+  targetType: "Story",
+  parentId: "ep002",
+  parentName: "Project Manager Post Release fixes"
 };
 
 const STORY_CONTEXT = {
   recordTypeName: "Story",
   triageStatus: "Approved",
   triageNotes: null,
-  targetType: "Story"
+  targetType: "Story",
+  parentId: "ep001",
+  parentName: "Org Changes"
 };
 
 function create() {
@@ -61,6 +90,10 @@ function create() {
   document.body.appendChild(el);
   return el;
 }
+
+beforeEach(() => {
+  getCandidateParents.mockResolvedValue(EPICS);
+});
 
 afterEach(() => {
   while (document.body.firstChild)
@@ -106,7 +139,7 @@ describe("target type", () => {
     const el = create();
     await flushAllPromises();
 
-    const combobox = el.shadowRoot.querySelector("lightning-combobox");
+    const combobox = getComboboxByLabel(el.shadowRoot, "This will become");
     combobox.dispatchEvent(
       new CustomEvent("change", { detail: { value: "Bug" } })
     );
@@ -123,6 +156,77 @@ describe("target type", () => {
     await flushAllPromises();
 
     expect(getButtonByLabel(el.shadowRoot, "Approve").disabled).toBe(true);
+  });
+});
+
+// ── Epic ────────────────────────────────────────────────────────────────────
+describe("epic", () => {
+  it("offers the Epics returned by getCandidateParents", async () => {
+    getTicketReviewContext.mockResolvedValue(TICKET_CONTEXT);
+    const el = create();
+    await flushAllPromises();
+
+    expect(getCandidateParents).toHaveBeenCalledWith({
+      recordTypeName: "Ticket"
+    });
+    expect(getComboboxByLabel(el.shadowRoot, "Epic").options).toEqual([
+      { label: "Org Changes", value: "ep001" },
+      { label: "Project Manager Post Release fixes", value: "ep002" }
+    ]);
+  });
+
+  it("saves the selected Epic via updateRecord", async () => {
+    getTicketReviewContext.mockResolvedValue(TICKET_CONTEXT);
+    updateRecord.mockResolvedValue();
+    const el = create();
+    await flushAllPromises();
+
+    getComboboxByLabel(el.shadowRoot, "Epic").dispatchEvent(
+      new CustomEvent("change", { detail: { value: "ep001" } })
+    );
+    await flushAllPromises();
+
+    expect(updateRecord).toHaveBeenCalledWith({
+      fields: { Id: "wi001", Parent_Work_Item__c: "ep001" }
+    });
+  });
+
+  it("reflects an Epic that is already set when the page loads", async () => {
+    getTicketReviewContext.mockResolvedValue(DECLINED_CONTEXT);
+    const el = create();
+    await flushAllPromises();
+
+    expect(getComboboxByLabel(el.shadowRoot, "Epic").value).toBe("ep002");
+  });
+
+  it("keeps Approve disabled when a target type is set but no Epic is", async () => {
+    getTicketReviewContext.mockResolvedValue(TICKET_NO_EPIC_CONTEXT);
+    const el = create();
+    await flushAllPromises();
+
+    expect(getButtonByLabel(el.shadowRoot, "Approve").disabled).toBe(true);
+  });
+
+  it("enables Approve once both a target type and an Epic are set", async () => {
+    getTicketReviewContext.mockResolvedValue(TICKET_NO_EPIC_CONTEXT);
+    updateRecord.mockResolvedValue();
+    const el = create();
+    await flushAllPromises();
+
+    getComboboxByLabel(el.shadowRoot, "Epic").dispatchEvent(
+      new CustomEvent("change", { detail: { value: "ep001" } })
+    );
+    await flushAllPromises();
+
+    expect(getButtonByLabel(el.shadowRoot, "Approve").disabled).toBe(false);
+  });
+
+  it("enables Approve on load when the ticket already has both", async () => {
+    getTicketReviewContext.mockResolvedValue(DECLINED_CONTEXT);
+    const el = create();
+    await flushAllPromises();
+
+    expect(getButtonByLabel(el.shadowRoot, "Approve").disabled).toBe(false);
   });
 });
 

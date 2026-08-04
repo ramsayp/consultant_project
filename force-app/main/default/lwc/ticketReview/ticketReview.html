@@ -23,6 +23,19 @@
         </lightning-combobox>
       </div>
 
+      <div class="tr-field">
+        <lightning-combobox
+          label="Epic"
+          value={epicId}
+          options={epicOptions}
+          placeholder="Select..."
+          required
+          field-level-help="Required. Without an Epic this item sits under no project and will not appear on any board."
+          onchange={handleEpicChange}
+        >
+        </lightning-combobox>
+      </div>
+
       <template if:false={showDeclineForm}>
         <div class="tr-actions">
           <lightning-button
