@@ -530,13 +530,21 @@ public with sharing class WorkItemController {
   @AuraEnabled
   public static void approveTicket(Id ticketId) {
     Work_Item__c ticket = [
-      SELECT Target_Type__c
+      SELECT Target_Type__c, Parent_Work_Item__c
       FROM Work_Item__c
       WHERE Id = :ticketId
     ];
     if (String.isBlank(ticket.Target_Type__c)) {
       throw new AuraHandledException(
         'Set what this ticket will become (Story, Task, or Bug) before approving.'
+      );
+    }
+    // Boards are scoped by walking Project → Epic → Story/Task/Bug, so an
+    // approved item with no Epic matches no board and is unreachable. Guarded
+    // here as well as in the UI: the UI copy of the parent can go stale.
+    if (ticket.Parent_Work_Item__c == null) {
+      throw new AuraHandledException(
+        'Select an Epic before approving — without one this item will not appear on any project board.'
       );
     }
     ensureBacklogSprint();
@@ -592,13 +600,19 @@ public with sharing class WorkItemController {
   }
 
   // ── getTicketReviewContext ────────────────────────────────────────────────
-  // Returns the record type, triage status/notes, and target type of a ticket.
-  // Used by the ticketReview applet to render its review controls only on
-  // Ticket records and to reflect their current triage state.
+  // Returns the record type, triage status/notes, target type, and parent Epic
+  // of a ticket. Used by the ticketReview applet to render its review controls
+  // only on Ticket records and to reflect their current triage state.
   @AuraEnabled
   public static Map<String, Object> getTicketReviewContext(Id ticketId) {
     Work_Item__c w = [
-      SELECT RecordType.Name, Triage_Status__c, Triage_Notes__c, Target_Type__c
+      SELECT
+        RecordType.Name,
+        Triage_Status__c,
+        Triage_Notes__c,
+        Target_Type__c,
+        Parent_Work_Item__c,
+        Parent_Work_Item__r.Name
       FROM Work_Item__c
       WHERE Id = :ticketId
     ];
@@ -606,7 +620,9 @@ public with sharing class WorkItemController {
       'recordTypeName' => w.RecordType.Name,
       'triageStatus' => w.Triage_Status__c,
       'triageNotes' => w.Triage_Notes__c,
-      'targetType' => w.Target_Type__c
+      'targetType' => w.Target_Type__c,
+      'parentId' => w.Parent_Work_Item__c,
+      'parentName' => w.Parent_Work_Item__r?.Name
     };
   }
 

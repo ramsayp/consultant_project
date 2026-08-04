@@ -141,7 +141,7 @@ Comment thread applet — add, inline edit, delete, 'Edited' badge when modified
 
 ### workItemParentSelector
 
-Reassign a work item's parent via a combobox of eligible candidates. Saves via LDS `updateRecord`.
+Reassign a work item's parent via a combobox of eligible candidates. Saves via LDS `updateRecord`. Hidden on Ticket record pages — `ticketReview` owns the Epic there (see Key Design Decisions).
 
 ### sprintCreate
 
@@ -158,7 +158,8 @@ BA agent triage (future) → classifies, drafts User_Story__c/AC/Plan
         ↓
 Human review: ticketTriage queue → ticketReview applet
         ↓
-   Approve → reclassified to Target_Type__c, lands in Backlog
+   Approve → requires Target_Type__c AND an Epic;
+             reclassified to Target_Type__c, lands in Backlog
    Decline → Triage_Notes__c captured, re-triage
 ```
 
@@ -172,7 +173,11 @@ Queue of tickets awaiting review — fourth view in `workManager`. Loads `getTri
 
 ### ticketReview
 
-Record-page sidebar applet, visible only on Ticket records (self-hides via `isTicket` getter). Approve calls `approveTicket` then self-hides. Decline reveals a notes textarea and calls `declineTicket`.
+Record-page sidebar applet, visible only on Ticket records (self-hides via `isTicket` getter). Carries two pickers — **This will become** (`Target_Type__c`) and **Epic** (`Parent_Work_Item__c`) — each auto-saving via LDS `updateRecord` on change. Approve stays disabled until both are set, then calls `approveTicket` and self-hides. Decline reveals a notes textarea and calls `declineTicket`; it requires no Epic.
+
+The Epic list reuses `getCandidateParents('Ticket')`, which already maps Ticket → Epic server-side.
+
+Both approve and decline write through imperative Apex, which LDS cannot observe, so each calls `notifyRecordUpdateAvailable` afterwards to force a refetch — without it the page keeps serving the cached record and FlexiPage record-type visibility rules never re-evaluate. That refresh is wrapped in its own `try`/`catch` and swallows failure deliberately: the write has already committed by the time it runs, so surfacing an error there would report a successful approval as a failed one.
 
 ---
 
@@ -226,6 +231,10 @@ Terminal statuses (stay on closed sprint): Completed, Cancelled, Done, Fixed, Cl
 
 **`Target_Type__c` decouples classification from reclassification:** the reviewer sets "what this becomes" as its own auto-saved field before approving; approveTicket refuses (AuraHandledException) if it's blank.
 
+**An Epic is mandatory to approve, guarded server-side:** boards are scoped by walking Project → Epic → Story/Task/Bug, so an approved item with no Epic matches no board and is unreachable in the Backlog. `approveTicket` throws an AuraHandledException on a blank `Parent_Work_Item__c`, mirroring the `Target_Type__c` guard. The guard is server-side as well as in the UI precisely because a client copy of the parent can go stale.
+
+**One writer per field beats syncing two:** `ticketReview` and `workItemParentSelector` both load once in `connectedCallback` and never refresh, so leaving both on a Ticket page would let the stale one clear the Epic the other had just set — `workItemParentSelector.handleSave` writes `selectedParentId || null`. Rather than wire them together with a message channel, `workItemParentSelector` is suppressed on the Ticket record type so only one control writes `Parent_Work_Item__c` there. This removes the stale-write bug class outright instead of narrowing its window.
+
 **Sequential per-project keys, independent TRI counter:** Story/Task/Bug receive `CODE-NNNNN` keys counted per project; Tickets receive `TRI-NNNNN` keys from a global counter. The two sequences are fully independent.
 
 **TRI exclusion from project counter via range comparison:** `getMaxItemNumberByProject` uses `(Ticket_Key__c < 'TRI-' OR Ticket_Key__c > 'TRI-99999')` to exclude TRI-keyed items. `NOT LIKE` is rejected by the VS Code SOQL parser in aggregate WHERE clauses. Project codes sorting before `TRI-` (e.g. `ORG`) satisfy `< 'TRI-'`; codes sorting after `TRI-99999` (e.g. `TST`) satisfy `> 'TRI-99999'`.
@@ -234,4 +243,4 @@ Terminal statuses (stay on closed sprint): Completed, Cancelled, Done, Fixed, Cl
 
 **getTriageQueue is imperative and explicitly not cacheable:** Marking it cacheable=true looks natural for a read-only query, but live testing showed the platform's storable-action cache for cacheable=true Apex methods is served even on imperative calls, not only wired ones — a ticket created or deleted elsewhere kept producing the same stale row count no matter how the reload was triggered. Dropping cacheable=true was the actual fix; the cross-component reload triggers (ticketTriage's TicketTriageChannel subscription and CurrentPageReference wiring) are necessary but not sufficient without it.
 
-**Work Item record page hides irrelevant fields per record type:** `Status__c` is hidden on the Ticket record type page (Tickets track pipeline stage via `Triage_Status__c`, not `Status__c`); `Triage_Status__c` is shown only for Tickets; `Project_Code__c` is shown only for Project records. Implemented via FlexiPage field-instance `visibilityRule`s keyed on `{!Record.RecordType.Name}` rather than maintaining separate page variants.
+**Work Item record page hides irrelevant fields per record type:** `Status__c` is hidden on the Ticket record type page (Tickets track pipeline stage via `Triage_Status__c`, not `Status__c`); `Triage_Status__c` is shown only for Tickets; `Project_Code__c` is shown only for Project records. Implemented via FlexiPage field-instance `visibilityRule`s keyed on `{!Record.RecordType.Name}` rather than maintaining separate page variants. The same mechanism applies to whole components, not just fields — a component-instance `visibilityRule` (`{!Record.RecordType.Name}` NE `Ticket`) hides `workItemParentSelector` on Ticket pages while leaving it visible everywhere else.

@@ -109,6 +109,25 @@ A request like "go straight to code review" or "doc agent go" means: do that one
 
 **How to apply:** When any pipeline stage surfaces a side issue (doc drift, stale data, missing dependency), stop and flag it with options rather than silently expanding the task. Reserve full backfills for when the user explicitly asks. For the Rich Text Area size check that goes with full-document rewrites, see [[salesforce]] and [[docs]].
 
+## Windows shell — pick the right tool first time
+
+Three failure modes cost repeated retries in one session. All three are avoidable by choosing correctly up front.
+
+**1. `sf` CLI must run in PowerShell, never the Bash tool.** Under Git Bash the `sf` shim fails with `'C:\Program' is not recognized as an internal or external command` — the wrapper invokes node via an unquoted `C:\Program Files\...` path. `node` itself works fine in Bash, so `node scripts/docs-check.js` is fine; `sf data query` is not.
+
+**2. PowerShell `Out-File -Encoding utf8` writes a BOM.** Piping `sf ... --json | Out-File` then `JSON.parse`-ing the file in Node throws `SyntaxError: Unexpected token '﻿'`. Strip it: `readFileSync(p,'utf8').replace(/^\uFEFF/,'')`.
+
+**3. Multi-line `git commit -m` with a PowerShell here-string breaks on embedded double quotes.** The `@'...'@` form is not reliably recognised in this harness, so the message gets parsed as loose arguments and git reports `error: pathspec '...' did not match any file(s)`. Write the message to a file and use `git commit -F <path>` whenever the message has more than one line or contains any quote character.
+
+**Why:** Each of these produced a failed tool call, a diagnostic detour, and a retry — in a session where the user explicitly called out that we were "going round in circles."
+
+**How to apply:**
+
+- Reach for **PowerShell** for anything `sf`, and for `git push`/`git commit`. Reach for the **Bash tool** for `node`, `grep`-style work, and scripts.
+- Never pipe `sf --json` into `Out-File` and parse it without stripping the BOM.
+- Default to `git commit -F` for any commit message that is not a single short line. Write the message with the Write tool into the scratchpad first.
+- `git push` writes progress to stderr, which this harness surfaces as `NativeCommandError` even on success. Confirm the outcome with `git status` / `git log`, not the push command's exit rendering.
+
 ## Check the whole stack before declaring a fix complete — or a claim wrong
 
 When a rule is implemented in more than one place, changing one copy is not a fix. And before contradicting a statement about how something behaves, verify every layer that could produce that behaviour — not only the layer currently being read.

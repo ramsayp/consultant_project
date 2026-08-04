@@ -1,8 +1,12 @@
 // ── Imports ───────────────────────────────────────────────────────────────────
 import { LightningElement, api, track } from "lwc";
-import { updateRecord } from "lightning/uiRecordApi";
+import {
+  updateRecord,
+  notifyRecordUpdateAvailable
+} from "lightning/uiRecordApi";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import getTicketReviewContext from "@salesforce/apex/WorkItemController.getTicketReviewContext";
+import getCandidateParents from "@salesforce/apex/WorkItemController.getCandidateParents";
 import approveTicket from "@salesforce/apex/WorkItemController.approveTicket";
 import declineTicket from "@salesforce/apex/WorkItemController.declineTicket";
 
@@ -26,6 +30,8 @@ export default class TicketReview extends LightningElement {
   @track triageStatus = null;
   @track triageNotes = null;
   @track targetType = ""; // bound to the "this will become" combobox
+  @track epicId = ""; // bound to the Epic combobox
+  @track epicCandidates = []; // eligible Epics for the dropdown
   @track declineNotes = "";
   @track showDeclineForm = false;
   @track isSaving = false;
@@ -45,6 +51,13 @@ export default class TicketReview extends LightningElement {
       this.triageStatus = ctx.triageStatus;
       this.triageNotes = ctx.triageNotes;
       this.targetType = ctx.targetType || "";
+      this.epicId = ctx.parentId || "";
+      if (this.isTicket) {
+        // Ticket → Epic is already mapped server-side, so reuse that list
+        this.epicCandidates = await getCandidateParents({
+          recordTypeName: "Ticket"
+        });
+      }
     } catch (e) {
       console.error("ticketReview: failed to load context", e);
     }
@@ -57,8 +70,15 @@ export default class TicketReview extends LightningElement {
   get hasTriageNotes() {
     return !!this.triageNotes;
   }
+
+  get epicOptions() {
+    return this.epicCandidates.map((c) => ({ label: c.Name, value: c.Id }));
+  }
+
+  // Both a target type and an Epic are required — an approved item with no Epic
+  // sits under no Project and never appears on a board.
   get isApproveDisabled() {
-    return this.isSaving || !this.targetType;
+    return this.isSaving || !this.targetType || !this.epicId;
   }
   get isDeclineDisabled() {
     return this.isSaving || !this.declineNotes?.trim();
@@ -72,6 +92,20 @@ export default class TicketReview extends LightningElement {
     try {
       await updateRecord({
         fields: { Id: this.recordId, Target_Type__c: this.targetType }
+      });
+    } catch (e) {
+      this.toast("Save failed", e?.body?.message ?? e?.message, "error");
+    }
+  }
+
+  // ── Epic ──────────────────────────────────────────────────────────────────
+  // Saves immediately on change, matching the target type picker, so the choice
+  // survives a page refresh taken before Approve is clicked.
+  async handleEpicChange(event) {
+    this.epicId = event.detail.value;
+    try {
+      await updateRecord({
+        fields: { Id: this.recordId, Parent_Work_Item__c: this.epicId }
       });
     } catch (e) {
       this.toast("Save failed", e?.body?.message ?? e?.message, "error");
@@ -95,6 +129,7 @@ export default class TicketReview extends LightningElement {
     this.isSaving = true;
     try {
       await approveTicket({ ticketId: this.recordId });
+      await this.notifyRecordChanged();
       this.toast(
         "Ticket approved",
         "Reclassified and moved to the Backlog",
@@ -118,6 +153,7 @@ export default class TicketReview extends LightningElement {
         ticketId: this.recordId,
         notes: this.declineNotes.trim()
       });
+      await this.notifyRecordChanged();
       this.toast(
         "Ticket declined",
         "Sent back to the BA agent for re-review",
@@ -133,6 +169,23 @@ export default class TicketReview extends LightningElement {
   }
 
   // ── Utility ───────────────────────────────────────────────────────────────
+  // Approve and decline write through imperative Apex, which LDS knows nothing
+  // about — so the page keeps serving the cached record and FlexiPage
+  // record-type visibility rules never re-evaluate (the Epic applet stays
+  // hidden until a manual refresh). This tells LDS to refetch.
+  //
+  // Swallows its own failure deliberately: the write has already committed by
+  // the time this runs, so surfacing an error here would report a successful
+  // approval as a failed one. A stale page is the pre-fix behaviour and is
+  // strictly better than a false failure.
+  async notifyRecordChanged() {
+    try {
+      await notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
+    } catch {
+      // page stays stale until the user refreshes — never fail the write for this
+    }
+  }
+
   toast(title, message, variant) {
     this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
   }
