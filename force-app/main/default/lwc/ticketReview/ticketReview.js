@@ -129,11 +129,7 @@ export default class TicketReview extends LightningElement {
     this.isSaving = true;
     try {
       await approveTicket({ ticketId: this.recordId });
-      // Approval changes the record type via imperative Apex, which LDS knows
-      // nothing about. Without this the page keeps serving the cached Ticket,
-      // so FlexiPage record-type visibility rules never re-evaluate and the
-      // Epic applet stays hidden until the user refreshes by hand.
-      await notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
+      await this.notifyRecordChanged();
       this.toast(
         "Ticket approved",
         "Reclassified and moved to the Backlog",
@@ -157,9 +153,7 @@ export default class TicketReview extends LightningElement {
         ticketId: this.recordId,
         notes: this.declineNotes.trim()
       });
-      // Same staleness as approve: the triage status and notes fields on the
-      // page would otherwise keep showing pre-decline values.
-      await notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
+      await this.notifyRecordChanged();
       this.toast(
         "Ticket declined",
         "Sent back to the BA agent for re-review",
@@ -175,6 +169,23 @@ export default class TicketReview extends LightningElement {
   }
 
   // ── Utility ───────────────────────────────────────────────────────────────
+  // Approve and decline write through imperative Apex, which LDS knows nothing
+  // about — so the page keeps serving the cached record and FlexiPage
+  // record-type visibility rules never re-evaluate (the Epic applet stays
+  // hidden until a manual refresh). This tells LDS to refetch.
+  //
+  // Swallows its own failure deliberately: the write has already committed by
+  // the time this runs, so surfacing an error here would report a successful
+  // approval as a failed one. A stale page is the pre-fix behaviour and is
+  // strictly better than a false failure.
+  async notifyRecordChanged() {
+    try {
+      await notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
+    } catch {
+      // page stays stale until the user refreshes — never fail the write for this
+    }
+  }
+
   toast(title, message, variant) {
     this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
   }

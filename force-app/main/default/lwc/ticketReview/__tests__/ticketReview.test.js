@@ -42,6 +42,14 @@ function getComboboxByLabel(container, label) {
   );
 }
 
+// Captures ShowToastEvent payloads — the stub dispatches 'lightning__showtoast'
+// with the toast object as detail
+function captureToasts(el) {
+  const toasts = [];
+  el.addEventListener("lightning__showtoast", (e) => toasts.push(e.detail));
+  return toasts;
+}
+
 const EPICS = [
   { Id: "ep001", Name: "Org Changes" },
   { Id: "ep002", Name: "Project Manager Post Release fixes" }
@@ -96,6 +104,9 @@ function create() {
 
 beforeEach(() => {
   getCandidateParents.mockResolvedValue(EPICS);
+  // clearAllMocks resets calls but keeps implementations, so restore the
+  // happy-path default explicitly — the refresh-failure tests override it
+  notifyRecordUpdateAvailable.mockResolvedValue();
 });
 
 afterEach(() => {
@@ -276,6 +287,25 @@ describe("approve", () => {
 
     expect(notifyRecordUpdateAvailable).not.toHaveBeenCalled();
   });
+
+  // The write has already committed by the time the refresh runs, so a refresh
+  // failure must never be reported as a failed approval — that would send the
+  // reviewer back to click Approve a second time, resetting Sprint__c.
+  it("still reports success when the LDS refresh fails", async () => {
+    getTicketReviewContext.mockResolvedValue(DECLINED_CONTEXT);
+    approveTicket.mockResolvedValue();
+    notifyRecordUpdateAvailable.mockRejectedValue(new Error("network"));
+    const el = create();
+    const toasts = captureToasts(el);
+    await flushAllPromises();
+
+    getButtonByLabel(el.shadowRoot, "Approve").click();
+    await flushAllPromises();
+
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0].title).toBe("Ticket approved");
+    expect(toasts[0].variant).toBe("success");
+  });
 });
 
 // ── Decline ─────────────────────────────────────────────────────────────────
@@ -322,5 +352,51 @@ describe("decline", () => {
     expect(notifyRecordUpdateAvailable).toHaveBeenCalledWith([
       { recordId: "wi001" }
     ]);
+  });
+
+  it("does not notify LDS when decline fails", async () => {
+    getTicketReviewContext.mockResolvedValue(TICKET_CONTEXT);
+    declineTicket.mockRejectedValue({ body: { message: "nope" } });
+    const el = create();
+    await flushAllPromises();
+
+    getButtonByLabel(el.shadowRoot, "Decline").click();
+    await flushAllPromises();
+
+    el.shadowRoot
+      .querySelector("lightning-textarea")
+      .dispatchEvent(new CustomEvent("change", { detail: { value: "no" } }));
+    await flushAllPromises();
+
+    getButtonByLabel(el.shadowRoot, "Confirm Decline").click();
+    await flushAllPromises();
+
+    expect(notifyRecordUpdateAvailable).not.toHaveBeenCalled();
+  });
+
+  it("still reports success when the LDS refresh fails", async () => {
+    getTicketReviewContext.mockResolvedValue(TICKET_CONTEXT);
+    declineTicket.mockResolvedValue();
+    notifyRecordUpdateAvailable.mockRejectedValue(new Error("network"));
+    const el = create();
+    const toasts = captureToasts(el);
+    await flushAllPromises();
+
+    getButtonByLabel(el.shadowRoot, "Decline").click();
+    await flushAllPromises();
+
+    el.shadowRoot
+      .querySelector("lightning-textarea")
+      .dispatchEvent(
+        new CustomEvent("change", { detail: { value: "Needs detail" } })
+      );
+    await flushAllPromises();
+
+    getButtonByLabel(el.shadowRoot, "Confirm Decline").click();
+    await flushAllPromises();
+
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0].title).toBe("Ticket declined");
+    expect(toasts[0].variant).toBe("success");
   });
 });
