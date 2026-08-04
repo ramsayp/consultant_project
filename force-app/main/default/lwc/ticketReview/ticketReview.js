@@ -1,6 +1,9 @@
 // ── Imports ───────────────────────────────────────────────────────────────────
 import { LightningElement, api, track } from "lwc";
-import { updateRecord } from "lightning/uiRecordApi";
+import {
+  updateRecord,
+  notifyRecordUpdateAvailable
+} from "lightning/uiRecordApi";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import getTicketReviewContext from "@salesforce/apex/WorkItemController.getTicketReviewContext";
 import getCandidateParents from "@salesforce/apex/WorkItemController.getCandidateParents";
@@ -126,6 +129,11 @@ export default class TicketReview extends LightningElement {
     this.isSaving = true;
     try {
       await approveTicket({ ticketId: this.recordId });
+      // Approval changes the record type via imperative Apex, which LDS knows
+      // nothing about. Without this the page keeps serving the cached Ticket,
+      // so FlexiPage record-type visibility rules never re-evaluate and the
+      // Epic applet stays hidden until the user refreshes by hand.
+      await notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
       this.toast(
         "Ticket approved",
         "Reclassified and moved to the Backlog",
@@ -149,6 +157,9 @@ export default class TicketReview extends LightningElement {
         ticketId: this.recordId,
         notes: this.declineNotes.trim()
       });
+      // Same staleness as approve: the triage status and notes fields on the
+      // page would otherwise keep showing pre-decline values.
+      await notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
       this.toast(
         "Ticket declined",
         "Sent back to the BA agent for re-review",

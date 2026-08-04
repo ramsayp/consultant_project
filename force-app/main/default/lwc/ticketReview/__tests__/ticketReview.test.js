@@ -1,6 +1,9 @@
 import { createElement } from "lwc";
 import TicketReview from "c/ticketReview";
-import { updateRecord } from "lightning/uiRecordApi";
+import {
+  updateRecord,
+  notifyRecordUpdateAvailable
+} from "lightning/uiRecordApi";
 
 // ── Imperative apex mocks ───────────────────────────────────────────────────
 // Use jest.fn() inline in factory so the same instance is shared with the import
@@ -244,6 +247,35 @@ describe("approve", () => {
     expect(approveTicket).toHaveBeenCalledWith({ ticketId: "wi001" });
     expect(getTicketReviewContext).toHaveBeenCalledTimes(2);
   });
+
+  // Approval changes the record type server-side. Without telling LDS, the page
+  // keeps serving the cached Ticket and the Epic applet's record-type
+  // visibility rule stays false until the user refreshes by hand.
+  it("notifies LDS so record-type visibility rules re-evaluate", async () => {
+    getTicketReviewContext.mockResolvedValue(DECLINED_CONTEXT);
+    approveTicket.mockResolvedValue();
+    const el = create();
+    await flushAllPromises();
+
+    getButtonByLabel(el.shadowRoot, "Approve").click();
+    await flushAllPromises();
+
+    expect(notifyRecordUpdateAvailable).toHaveBeenCalledWith([
+      { recordId: "wi001" }
+    ]);
+  });
+
+  it("does not notify LDS when approval fails", async () => {
+    getTicketReviewContext.mockResolvedValue(DECLINED_CONTEXT);
+    approveTicket.mockRejectedValue({ body: { message: "nope" } });
+    const el = create();
+    await flushAllPromises();
+
+    getButtonByLabel(el.shadowRoot, "Approve").click();
+    await flushAllPromises();
+
+    expect(notifyRecordUpdateAvailable).not.toHaveBeenCalled();
+  });
 });
 
 // ── Decline ─────────────────────────────────────────────────────────────────
@@ -285,5 +317,10 @@ describe("decline", () => {
       ticketId: "wi001",
       notes: "Needs more detail on edge cases"
     });
+    // Decline writes triage status/notes server-side too, so the page fields
+    // would otherwise keep showing pre-decline values.
+    expect(notifyRecordUpdateAvailable).toHaveBeenCalledWith([
+      { recordId: "wi001" }
+    ]);
   });
 });
