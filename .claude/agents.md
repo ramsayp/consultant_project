@@ -50,3 +50,26 @@ Ticket (Idea / Bug)
 ```
 
 All pipeline failures: agent sets status + creates a `Comment__c` record describing the failure. Work stays in the current sprint — does not return to Backlog.
+
+---
+
+## Writing records — applies to every agent
+
+**Tool:** record writes (`Comment__c`, `Status__c`, `Triage_Notes__c`, …) go through the `salesforce-project-doc` MCP server (`ProjectMCPCreateRecord` / `ProjectMCPUpdateRecord`). If it is unavailable or needs re-auth, **stop and ask the user** — never fall back to `sf apex run`, `sf data`, or REST. See [memory/salesforce.md](memory/salesforce.md) → _MCP tooling_.
+
+**`Comment__c.Body__c` is plain text — no HTML, no Markdown.** `workItemComments` renders the raw string with `white-space: pre-wrap`, so `<p>`, `<b>`, `**bold**` all appear literally. Structure with line breaks only:
+
+```
+Dev Agent — build complete
+Branch: feature/<slug> (commit abc1234)
+
+Root cause: <one or two sentences>
+
+Files changed:
+- <file> — <what changed>
+- <file> — <what changed>
+
+Tests: 113/113 Apex, 100/100 Jest. Deployed to org.
+```
+
+Short labelled lines, a blank line between groups, `-` for list items.
