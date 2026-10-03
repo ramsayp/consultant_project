@@ -64,6 +64,30 @@ private class WorkItemService_Test {
   }
 
   @IsTest
+  static void projectNeverGetsTicketKey() {
+    Work_Item__c project = WorkItemTestDataFactory.insertProject(
+      'Keyless Project',
+      'KEY'
+    );
+
+    Work_Item__c result = [
+      SELECT Ticket_Key__c, Item_Number__c
+      FROM Work_Item__c
+      WHERE Id = :project.Id
+    ];
+    System.assertEquals(
+      null,
+      result.Ticket_Key__c,
+      'Projects should never be assigned a ticket key'
+    );
+    System.assertEquals(
+      null,
+      result.Item_Number__c,
+      'Projects should never be assigned an item number'
+    );
+  }
+
+  @IsTest
   static void sequentialNumbering() {
     Work_Item__c epic = [
       SELECT Id
