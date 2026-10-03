@@ -114,7 +114,7 @@ Open any work item and use the **Child Work Items** panel on the right to add ch
 
 Click any card to open the full record. Two tabs are available:
 
-- **Request** — name, description, user story, acceptance criteria, status, assignee, sprint, and the comment thread.
+- **Request** — the ticket number (on a Project, its **Project Code** instead), name, description, user story, acceptance criteria, status, assignee, sprint, and the comment thread.
 - **Settings** — sequence order, work mode, and audit fields.
 
 The **Child Work Items** panel on the right shows all children and lets you add new ones inline.
