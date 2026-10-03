@@ -2,7 +2,7 @@
 <RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Project</fullName>
     <active>true</active>
-    <compactLayoutAssignment>Custom_Work_Item_Compact_Layout</compactLayoutAssignment>
+    <compactLayoutAssignment>Project_Compact_Layout</compactLayoutAssignment>
     <description>Top-level strategic container. Groups Epics into a coherent objective.</description>
     <label>Project</label>
     <picklistValues>
