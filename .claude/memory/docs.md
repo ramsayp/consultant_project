@@ -86,7 +86,7 @@ For a Rich Text Area payload of any real size, write it from a file using `sf da
 **How to apply:**
 
 - Build a comma-separated-values file with `Id` and the target field, wrapping the value in double quotes and doubling any internal double quote.
-- Use carriage-return-plus-line-feed line endings — the Bulk Application Programming Interface rejects line-feed-only input with `LineEnding is invalid on user data`.
+- Use carriage-return-plus-line-feed line endings — the Bulk Application Programming Interface rejects line-feed-only input with `LineEnding is invalid on user data`. Generate the whole file, Id included, in one `node` step and never edit it afterwards with `sed -i` — in Git Bash it silently rewrites carriage-return-plus-line-feed to line-feed only, and with the console output discarded the failure is invisible until the re-query comes back empty.
 - Confirm the body contains no raw line breaks before writing, or the row structure breaks.
 - Always re-read the field afterwards and compare it to the intended content. Rich Text Area values can be silently dropped or truncated; see [[salesforce]] for the 32,768 character cap.
 - Ignore the bulk command's console output — it is almost entirely progress-spinner redraw noise and can run to tens of kilobytes. Re-querying the field is the verification; the command output is not.
