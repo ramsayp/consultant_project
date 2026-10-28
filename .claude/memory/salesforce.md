@@ -127,6 +127,16 @@ Read tools always fire without asking — proceed directly: `soqlQuery`, `getObj
 - **`Comment__c.Body__c` — always plain text.** The `workItemComments` LWC renders it as plain text (no rich-text component). HTML tags are stored literally and appear as raw tag text in the UI.
 - **Large Rich Text Area fields on other objects — two-step create then update.** For Rich Text Area fields on objects other than `Comment__c`, the Salesforce API can silently drop content on `createSobjectRecord` when payloads are large. Fix: create with metadata fields only, then `updateSobjectRecord` the new record Id to set the Rich Text Area fields. Long Text Area fields are not affected.
 
+## Authoring a `ProjectMCP*` Apex tool
+
+Custom MCP server tools are Apex `@InvocableMethod` classes in `force-app/main/default/classes/mcp/`, one per class.
+
+- **`global` at every level** — outer class, inner `Input`/`Output` classes, and the `execute` method. A `public` method never appears in the API Catalog's Add Tools picker.
+- **The `Input` class must have at least one `@InvocableVariable`.** An empty `Input` class compiles and deploys, but the tool is rejected when registered on the server — a silent failure. For a tool that takes no input (such as `ProjectMCPGetUserInfo`), skip the `Input` class and declare `execute(List<String> inputs)` — `List<String>` is a valid `@InvocableMethod` primitive.
+- **Server registration is Setup-only.** The `McpServer` metadata type is not supported by the command-line interface, so adding the tool to `project-doc-object-all` and activating it happens in Setup → MCP Servers.
+
+**Why:** These rules were learned building the server and lived in a repo setup guide that duplicated the Salesforce MCP setup guide; that file was deleted under ORG-00011 and the Claude-facing rules moved here.
+
 ---
 
 # Rich Text Area — the canonical limit and how to write it
@@ -135,7 +145,7 @@ Read tools always fire without asking — proceed directly: `soqlQuery`, `getObj
 
 `Documentation__c.Body__c` and the rich-text fields on `Change_Log__c` (`Staged_Technical_Body__c`, `Staged_User_Body__c`, plus the legacy Before/After snapshot fields) are `Rich Text Area(32768)`. **32,768 chars is Salesforce's hard platform ceiling for this field type — it cannot be raised.** This is the single source for this number; other files reference it.
 
-**Size discipline:** For a small targeted edit (one paragraph/bullet), don't pre-check — just attempt the update (the error is more authoritative than any local check, per [[how_i_work]]). But before any **full-document rewrite or backfill**, check the candidate HTML length first (e.g. `node -e "console.log(fs.readFileSync(path).length)"`) against 32,768. A repo doc may have outgrown the cap — `docs/technical/project-management-guide.md` grew to ~56KB markdown (~60KB+ HTML), 2x over. If the repo file is large, the SF baseline is almost certainly a hand-condensed prose summary, not a 1:1 conversion — match the SF baseline's density, don't mechanically convert the whole repo file. See [[docs]].
+**Size discipline:** For a small targeted edit (one paragraph/bullet), don't pre-check — just attempt the update (the error is more authoritative than any local check, per [[how_i_work]]). But before any **full-document rewrite or backfill**, check the candidate HTML length first (e.g. `node -e "console.log(fs.readFileSync(path).length)"`) against 32,768. The old repo Markdown copy of the Project Management technical guide grew to ~56KB (~60KB+ HTML), 2x over — which is why the Salesforce body is a hand-condensed summary. Match its density when extending it. See [[docs]].
 
 ## Escaping large payloads via `fieldsJson`
 

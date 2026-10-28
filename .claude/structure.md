@@ -20,24 +20,57 @@ This file defines where new knowledge belongs. Read it before adding any file to
 
 ## On demand (read when needed)
 
-| Folder                 | Purpose                                        |
-| ---------------------- | ---------------------------------------------- |
-| `agents/`              | Detail files for each agent role               |
-| `apps/*/salesforce.md` | Field-level Salesforce detail for each app     |
-| `integrations/`        | Setup guides for external services (MCP, etc.) |
-| `security/`            | Security policies                              |
-| `skills/`              | Step-by-step task guides                       |
-| `memory/`              | Persistent knowledge — see below               |
+| Folder                 | Purpose                                       |
+| ---------------------- | --------------------------------------------- |
+| `agents/`              | Detail files for each agent role              |
+| `apps/*/salesforce.md` | Field-level Salesforce detail for each app    |
+| `security/`            | Security policies                             |
+| `skills/`              | Step-by-step guides for Claude's coding tasks |
+| `memory/`              | Persistent knowledge — see below              |
 
 ---
 
-## Standards vs Skills vs Memory
+## In Salesforce, not the repo — technical and user guides
 
-| Category           | Question to ask                                                  | Examples                                                             |
-| ------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
-| **`standards.md`** | Is this a convention _we_ chose for our code?                    | Layered Apex architecture, `with sharing`, comment style             |
-| **`skills/`**      | Is this a step-by-step guide for a specific task?                | How to write an Apex test, how to set up MCP                         |
-| **`memory/`**      | Is this a platform constraint or lesson learned from experience? | RTA formula quirk, permission set restrictions, MCP connection rules |
+The human-facing **technical and user guides** live **only** in Salesforce, in `Documentation__c.Body__c` (change history in `Change_Log__c`). There is no copy in the repo — never create one, and never build a sync between the two.
+
+**The split:**
+
+| Lives in Salesforce                                                             | Lives in the repo (`.claude/`, Markdown)                                                       |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Technical guides and user guides — how the apps work and are set up, for people | Everything Claude works from — agents, memory, skills, standards, app context, security policy |
+| `Change_Log__c` history of guide changes                                        | Code and metadata                                                                              |
+
+**Reading a guide** — treat it like an on-demand `.md` file, just fetched over MCP. Query by its External ID (never hard-code Salesforce IDs); `Body__c` comes back as Quill HTML:
+
+```
+SELECT Id, Name, Body__c, LastModifiedDate FROM Documentation__c WHERE Claude_Doc_Id__c = '<slug>'
+```
+
+| `Claude_Doc_Id__c`             | Guide                                    | Record Type |
+| ------------------------------ | ---------------------------------------- | ----------- |
+| `project-management-technical` | Project Management App — Technical Guide | Technical   |
+| `documentation-technical`      | Documentation App — Technical Guide      | Technical   |
+| `mcp-setup-technical`          | MCP Setup — Technical Guide              | Technical   |
+| `project-management-user`      | Project Management App — User Guide      | User        |
+| `documentation-user`           | Documentation App — User Guide           | User        |
+
+This table is the single index — add a row when a guide is created in Salesforce.
+
+**If MCP is down** (so the guides cannot be read — including the MCP setup guide itself): ask the human to provide the guide's content. Do not reconstruct it from memory or recreate it in the repo.
+
+**Editing a guide** goes through the Docs Agent / Release Agent pipeline — see [agents/docs-agent.md](agents/docs-agent.md) and [memory/docs.md](memory/docs.md).
+
+---
+
+## Standards vs Skills vs Memory vs Salesforce guides
+
+| Category             | Question to ask                                                   | Examples                                                             |
+| -------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **`standards.md`**   | Is this a convention _we_ chose for our code?                     | Layered Apex architecture, `with sharing`, comment style             |
+| **`skills/`**        | Is this a step-by-step guide for a coding task Claude performs?   | How to write an Apex test, how to write an LWC Jest test             |
+| **`memory/`**        | Is this a platform constraint or lesson learned from experience?  | RTA formula quirk, permission set restrictions, MCP connection rules |
+| **Salesforce guide** | Does this explain to people how an app works or how to set it up? | Project Management user guide, MCP setup guide                       |
 
 ---
 

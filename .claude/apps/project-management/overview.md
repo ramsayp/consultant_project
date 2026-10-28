@@ -56,13 +56,14 @@ not by `Status__c`.
 Scaffolding for an upcoming BA (Business Analyst) agent that classifies raw `Ticket` intake before
 it reaches the team backlog: `ticketSubmit` (intake) → BA agent triage (future) → `ticketTriage`
 (human review queue) → `ticketReview` (approve reclassifies to `Target_Type__c`; decline captures
-`Triage_Notes__c` for re-triage). See `docs/technical/project-management-guide.md` for the full
+`Triage_Notes__c` for re-triage). See the Project Management technical guide in Salesforce
+(`Claude_Doc_Id__c = 'project-management-technical'`, indexed in `.claude/structure.md`) for the full
 workflow and field-level detail.
 
 ## Apex controller
 
 `WorkItemController.cls` — single controller, `with sharing`.
-All board data flows through this class. See inline comments and `docs/technical/project-management-guide.md` for method-level detail.
+All board data flows through this class. See inline comments and the Project Management technical guide in Salesforce (`project-management-technical`) for method-level detail.
 
 ## Tests
 
