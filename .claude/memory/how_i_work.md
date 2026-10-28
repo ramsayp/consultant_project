@@ -113,7 +113,7 @@ A request like "go straight to code review" or "doc agent go" means: do that one
 
 Three failure modes cost repeated retries in one session. All three are avoidable by choosing correctly up front.
 
-**1. `sf` CLI must run in PowerShell, never the Bash tool.** Under Git Bash the `sf` shim fails with `'C:\Program' is not recognized as an internal or external command` — the wrapper invokes node via an unquoted `C:\Program Files\...` path. `node` itself works fine in Bash, so `node scripts/docs-check.js` is fine; `sf data query` is not.
+**1. `sf` CLI must run in PowerShell, never the Bash tool.** Under Git Bash the `sf` shim fails with `'C:\Program' is not recognized as an internal or external command` — the wrapper invokes node via an unquoted `C:\Program Files\...` path. `node` itself works fine in Bash, so `node -e ...` is fine; `sf data query` is not.
 
 **2. PowerShell `Out-File -Encoding utf8` writes a BOM.** Piping `sf ... --json | Out-File` then `JSON.parse`-ing the file in Node throws `SyntaxError: Unexpected token '﻿'`. Strip it: `readFileSync(p,'utf8').replace(/^\uFEFF/,'')`.
 

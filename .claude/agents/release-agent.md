@@ -20,7 +20,7 @@
 7. Close out the Change Log in a **single atomic `updateSobjectRecord` call**: set `Status__c = 'Published'` and clear `Staged_Technical_Body__c = null` and `Staged_User_Body__c = null` together. A validation rule blocks staged fields from being non-null when Published — the fields must be cleared in the same call, not in a separate step.
    - If this update fails (e.g. the validation rule fires because staged fields were not cleared correctly), create a `Comment__c` on the work item describing the error and leave `Status__c = Releasing`. Do not advance to Done.
 8. Publish any other `Documentation__c` records that are in Draft state and related to this work (same file-based write mechanism as step 6)
-9. **Assert Salesforce equals the repo** — run `node scripts/docs-check.js --assert` (in the **Bash tool**). This gate runs **after every doc publication this release makes** (steps 6 and 8), so nothing escapes it: every doc this ticket touched must report in sync (use `--doc <Claude_Doc_Id__c>` to scope if other docs have known, pre-existing drift). Verifying SF against the _staged_ content alone is weaker — staged content can itself be incomplete, which is exactly how historical drift arose. If the check reports `DRIFT` on a doc this ticket touched: do **not** advance to Done — create a `Comment__c` describing the mismatch and leave `Status__c = Releasing`.
+9. If any re-queried `Body__c` from steps 6 or 8 does not match what was published (after allowing for Salesforce re-encoding `'` as `&#39;`): do **not** advance to Done — create a `Comment__c` describing the mismatch and leave `Status__c = Releasing`. Salesforce is the only copy of the guides — there is no repo Markdown to compare against.
 10. Update the as-is architecture doc if the change affected app structure
 11. Create a `Comment__c` record on the work item: "Released — merged to main, feature branch deleted, staged docs published to SF, Change Log published and staged fields cleared"
 12. Set `Status__c = Done`
@@ -31,7 +31,7 @@
     - ✅ Feature branch deleted (remote + local)
     - ✅ Staged content published to Documentation\_\_c in SF
     - ✅ Change Log published and staged fields cleared
-    - ✅ docs-check assertion passed — Salesforce matches the repo for all docs touched
+    - ✅ Published `Body__c` values re-queried and verified against the staged content
 
 ## Failure
 
