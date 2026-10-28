@@ -27,7 +27,7 @@ Any Salesforce API name containing a double underscore — custom fields/objects
 **How to apply:**
 
 - Backticks here are functionally required, not stylistic — they prevent CommonMark parsing `__` as emphasis.
-- This applies to _any_ Markdown — memory files, `docs/`, `.claude/*.md` — not just files Prettier touches; GitHub's renderer has the same behaviour.
+- This applies to _any_ Markdown — memory files, `.claude/*.md`, `README.md` — not just files Prettier touches; GitHub's renderer has the same behaviour.
 - After any Markdown edit mentioning Salesforce API names, run an explicit grep self-check (e.g. `grep -n '\*\*c\b'`) before staging anywhere. The rule was once _known_ but not _applied_ while drafting doc bullets — bare `Sprint__c`, `Status__c`, `Triage_Status__c` were mangled to `Sprint**c` etc. on commit and not caught until after the corrupted content had been staged into `Change_Log__c.Staged_Technical_Body__c`. Don't rely on remembering the rule in the moment of writing.
 
 ## Salesforce is the only copy of the technical and user guides
@@ -56,7 +56,7 @@ For a Rich Text Area payload of any real size, write it from a file using `sf da
 
 - Build a comma-separated-values file with `Id` and the target field, wrapping the value in double quotes and doubling any internal double quote.
 - Use carriage-return-plus-line-feed line endings — the Bulk Application Programming Interface rejects line-feed-only input with `LineEnding is invalid on user data`. Generate the whole file, Id included, in one `node` step and never edit it afterwards with `sed -i` — in Git Bash it silently rewrites carriage-return-plus-line-feed to line-feed only, and with the console output discarded the failure is invisible until the re-query comes back empty.
-- Confirm the body contains no raw line breaks before writing, or the row structure breaks.
+- Raw line breaks inside the body are fine as long as the value is wrapped in double quotes — a quoted field may span lines. A body with newlines inside `<pre>` code blocks (where stripping them would break the code) round-tripped byte-for-byte this way under ORG-00011. Only an unquoted value with a line break breaks the row structure.
 - Always re-read the field afterwards and compare it to the intended content. Rich Text Area values can be silently dropped or truncated; see [[salesforce]] for the 32,768 character cap.
 - Ignore the bulk command's console output — it is almost entirely progress-spinner redraw noise and can run to tens of kilobytes. Re-querying the field is the verification; the command output is not.
 
