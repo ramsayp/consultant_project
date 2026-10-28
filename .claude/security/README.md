@@ -14,7 +14,7 @@ This applies to every layer of the system: MCP servers, connected apps, permissi
 
 ## Related
 
-Setup and configuration guides live in [`.claude/integrations/`](../integrations/) — separate from policy so the two concerns don't mix.
+Setup and configuration guides (such as MCP setup) are technical guides in Salesforce — see [`.claude/structure.md`](../structure.md) — separate from policy so the two concerns don't mix.
 
 ## General Rules
 

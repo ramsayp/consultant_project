@@ -32,9 +32,9 @@ Any Salesforce API name containing a double underscore — custom fields/objects
 
 ## Salesforce is the only copy of the technical and user guides
 
-Technical guides, user guides, and change-log entries live **only** in Salesforce (`Documentation__c` and `Change_Log__c`). There are no Markdown copies in the repo — `docs/README.md` is just an index of each guide's `Claude_Doc_Id__c`.
+Technical guides, user guides, and change-log entries live **only** in Salesforce (`Documentation__c` and `Change_Log__c`). There are no Markdown copies in the repo — the split rule and the index of each guide's `Claude_Doc_Id__c` live in `.claude/structure.md`. This includes the MCP setup guide (`mcp-setup-technical`): if MCP is down and a guide cannot be read, ask the human for it rather than recreating it in the repo.
 
-**Why:** The repo used to keep a Markdown copy of every guide plus a drift-check script. Keeping them in sync (Markdown against Quill HTML, users editing in the org) ate whole sessions and still drifted — the User Guide repo copy ended up ~190 words longer than a deliberately trimmed Salesforce edit. Work Item ORG-00011 (2026-10-28) deleted the copies and the script.
+**Why:** The repo used to keep a Markdown copy of every guide plus a drift-check script. Keeping them in sync (Markdown against Quill HTML, users editing in the org) ate whole sessions and still drifted — the User Guide repo copy ended up ~190 words longer than a deliberately trimmed Salesforce edit. Work Item ORG-00011 (2026-10-28) deleted the copies, the script, and the duplicate `.claude/integrations/salesforce-mcp-setup.md`.
 
 **How to apply:**
 

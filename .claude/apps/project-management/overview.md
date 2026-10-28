@@ -57,7 +57,7 @@ Scaffolding for an upcoming BA (Business Analyst) agent that classifies raw `Tic
 it reaches the team backlog: `ticketSubmit` (intake) → BA agent triage (future) → `ticketTriage`
 (human review queue) → `ticketReview` (approve reclassifies to `Target_Type__c`; decline captures
 `Triage_Notes__c` for re-triage). See the Project Management technical guide in Salesforce
-(`Claude_Doc_Id__c = 'project-management-technical'`, indexed in `docs/README.md`) for the full
+(`Claude_Doc_Id__c = 'project-management-technical'`, indexed in `.claude/structure.md`) for the full
 workflow and field-level detail.
 
 ## Apex controller

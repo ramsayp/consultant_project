@@ -127,6 +127,16 @@ Read tools always fire without asking — proceed directly: `soqlQuery`, `getObj
 - **`Comment__c.Body__c` — always plain text.** The `workItemComments` LWC renders it as plain text (no rich-text component). HTML tags are stored literally and appear as raw tag text in the UI.
 - **Large Rich Text Area fields on other objects — two-step create then update.** For Rich Text Area fields on objects other than `Comment__c`, the Salesforce API can silently drop content on `createSobjectRecord` when payloads are large. Fix: create with metadata fields only, then `updateSobjectRecord` the new record Id to set the Rich Text Area fields. Long Text Area fields are not affected.
 
+## Authoring a `ProjectMCP*` Apex tool
+
+Custom MCP server tools are Apex `@InvocableMethod` classes in `force-app/main/default/classes/mcp/`, one per class.
+
+- **`global` at every level** — outer class, inner `Input`/`Output` classes, and the `execute` method. A `public` method never appears in the API Catalog's Add Tools picker.
+- **The `Input` class must have at least one `@InvocableVariable`.** An empty `Input` class compiles and deploys, but the tool is rejected when registered on the server — a silent failure. For a tool that takes no input (such as `ProjectMCPGetUserInfo`), skip the `Input` class and declare `execute(List<String> inputs)` — `List<String>` is a valid `@InvocableMethod` primitive.
+- **Server registration is Setup-only.** The `McpServer` metadata type is not supported by the command-line interface, so adding the tool to `project-doc-object-all` and activating it happens in Setup → MCP Servers.
+
+**Why:** These rules were learned building the server and lived in a repo setup guide that duplicated the Salesforce MCP setup guide; that file was deleted under ORG-00011 and the Claude-facing rules moved here.
+
 ---
 
 # Rich Text Area — the canonical limit and how to write it

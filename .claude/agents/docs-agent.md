@@ -2,7 +2,7 @@
 
 **Trigger:** `Status__c = Documenting`
 
-**Inputs:** `Work_Item__c` record; feature branch code; `Documentation__c` records in Salesforce — the **only** copy of the guides. There are no Markdown copies in the repo; `docs/README.md` indexes each guide's `Claude_Doc_Id__c`.
+**Inputs:** `Work_Item__c` record; feature branch code; `Documentation__c` records in Salesforce — the **only** copy of the guides. There are no Markdown copies in the repo; [structure.md](../structure.md) indexes each guide's `Claude_Doc_Id__c`.
 
 ## Responsibilities
 
@@ -10,7 +10,7 @@
 
 **Step 0b — Establish what changed.** Before touching any docs, re-read `Acceptance_Criteria__c` from the work item and run `git log main..HEAD --oneline` plus `git diff main...HEAD` to see exactly what was built. This is the authoritative input for what needs documenting.
 
-1. Query the relevant `Documentation__c` records (including `Body__c`) via MCP using `Claude_Doc_Id__c` — see `docs/README.md`. The current `Body__c` is the baseline you edit. Also query for any existing Draft `Change_Log__c` records linked to the same Technical doc: `SELECT Id, Name, Status__c, Title__c FROM Change_Log__c WHERE Technical_Doc__c = '<id>' AND Status__c != 'Published'`. If a Draft Change Log already exists, **stop and flag this to the human** — there may be unpublished staged content from a previous agent run that has not been released yet. Do not create a second Change Log until the human has reviewed the situation.
+1. Query the relevant `Documentation__c` records (including `Body__c`) via MCP using `Claude_Doc_Id__c` — see [structure.md](../structure.md). The current `Body__c` is the baseline you edit. Also query for any existing Draft `Change_Log__c` records linked to the same Technical doc: `SELECT Id, Name, Status__c, Title__c FROM Change_Log__c WHERE Technical_Doc__c = '<id>' AND Status__c != 'Published'`. If a Draft Change Log already exists, **stop and flag this to the human** — there may be unpublished staged content from a previous agent run that has not been released yet. Do not create a second Change Log until the human has reviewed the situation.
 2. Compute the full new Technical doc content by **surgically patching the existing `Body__c` HTML** — never regenerate it from Markdown. Assert that each find-and-replace matched **exactly once**, and match Quill's serialisation (see `memory/docs.md`).
 3. Create the `Change_Log__c` record with **metadata fields only** (do not include large Rich Text Area fields in the create payload — the SF API silently drops them): `Title__c` (required), `Technical_Doc__c`, `Work_Item__c` (optional), `Technical_Doc_Removed__c`, `Technical_Doc_Added__c`, `User_Doc_Removed__c` (if applicable), `User_Doc_Added__c` (if applicable). For `RecordTypeId`: query `SELECT Id FROM RecordType WHERE SobjectType = 'Change_Log__c' AND DeveloperName = 'Initial'` (or `'Update'`) and pass the explicit Id — relationship notation (`"RecordType": {"DeveloperName": "..."}`) is rejected by the SF API because `DeveloperName` is not an indexed external ID on `RecordType`. Use record type `Initial` for first-time doc creation, `Update` for subsequent changes.
 4. Set the large staged fields **separately** from the create (the SF API silently drops Rich Text Area content on `createSobjectRecord` when payloads are large):
@@ -23,7 +23,7 @@
 8. Update Claude memory files if any architecture decisions changed during this work
 9. Set `Status__c = Releasing`
 
-The doc list (`Claude_Doc_Id__c` → guide) lives in `docs/README.md` — the single index; update it when a guide is added.
+The guide list (`Claude_Doc_Id__c` → guide) lives in [structure.md](../structure.md) — the single index; add a row when a guide is created.
 
 ## Failure
 
